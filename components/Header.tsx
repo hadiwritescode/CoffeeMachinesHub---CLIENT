@@ -17,10 +17,11 @@ const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Pages where header should be transparent at top
-  const isTransparentRoute = ['/', '/shop'].includes(location.pathname) || 
-                             (location.pathname.startsWith('/blogs/') && location.pathname !== '/blogs') ||
-                             (location.pathname.startsWith('/product/'));
+  // Pages where header should be transparent at top (Hero sections)
+  // Product pages (/product/:id) should have a SOLID header.
+  const isTransparentRoute = location.pathname === '/' || 
+                             location.pathname === '/shop' ||
+                             (location.pathname.startsWith('/blogs/') && location.pathname !== '/blogs');
   
   const isHomePage = location.pathname === '/';
 
@@ -77,18 +78,21 @@ const Header: React.FC = () => {
 
   // Header Logic
   const getHeaderClasses = () => {
-    // If mobile menu is open, force standard background if not scrolled, but typically header stays under menu
+    // If scrolled, solid background
     if (isScrolled) {
       return 'bg-nomad-paper/95 backdrop-blur-md shadow-sm py-3 text-nomad-black';
     }
+    // Transparent routes (Home, Shop Hero, Blog Post Hero) gets transparent bg until scrolled
     if (isTransparentRoute && !mobileMenuOpen) {
       return 'bg-transparent py-6 text-white hover:bg-nomad-black/10';
     }
+    // Default for other pages (Product Detail, Cart, Login, etc) is solid paper color
     return 'bg-nomad-paper py-5 text-nomad-black';
   };
 
   const getLogoFill = () => {
     if (isScrolled) return 'currentColor';
+    // Transparent routes use white logo, others use dark
     if (isTransparentRoute && !mobileMenuOpen) return 'white';
     return 'currentColor';
   };
@@ -174,7 +178,7 @@ const Header: React.FC = () => {
                         <div className="hidden lg:flex w-72 flex-col flex-shrink-0 bg-white p-6 rounded-2xl shadow-sm border border-nomad-gray group/card">
                            <h4 className="text-[10px] font-bold tracking-widest uppercase mb-4 text-gray-400">Featured</h4>
                            <div className="overflow-hidden rounded-xl mb-4 aspect-square relative">
-                              <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&q=80&w=400" className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110" alt="Featured" />
+                              <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&q=80&w=400" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Featured" />
                            </div>
                            <p className="font-serif font-bold text-xl mb-1 text-nomad-black">New Arrivals</p>
                            <p className="text-gray-500 text-xs mb-3">Check out the latest beans from Ethiopia.</p>
@@ -258,10 +262,10 @@ const Header: React.FC = () => {
         {/* Mobile Menu Overlay */}
         <div className={`fixed inset-0 bg-nomad-black/60 backdrop-blur-sm z-[55] transition-opacity duration-300 md:hidden ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setMobileMenuOpen(false)}></div>
         
-        {/* Mobile Menu Content - Increased z-index to 60 to cover everything */}
-        <div className={`fixed top-0 left-0 w-[90%] max-w-sm h-full bg-nomad-paper z-[60] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {/* Mobile Menu Content - Using inset-y-0 and h-[100dvh] for full height on mobile */}
+        <div className={`fixed inset-y-0 left-0 w-[90%] max-w-sm h-[100dvh] bg-nomad-paper z-[60] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="p-6 flex justify-between items-center border-b border-gray-200 bg-nomad-paper shrink-0">
-             <Logo className="h-10 w-auto" />
+             <Logo className="h-10 w-auto" fill="#3B261B" />
              {/* Close button for menu */}
              <button onClick={() => setMobileMenuOpen(false)} className="text-nomad-black p-2">
                  <X size={24} />
@@ -316,7 +320,7 @@ const Header: React.FC = () => {
                </div>
              ))}
           </div>
-          <div className="p-6 bg-nomad-gray border-t border-gray-200 shrink-0">
+          <div className="p-6 bg-nomad-gray border-t border-gray-200 shrink-0 mb-safe">
              <Link to="/login" className="flex items-center space-x-3 text-sm font-bold uppercase tracking-wider text-gray-600 mb-4 hover:text-nomad-black" onClick={() => setMobileMenuOpen(false)}>
                <User size={18} /> <span>Sign In / Register</span>
              </Link>
