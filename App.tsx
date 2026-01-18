@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WhatsAppWidget from './components/WhatsAppWidget';
+import FeaturesBanner from './components/FeaturesBanner';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Shop from './pages/Shop';
@@ -68,6 +69,8 @@ const App: React.FC = () => {
                 <Route path="*" element={<Home />} />
               </Routes>
             </main>
+            {/* Features Banner added at the bottom of the content card */}
+            <FeaturesBanner />
           </div>
           
           {/* Fixed Footer (Revealed on Scroll on Desktop, Static on Mobile) */}
