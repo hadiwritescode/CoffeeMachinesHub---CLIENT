@@ -1,5 +1,4 @@
 import { NavLink, Product, BlogPost, FAQItem } from './types';
-import React from 'react';
 
 export const NAVIGATION_LINKS: NavLink[] = [
   { label: 'HOME', href: '/' },
