@@ -87,7 +87,8 @@ const Header: React.FC = () => {
       return 'bg-transparent py-6 text-white hover:bg-nomad-black/10';
     }
     // Default for other pages (Product Detail, Cart, Login, etc) is solid paper color
-    return 'bg-nomad-paper py-5 text-nomad-black';
+    // Added shadow-sm and border to ensure it's visible against the matching background
+    return 'bg-nomad-paper py-5 text-nomad-black shadow-sm border-b border-nomad-black/5';
   };
 
   const getLogoFill = () => {
