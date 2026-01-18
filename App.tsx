@@ -32,7 +32,8 @@ const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
     setTimeout(() => {
-      const elements = document.querySelectorAll('.fade-up');
+      // Observe both fade-up and fade-right elements
+      const elements = document.querySelectorAll('.fade-up, .fade-right');
       elements.forEach(el => observer.observe(el));
     }, 100);
 
