@@ -94,7 +94,7 @@ const Home: React.FC = () => {
       </div>
 
       {/* Categories Section */}
-      <section className="relative z-10 py-24 bg-nomad-paper">
+      <section className="relative z-10 py-16 md:py-24 bg-nomad-paper">
         <div className="container mx-auto px-6 md:px-12">
           <div className="flex justify-between items-end mb-12">
             <div className="max-w-xl">
@@ -132,6 +132,9 @@ const Home: React.FC = () => {
                 bgColor="bg-[#FCE4EC]" 
              />
           </div>
+          <Link to="/shop" className="md:hidden mt-8 flex items-center justify-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors pb-2 border-b border-gray-200">
+                View All Categories <ArrowRight size={16} className="ml-2" />
+          </Link>
         </div>
       </section>
 
@@ -156,27 +159,27 @@ const Home: React.FC = () => {
       </section>
 
       {/* Editorial / Feature Section */}
-      <section className="relative z-10 py-32 bg-nomad-black text-white overflow-hidden fade-up">
+      <section className="relative z-10 py-24 md:py-32 bg-nomad-black text-white overflow-hidden fade-up">
          {/* Background Texture/Image */}
          <div className="absolute inset-0 opacity-30 mix-blend-overlay">
             <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&q=80&w=1600" alt="Texture" className="w-full h-full object-cover" />
          </div>
 
          <div className="container mx-auto px-6 md:px-12 relative z-10 flex flex-col md:flex-row items-center gap-16 md:gap-24">
-             <div className="w-full md:w-1/2 flex justify-center">
+             <div className="w-full md:w-1/2 flex justify-center order-2 md:order-1">
                 <div className="relative aspect-[4/5] w-full max-w-[450px] rounded-t-full overflow-hidden border-b-0 border-white/10">
                    <img src="https://images.unsplash.com/photo-1507133750069-41e575498f62?auto=format&fit=crop&q=80&w=800" alt="Pour Over Art" className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000 ease-in-out" />
                 </div>
              </div>
-             <div className="w-full md:w-1/2 text-left">
+             <div className="w-full md:w-1/2 text-center md:text-left order-1 md:order-2">
                 <span className="text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-4 block">The Art of Extraction</span>
                 <h2 className="text-4xl md:text-6xl font-serif font-medium mb-8 leading-tight">
                     Precision in <br/> Every Pour
                 </h2>
-                <p className="text-gray-400 text-lg mb-12 leading-relaxed max-w-md font-light">
+                <p className="text-gray-400 text-lg mb-12 leading-relaxed max-w-md mx-auto md:mx-0 font-light">
                     We believe that the perfect cup is a balance of science and art. Our equipment collection is curated to give you total control over every variable of extraction.
                 </p>
-                <Link to="/shop?category=Brew Equipment" className="bg-white text-black px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                <Link to="/shop?category=Brew Equipment" className="inline-block bg-white text-black px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                     Explore Equipment
                 </Link>
              </div>
@@ -207,9 +210,9 @@ const Home: React.FC = () => {
         <div className="container mx-auto px-6 md:px-12 text-center">
            <p className="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase mb-12">Trusted Partners & Brands</p>
            
-           <div className="flex flex-wrap justify-center items-center gap-x-16 gap-y-10 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+           <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-10 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
              {BRAND_LOGOS.slice(0, 12).map((brand, idx) => (
-               <span key={idx} className="text-xl md:text-2xl font-serif font-bold text-gray-500 hover:text-black cursor-default transition-colors">{brand}</span>
+               <span key={idx} className="text-lg md:text-2xl font-serif font-bold text-gray-500 hover:text-black cursor-default transition-colors">{brand}</span>
              ))}
            </div>
         </div>

@@ -1,19 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
 import { ALL_PRODUCTS } from '../constants';
 import { useSearchParams, Link, useParams } from 'react-router-dom';
-import { ChevronDown, SlidersHorizontal, X, Filter, Search } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, X, Filter, Search, Check } from 'lucide-react';
+
+type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'newest';
 
 const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { collectionId } = useParams<{ collectionId: string }>();
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('featured');
 
+  // Derived state from URL
   const categoryParam = searchParams.get('category');
   const subcategoryParam = searchParams.get('subcategory');
   const searchParam = searchParams.get('search');
 
-  const filteredProducts = ALL_PRODUCTS.filter(product => {
-    // 0. Search Filter (Priority)
+  // Close drawers on resize or route change
+  useEffect(() => {
+    setIsFilterOpen(false);
+    setIsSortOpen(false);
+  }, [searchParams, collectionId]);
+
+  // Prevent body scroll when filter is open
+  useEffect(() => {
+    if (isFilterOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isFilterOpen]);
+
+  // Filtering Logic
+  let filteredProducts = ALL_PRODUCTS.filter(product => {
+    // 0. Search Filter
     if (searchParam) {
         const query = searchParam.toLowerCase();
         const matchesTitle = product.title.toLowerCase().includes(query);
@@ -22,34 +45,22 @@ const Shop: React.FC = () => {
         return matchesTitle || matchesDesc || matchesTags;
     }
 
-    // 1. URL Path Collection Filter (e.g., /collections/blends)
+    // 1. Collection ID Path
     if (collectionId) {
        const normalizedCollection = collectionId.toLowerCase().replace(/-/g, ' ');
-       
-       // Handle 'blends' specifically
-       if (normalizedCollection === 'blends') {
-         return product.tags?.some(tag => tag.toLowerCase() === 'blends');
-       }
-       
-       // Handle 'all'
+       if (normalizedCollection === 'blends') return product.tags?.some(tag => tag.toLowerCase() === 'blends');
        if (normalizedCollection === 'all') return true;
-
-       // General tag/category matching
        const matchesCategory = product.category?.toLowerCase() === normalizedCollection;
        const matchesTag = product.tags?.some(tag => tag.toLowerCase() === normalizedCollection);
-       
        return matchesCategory || matchesTag;
     }
 
-    // 2. Filter by specific subcategory (e.g., 'Blends', 'Pour Over')
+    // 2. Subcategory (Tag)
     if (subcategoryParam) {
-      if (product.tags) {
-        return product.tags.some(tag => tag.toLowerCase() === subcategoryParam.toLowerCase() || tag.includes(subcategoryParam));
-      }
-      return false; 
+      return product.tags?.some(tag => tag.toLowerCase() === subcategoryParam.toLowerCase() || tag.includes(subcategoryParam));
     }
 
-    // 3. Filter by main category if no subcategory is present
+    // 3. Category
     if (categoryParam) {
       if (categoryParam === 'Coffee' && product.category === 'Coffee') return true;
       if (categoryParam === 'Brew Equipment' && product.category === 'Gear') return true;
@@ -61,76 +72,194 @@ const Shop: React.FC = () => {
     return true;
   });
 
-  // Determine Page Title & Description
-  let pageTitle = 'All Products';
-  let pageDescription = 'Explore our complete collection of premium coffee and gear.';
+  // Sorting Logic
+  filteredProducts = [...filteredProducts].sort((a, b) => {
+      switch (sortBy) {
+          case 'price-asc': return a.price - b.price;
+          case 'price-desc': return b.price - a.price;
+          case 'newest': return 0; // Assuming API order is newest or random. Real app would have date.
+          default: return 0; // Featured
+      }
+  });
 
-  if (searchParam) {
-    pageTitle = `Search Results: "${searchParam}"`;
-    pageDescription = `Found ${filteredProducts.length} items matching your search.`;
-  } else if (collectionId) {
-    const formattedTitle = collectionId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    pageTitle = formattedTitle;
-    if (collectionId.toLowerCase() === 'blends') {
-       pageDescription = 'Our signature blends, crafted for perfect balance and depth.';
+  // Helper for filter links
+  const toggleCategory = (cat: string) => {
+    if (categoryParam === cat) {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('category');
+        setSearchParams(newParams);
     } else {
-       pageDescription = `Browse our ${formattedTitle} collection.`;
+        setSearchParams({ category: cat });
     }
-  } else if (subcategoryParam) {
-    pageTitle = subcategoryParam;
-    pageDescription = `Browse our finest selection of ${subcategoryParam}.`;
-  } else if (categoryParam) {
-    pageTitle = categoryParam;
-    if (categoryParam === 'Coffee') pageDescription = 'Sustainably sourced, meticulously roasted.';
-    if (categoryParam === 'Brew Equipment') pageDescription = 'Professional tools for the home barista.';
-  }
+  };
+
+  const getPageTitle = () => {
+    if (searchParam) return `Search: "${searchParam}"`;
+    if (collectionId) return collectionId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    if (subcategoryParam) return subcategoryParam;
+    if (categoryParam) return categoryParam;
+    return 'All Products';
+  };
 
   const clearFilters = () => {
     setSearchParams({});
+    setSortBy('featured');
+    setIsFilterOpen(false);
   };
 
   return (
     <div className="animate-fade-in min-h-screen bg-nomad-paper">
       
       {/* Editorial Header */}
-      <div className="bg-nomad-black text-white pt-40 pb-20 rounded-b-[3rem] shadow-xl relative overflow-hidden">
+      <div className="bg-nomad-black text-white pt-32 md:pt-40 pb-16 md:pb-20 rounded-b-[2rem] md:rounded-b-[3rem] shadow-xl relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
         <div className="container mx-auto px-6 md:px-12 text-center md:text-left relative z-10">
-           <span className="block text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-6 animate-slide-up">Collection</span>
-           <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-medium mb-6 animate-slide-up leading-none" style={{ animationDelay: '0.1s' }}>{pageTitle}</h1>
-           <p className="text-gray-400 text-lg max-w-xl animate-slide-up font-light" style={{ animationDelay: '0.2s' }}>{pageDescription}</p>
+           <span className="block text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-4 md:mb-6 animate-slide-up">Collection</span>
+           <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-medium mb-4 md:mb-6 animate-slide-up leading-none" style={{ animationDelay: '0.1s' }}>
+             {getPageTitle()}
+           </h1>
+           <p className="text-gray-400 text-sm md:text-lg max-w-xl animate-slide-up font-light mx-auto md:mx-0" style={{ animationDelay: '0.2s' }}>
+             Explore our complete collection of premium coffee and gear.
+           </p>
         </div>
       </div>
 
       {/* Sticky Filter Bar */}
       <div className="sticky top-[64px] z-30 bg-nomad-paper/95 backdrop-blur-md border-b border-gray-200 transition-all duration-300">
-        <div className="container mx-auto px-6 md:px-12 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-           <div className="flex items-center space-x-6">
-                <button className="flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors group">
-                    <Filter size={16} className="mr-2" /> Filter
+        <div className="container mx-auto px-6 md:px-12 py-4 flex flex-row justify-between items-center gap-4">
+           <div className="flex items-center space-x-4 md:space-x-6">
+                <button 
+                  onClick={() => setIsFilterOpen(true)}
+                  className="flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors group bg-white md:bg-transparent px-4 py-2 md:p-0 rounded-full border border-gray-100 md:border-none shadow-sm md:shadow-none"
+                >
+                    <SlidersHorizontal size={14} className="mr-2" /> Filter
                 </button>
                 {(searchParam || categoryParam || subcategoryParam) && (
-                    <button onClick={clearFilters} className="flex items-center text-xs font-bold uppercase tracking-widest text-red-400 hover:text-red-600 transition-colors">
-                        <X size={16} className="mr-1" /> Clear All
+                    <button onClick={clearFilters} className="hidden md:flex items-center text-xs font-bold uppercase tracking-widest text-red-400 hover:text-red-600 transition-colors">
+                        <X size={14} className="mr-1" /> Clear
                     </button>
                 )}
            </div>
 
-           <div className="flex items-center gap-6">
+           <div className="flex items-center gap-4 md:gap-6">
                <span className="text-xs font-medium text-gray-500 hidden sm:block uppercase tracking-wider">{filteredProducts.length} items</span>
                <div className="h-4 w-px bg-gray-300 hidden sm:block"></div>
-               <button className="flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors group">
-                    Sort by
-                    <ChevronDown size={14} className="ml-1 group-hover:translate-y-0.5 transition-transform" />
-               </button>
+               <div className="relative">
+                  <button 
+                    onClick={() => setIsSortOpen(!isSortOpen)}
+                    className="flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors group"
+                  >
+                        Sort by <span className="hidden md:inline ml-1 text-gray-400 font-normal capitalize">({sortBy.replace('-', ' ')})</span>
+                        <ChevronDown size={14} className={`ml-1 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {/* Sort Dropdown */}
+                  {isSortOpen && (
+                    <div className="absolute right-0 top-full mt-4 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-40 animate-in fade-in slide-in-from-top-2">
+                        {[
+                          { label: 'Featured', value: 'featured' },
+                          { label: 'Price: Low to High', value: 'price-asc' },
+                          { label: 'Price: High to Low', value: 'price-desc' },
+                          { label: 'Newest', value: 'newest' }
+                        ].map((option) => (
+                          <button
+                            key={option.value}
+                            onClick={() => { setSortBy(option.value as SortOption); setIsSortOpen(false); }}
+                            className={`w-full text-left px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-gray-50 flex justify-between items-center ${sortBy === option.value ? 'text-nomad-gold' : 'text-gray-600'}`}
+                          >
+                            {option.label}
+                            {sortBy === option.value && <Check size={12} />}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+               </div>
            </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 md:px-12 py-16">
+      {/* Filter Drawer (Mobile & Desktop) */}
+      <div 
+        className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isFilterOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsFilterOpen(false)}
+      ></div>
+      <div className={`fixed inset-y-0 right-0 z-[61] w-full max-w-sm bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isFilterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+         <div className="h-full flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="font-serif font-bold text-xl">Filters</h2>
+                <button onClick={() => setIsFilterOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <X size={20} />
+                </button>
+            </div>
+            
+            <div className="flex-grow overflow-y-auto p-6 space-y-8">
+                {/* Categories */}
+                <div>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Category</h3>
+                    <div className="space-y-3">
+                        {['Coffee', 'Brew Equipment', 'Merchandise'].map(cat => (
+                            <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${categoryParam === cat ? 'bg-nomad-black border-nomad-black' : 'border-gray-300 group-hover:border-black'}`}>
+                                    {categoryParam === cat && <Check size={12} className="text-white" />}
+                                </div>
+                                <input 
+                                    type="checkbox" 
+                                    checked={categoryParam === cat} 
+                                    onChange={() => toggleCategory(cat)}
+                                    className="hidden" 
+                                />
+                                <span className={`text-sm font-medium transition-colors ${categoryParam === cat ? 'text-nomad-black' : 'text-gray-600'}`}>{cat}</span>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Price Range (Mock) */}
+                <div>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Price Range</h3>
+                    <div className="flex gap-4">
+                        <input type="number" placeholder="Min" className="w-1/2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black" />
+                        <input type="number" placeholder="Max" className="w-1/2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black" />
+                    </div>
+                </div>
+                
+                {/* Roast Level (Mock - only shows if Coffee) */}
+                {(!categoryParam || categoryParam === 'Coffee') && (
+                    <div>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Roast Level</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {['Light', 'Medium', 'Dark', 'Espresso'].map(roast => (
+                                <button key={roast} className="px-4 py-2 bg-gray-50 rounded-full text-xs font-bold uppercase tracking-wider text-gray-600 hover:bg-black hover:text-white transition-colors">
+                                    {roast}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div className="p-6 border-t border-gray-100 bg-gray-50">
+                <button 
+                    onClick={() => setIsFilterOpen(false)}
+                    className="w-full bg-nomad-black text-white py-4 rounded-full text-xs font-bold uppercase tracking-[0.2em] hover:bg-nomad-gold transition-colors"
+                >
+                    Show {filteredProducts.length} Results
+                </button>
+                <button 
+                    onClick={clearFilters} 
+                    className="w-full mt-3 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
+                >
+                    Reset All Filters
+                </button>
+            </div>
+         </div>
+      </div>
+
+      {/* Product Grid */}
+      <div className="container mx-auto px-6 md:px-12 py-12 md:py-16">
         <div className="fade-up" style={{ transitionDelay: '0.2s' }}>
              {filteredProducts.length > 0 ? (
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12 md:gap-x-8 md:gap-y-16">
                   {filteredProducts.map(product => (
                     <ProductCard key={product.id} product={product} variant="poster" />
                   ))}

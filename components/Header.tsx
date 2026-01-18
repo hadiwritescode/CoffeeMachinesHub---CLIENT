@@ -8,6 +8,7 @@ const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState<string | null>(null); // Track open submenu in mobile
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -33,6 +34,7 @@ const Header: React.FC = () => {
     setMobileMenuOpen(false);
     setActiveDropdown(null);
     setSearchOpen(false);
+    setMobileSubmenuOpen(null);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, [location]);
 
@@ -67,7 +69,13 @@ const Header: React.FC = () => {
     }, 150);
   };
 
+  const toggleMobileSubmenu = (label: string) => {
+    setMobileSubmenuOpen(mobileSubmenuOpen === label ? null : label);
+  };
+
+  // Header Logic
   const getHeaderClasses = () => {
+    // If mobile menu is open, force standard background if not scrolled, but typically header stays under menu
     if (isScrolled) {
       return 'bg-nomad-paper/95 backdrop-blur-md shadow-sm py-3 text-nomad-black';
     }
@@ -97,19 +105,19 @@ const Header: React.FC = () => {
             className="md:hidden mr-4 focus:outline-none transition-colors p-1"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={24} className="text-nomad-black z-50 relative" /> : <Menu size={24} />}
           </button>
 
           {/* Logo */}
           <Link to="/" className="flex-shrink-0 z-50 transition-transform duration-300 hover:scale-105">
             <Logo 
-                className={`transition-all duration-300 ${isScrolled ? 'h-10 w-auto' : 'h-12 w-auto'}`} 
-                fill={getLogoFill()}
+                className={`transition-all duration-300 ${isScrolled ? 'h-8 md:h-10 w-auto' : 'h-10 md:h-12 w-auto'}`} 
+                fill={mobileMenuOpen ? '#121212' : getLogoFill()} // Force dark logo when menu open
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8 lg:space-x-12 items-center h-full mx-auto">
+          <nav className="hidden md:flex space-x-6 lg:space-x-10 items-center h-full mx-auto">
             {NAVIGATION_LINKS.map((link) => (
               <div 
                 key={link.label}
@@ -119,7 +127,7 @@ const Header: React.FC = () => {
               >
                 <Link 
                   to={link.href} 
-                  className={`text-[11px] font-bold tracking-[0.2em] uppercase transition-colors duration-300 hover-underline-animation flex items-center gap-1 ${
+                  className={`text-[10px] lg:text-[11px] font-bold tracking-[0.2em] uppercase transition-colors duration-300 hover-underline-animation flex items-center gap-1 ${
                     location.pathname === link.href 
                       ? 'opacity-100' 
                       : 'opacity-80 hover:opacity-100'
@@ -140,7 +148,7 @@ const Header: React.FC = () => {
                     
                     <div className="container mx-auto px-6 md:px-12 py-12">
                       <div className="flex flex-col md:flex-row gap-16">
-                        <div className="flex-grow grid grid-cols-4 gap-12">
+                        <div className="flex-grow grid grid-cols-3 gap-12">
                             {link.subItems.map((category) => (
                               <div key={category.title} className="flex flex-col space-y-6">
                                 <h3 className="font-serif font-bold text-xl text-nomad-black border-b border-gray-200 pb-2">{category.title}</h3>
@@ -178,19 +186,19 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Icons */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4 md:space-x-6 z-50">
             <button 
               onClick={() => setSearchOpen(true)}
               className="hover:text-nomad-gold transition-colors p-1"
               aria-label="Search"
             >
-              <Search strokeWidth={1.5} size={22} />
+              <Search strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />
             </button>
             <Link to="/login" className="hover:text-nomad-gold transition-colors p-1 hidden sm:block" aria-label="Account">
               <User strokeWidth={1.5} size={22} />
             </Link>
             <Link to="/cart" className="hover:text-nomad-gold transition-colors p-1 relative group" aria-label="Cart">
-              <ShoppingBag strokeWidth={1.5} size={22} />
+              <ShoppingBag strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-nomad-gold rounded-full flex items-center justify-center text-[8px] font-bold text-white">0</span>
             </Link>
           </div>
@@ -249,28 +257,36 @@ const Header: React.FC = () => {
         
         {/* Mobile Menu Content */}
         <div className={`fixed top-0 left-0 w-[90%] max-w-sm h-full bg-nomad-paper z-50 transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="p-6 flex justify-between items-center border-b border-gray-100 bg-nomad-paper">
+          <div className="p-6 flex justify-between items-center border-b border-gray-100 bg-nomad-paper shrink-0">
              <Logo className="h-10 w-auto" />
-             <button onClick={() => setMobileMenuOpen(false)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-               <X size={20} className="text-gray-600" />
-             </button>
+             {/* Close button is now handled by the toggle in the main header for visual consistency, but redundant button here for UX safety */}
           </div>
           <div className="flex-grow overflow-y-auto p-6 space-y-1">
              {NAVIGATION_LINKS.map((link) => (
                <div key={link.label} className="border-b border-gray-100 last:border-0 pb-2 mb-2">
                  <div className="flex justify-between items-center">
-                    <Link 
-                        to={link.href} 
-                        className="flex-grow text-lg font-serif font-bold text-nomad-black py-3"
-                        onClick={() => !link.subItems && setMobileMenuOpen(false)}
-                    >
-                        {link.label}
-                    </Link>
+                    {link.subItems ? (
+                        <button 
+                            className="flex-grow text-lg font-serif font-bold text-nomad-black py-3 text-left flex justify-between items-center"
+                            onClick={() => toggleMobileSubmenu(link.label)}
+                        >
+                            {link.label}
+                            <ChevronDown size={16} className={`transition-transform duration-300 ${mobileSubmenuOpen === link.label ? 'rotate-180' : ''}`} />
+                        </button>
+                    ) : (
+                        <Link 
+                            to={link.href} 
+                            className="flex-grow text-lg font-serif font-bold text-nomad-black py-3"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            {link.label}
+                        </Link>
+                    )}
                  </div>
                  
-                 {/* Mobile Submenu - simplified flat list for better UX */}
+                 {/* Mobile Submenu */}
                  {link.subItems && (
-                   <div className="pl-4 space-y-4 mb-4 mt-1">
+                   <div className={`pl-4 space-y-4 overflow-hidden transition-all duration-300 ${mobileSubmenuOpen === link.label ? 'max-h-[800px] mb-4 mt-2' : 'max-h-0'}`}>
                       {link.subItems.map(sub => (
                         <div key={sub.title}>
                           <h4 className="text-[10px] font-bold text-nomad-gold uppercase mb-2 tracking-widest">{sub.title}</h4>
@@ -279,7 +295,7 @@ const Header: React.FC = () => {
                               <li key={item}>
                                 <Link 
                                   to={`/shop?category=${encodeURIComponent(sub.title)}&subcategory=${encodeURIComponent(item)}`} 
-                                  className="text-sm text-gray-600 block py-1 hover:text-black transition-colors"
+                                  className="text-sm text-gray-600 block py-1.5 hover:text-black transition-colors"
                                   onClick={() => setMobileMenuOpen(false)}
                                 >
                                   {item}
@@ -294,7 +310,7 @@ const Header: React.FC = () => {
                </div>
              ))}
           </div>
-          <div className="p-6 bg-gray-50 border-t border-gray-100">
+          <div className="p-6 bg-gray-50 border-t border-gray-100 shrink-0">
              <Link to="/login" className="flex items-center space-x-3 text-sm font-bold uppercase tracking-wider text-gray-600 mb-4 hover:text-black" onClick={() => setMobileMenuOpen(false)}>
                <User size={18} /> <span>Sign In / Register</span>
              </Link>

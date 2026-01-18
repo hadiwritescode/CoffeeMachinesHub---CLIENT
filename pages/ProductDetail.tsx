@@ -68,7 +68,7 @@ const ProductDetail: React.FC = () => {
       <div className="container mx-auto px-6 md:px-12 max-w-7xl">
         
         {/* Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-[10px] text-gray-400 mb-8 font-bold uppercase tracking-[0.2em] fade-up">
+        <div className="flex items-center space-x-2 text-[10px] text-gray-400 mb-8 font-bold uppercase tracking-[0.2em] fade-up flex-wrap gap-y-2">
           <Link to="/" className="hover:text-black transition-colors">Home</Link>
           <span>/</span>
           <Link to="/shop" className="hover:text-black transition-colors">Shop</Link>
@@ -76,9 +76,9 @@ const ProductDetail: React.FC = () => {
           <span className="text-nomad-black">{product.title}</span>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-16 xl:gap-24 mb-24 fade-up" style={{ transitionDelay: '0.1s' }}>
+        <div className="flex flex-col lg:flex-row gap-12 xl:gap-24 mb-24 fade-up" style={{ transitionDelay: '0.1s' }}>
           
-          {/* Left Side: Scrolling Image Gallery */}
+          {/* Left Side: Image Gallery */}
           <div className="w-full lg:w-[55%] flex flex-col gap-6">
              <div className="bg-[#F9F9F9] rounded-[2rem] overflow-hidden w-full aspect-[4/5] relative group shadow-sm">
                 <img src={product.image} alt={product.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -90,7 +90,7 @@ const ProductDetail: React.FC = () => {
              </div>
              
              {/* Secondary Images Grid */}
-             <div className="grid grid-cols-2 gap-6">
+             <div className="grid grid-cols-2 gap-4 md:gap-6">
                 <div className="bg-[#F9F9F9] rounded-[2rem] overflow-hidden aspect-square cursor-pointer group">
                     <img 
                         src={product.hoverImage || product.image} 
@@ -98,9 +98,9 @@ const ProductDetail: React.FC = () => {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                     />
                 </div>
-                <div className="bg-nomad-cream/30 rounded-[2rem] flex flex-col items-center justify-center aspect-square p-8 text-center border border-nomad-gold/10">
-                    <p className="font-serif italic text-2xl text-nomad-dark-gold mb-2">Premium Quality</p>
-                    <p className="text-xs uppercase tracking-widest text-gray-500">Sustainably Sourced</p>
+                <div className="bg-nomad-cream/30 rounded-[2rem] flex flex-col items-center justify-center aspect-square p-4 md:p-8 text-center border border-nomad-gold/10">
+                    <p className="font-serif italic text-xl md:text-2xl text-nomad-dark-gold mb-2">Premium Quality</p>
+                    <p className="text-[10px] md:text-xs uppercase tracking-widest text-gray-500">Sustainably Sourced</p>
                 </div>
              </div>
           </div>
@@ -116,7 +116,7 @@ const ProductDetail: React.FC = () => {
                     </div>
                 </div>
 
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium mb-6 text-nomad-black leading-none">{product.title}</h1>
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium mb-6 text-nomad-black leading-none">{product.title}</h1>
                 
                 <div className="flex items-center gap-6 mb-8 border-b border-gray-100 pb-8">
                   <span className="text-2xl font-sans font-medium text-gray-900">{formatPrice(product.price)}</span>
@@ -177,14 +177,14 @@ const ProductDetail: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex gap-4 mb-6">
+                    <div className="flex flex-col sm:flex-row gap-4 mb-8">
                         <button 
                             onClick={handleAddToCart}
                             className="flex-grow bg-nomad-gold text-white py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200"
                         >
                             Add to Cart — {formatPrice(product.price)}
                         </button>
-                        <button className="w-14 h-14 flex items-center justify-center border border-gray-200 rounded-full hover:border-nomad-gold hover:text-nomad-gold transition-colors">
+                        <button className="w-full sm:w-14 h-14 flex items-center justify-center border border-gray-200 rounded-full hover:border-nomad-gold hover:text-nomad-gold transition-colors">
                             <Heart size={20} />
                         </button>
                     </div>
@@ -192,18 +192,18 @@ const ProductDetail: React.FC = () => {
                 )}
 
                 {/* Features List */}
-                <div className="grid grid-cols-3 gap-4 mb-10 text-center">
-                    <div className="flex flex-col items-center p-4 bg-white rounded-2xl shadow-sm border border-gray-50/50">
+                <div className="grid grid-cols-3 gap-3 md:gap-4 mb-10 text-center">
+                    <div className="flex flex-col items-center p-3 md:p-4 bg-white rounded-2xl shadow-sm border border-gray-50/50">
                         <Truck size={20} className="mb-3 text-gray-400" strokeWidth={1.5} />
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Fast Ship</span>
+                        <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-widest text-gray-500">Fast Ship</span>
                     </div>
-                    <div className="flex flex-col items-center p-4 bg-white rounded-2xl shadow-sm border border-gray-50/50">
+                    <div className="flex flex-col items-center p-3 md:p-4 bg-white rounded-2xl shadow-sm border border-gray-50/50">
                         <ShieldCheck size={20} className="mb-3 text-gray-400" strokeWidth={1.5} />
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Secure</span>
+                        <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-widest text-gray-500">Secure</span>
                     </div>
-                    <div className="flex flex-col items-center p-4 bg-white rounded-2xl shadow-sm border border-gray-50/50">
+                    <div className="flex flex-col items-center p-3 md:p-4 bg-white rounded-2xl shadow-sm border border-gray-50/50">
                         <Coffee size={20} className="mb-3 text-gray-400" strokeWidth={1.5} />
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Fresh</span>
+                        <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-widest text-gray-500">Fresh</span>
                     </div>
                 </div>
 
