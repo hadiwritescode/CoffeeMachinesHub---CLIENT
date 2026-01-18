@@ -52,7 +52,7 @@ const Home: React.FC = () => {
                         New Arrivals: Ethiopia Guji
                     </span>
                     <h1 className="text-5xl md:text-7xl lg:text-9xl font-serif font-medium mb-8 leading-none tracking-tight">
-                        Nomad <br/> Studio
+                        Coffee <br/> Machines Hub
                     </h1>
                     <p className="text-lg md:text-xl font-sans font-light text-white/80 max-w-lg mx-auto mb-10">
                         Purveyors of fine coffee and exceptional brewing equipment for the modern ritual.
