@@ -14,9 +14,10 @@ import BlogPost from './pages/BlogPost';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 
-// Wrapper component to handle ScrollToTop and Animations
-const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
-  const { pathname } = useLocation();
+// Helper component to handle layout logic that depends on the router
+const Layout = () => {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -36,45 +37,50 @@ const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
     }, 100);
 
     return () => observer.disconnect();
-  }, [pathname]);
+  }, [location.pathname]);
 
-  return <>{children}</>;
+  return (
+    <div className="flex flex-col min-h-screen font-sans text-nomad-black bg-[#1a1510] selection:bg-nomad-gold selection:text-white">
+      {/* 
+        Main Content Wrapper 
+        - Shadows Footer
+        - mb-0 on mobile (footer stacks)
+        - mb-[450px] on desktop (footer reveals)
+        - isHome ? 'bg-transparent' : 'bg-nomad-paper': Keeps Hero video visible on home, while other pages have paper background.
+      */}
+      <div className={`relative z-10 ${isHome ? 'bg-nomad-paper md:bg-transparent' : 'bg-nomad-paper'} shadow-2xl rounded-b-[2rem] md:rounded-b-[4rem] mb-0 md:mb-[450px] overflow-hidden min-h-screen flex flex-col transition-all duration-300`}>
+        <Header />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/collections/blends" element={<Shop />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/pages/about" element={<About />} />
+            <Route path="/blogs" element={<Blogs />} />
+            <Route path="/blogs/:id" element={<BlogPost />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="*" element={<Home />} />
+          </Routes>
+        </main>
+      </div>
+      
+      {/* Fixed Footer (Revealed on Scroll on Desktop, Static on Mobile) */}
+      <Footer />
+      
+      <RewardsButton />
+    </div>
+  );
 };
 
 const App: React.FC = () => {
   return (
     <Router>
-      <PageWrapper>
-        <div className="flex flex-col min-h-screen font-sans text-nomad-black bg-[#1a1510] selection:bg-nomad-gold selection:text-white">
-          {/* Main Content Wrapper - Shadows Footer */}
-          {/* mb-0 on mobile (footer stacks), mb-[450px] on desktop (footer reveals) */}
-          <div className="relative z-10 bg-nomad-paper shadow-2xl rounded-b-[2rem] md:rounded-b-[4rem] mb-0 md:mb-[450px] overflow-hidden min-h-screen flex flex-col transition-all duration-300">
-            <Header />
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/collections/blends" element={<Shop />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/pages/about" element={<About />} />
-                <Route path="/blogs" element={<Blogs />} />
-                <Route path="/blogs/:id" element={<BlogPost />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="*" element={<Home />} />
-              </Routes>
-            </main>
-          </div>
-          
-          {/* Fixed Footer (Revealed on Scroll on Desktop, Static on Mobile) */}
-          <Footer />
-          
-          <RewardsButton />
-        </div>
-      </PageWrapper>
+      <Layout />
     </Router>
   );
 };
