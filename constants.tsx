@@ -365,7 +365,7 @@ export const BRAND_LOGOS = [
 
 export const BLOG_POSTS: BlogPost[] = [
   {
-    id: 'origins-ethiopia',
+    id: 'origins',
     title: 'Origins: The Birthplace of Coffee',
     excerpt: 'Exploring the wild forests of Ethiopia where Arabica coffee was first discovered.',
     date: 'October 12, 2025',
