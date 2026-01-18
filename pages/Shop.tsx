@@ -1,11 +1,13 @@
 import React from 'react';
 import ProductCard from '../components/ProductCard';
 import { ALL_PRODUCTS } from '../constants';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useParams } from 'react-router-dom';
 import { ChevronDown, SlidersHorizontal, X, Filter, Search } from 'lucide-react';
 
 const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { collectionId } = useParams<{ collectionId: string }>();
+
   const categoryParam = searchParams.get('category');
   const subcategoryParam = searchParams.get('subcategory');
   const searchParam = searchParams.get('search');
@@ -20,7 +22,26 @@ const Shop: React.FC = () => {
         return matchesTitle || matchesDesc || matchesTags;
     }
 
-    // 1. Filter by specific subcategory (e.g., 'Blends', 'Pour Over')
+    // 1. URL Path Collection Filter (e.g., /collections/blends)
+    if (collectionId) {
+       const normalizedCollection = collectionId.toLowerCase().replace(/-/g, ' ');
+       
+       // Handle 'blends' specifically
+       if (normalizedCollection === 'blends') {
+         return product.tags?.some(tag => tag.toLowerCase() === 'blends');
+       }
+       
+       // Handle 'all'
+       if (normalizedCollection === 'all') return true;
+
+       // General tag/category matching
+       const matchesCategory = product.category?.toLowerCase() === normalizedCollection;
+       const matchesTag = product.tags?.some(tag => tag.toLowerCase() === normalizedCollection);
+       
+       return matchesCategory || matchesTag;
+    }
+
+    // 2. Filter by specific subcategory (e.g., 'Blends', 'Pour Over')
     if (subcategoryParam) {
       if (product.tags) {
         return product.tags.some(tag => tag.toLowerCase() === subcategoryParam.toLowerCase() || tag.includes(subcategoryParam));
@@ -28,7 +49,7 @@ const Shop: React.FC = () => {
       return false; 
     }
 
-    // 2. Filter by main category if no subcategory is present
+    // 3. Filter by main category if no subcategory is present
     if (categoryParam) {
       if (categoryParam === 'Coffee' && product.category === 'Coffee') return true;
       if (categoryParam === 'Brew Equipment' && product.category === 'Gear') return true;
@@ -47,6 +68,14 @@ const Shop: React.FC = () => {
   if (searchParam) {
     pageTitle = `Search Results: "${searchParam}"`;
     pageDescription = `Found ${filteredProducts.length} items matching your search.`;
+  } else if (collectionId) {
+    const formattedTitle = collectionId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    pageTitle = formattedTitle;
+    if (collectionId.toLowerCase() === 'blends') {
+       pageDescription = 'Our signature blends, crafted for perfect balance and depth.';
+    } else {
+       pageDescription = `Browse our ${formattedTitle} collection.`;
+    }
   } else if (subcategoryParam) {
     pageTitle = subcategoryParam;
     pageDescription = `Browse our finest selection of ${subcategoryParam}.`;
