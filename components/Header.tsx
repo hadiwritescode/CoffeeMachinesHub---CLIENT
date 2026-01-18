@@ -256,13 +256,16 @@ const Header: React.FC = () => {
         </div>
 
         {/* Mobile Menu Overlay */}
-        <div className={`fixed inset-0 bg-nomad-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 md:hidden ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setMobileMenuOpen(false)}></div>
+        <div className={`fixed inset-0 bg-nomad-black/60 backdrop-blur-sm z-[55] transition-opacity duration-300 md:hidden ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setMobileMenuOpen(false)}></div>
         
-        {/* Mobile Menu Content */}
-        <div className={`fixed top-0 left-0 w-[90%] max-w-sm h-full bg-nomad-paper z-50 transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {/* Mobile Menu Content - Increased z-index to 60 to cover everything */}
+        <div className={`fixed top-0 left-0 w-[90%] max-w-sm h-full bg-nomad-paper z-[60] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="p-6 flex justify-between items-center border-b border-gray-200 bg-nomad-paper shrink-0">
              <Logo className="h-10 w-auto" />
-             {/* Close button is now handled by the toggle in the main header for visual consistency, but redundant button here for UX safety */}
+             {/* Close button for menu */}
+             <button onClick={() => setMobileMenuOpen(false)} className="text-nomad-black p-2">
+                 <X size={24} />
+             </button>
           </div>
           <div className="flex-grow overflow-y-auto p-6 space-y-1">
              {NAVIGATION_LINKS.map((link) => (
