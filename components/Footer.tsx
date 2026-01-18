@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
   return (
     // md:fixed ensures it only uses the reveal effect on larger screens
     // On mobile, it acts as a normal block element
-    <footer className="w-full bg-nomad-black text-white z-0 md:fixed md:bottom-0 md:left-0 md:h-[450px] flex flex-col justify-between pt-16 pb-8 md:pt-0 md:pb-0">
+    <footer className="w-full bg-[#121212] text-white z-0 md:fixed md:bottom-0 md:left-0 md:h-[450px] flex flex-col justify-between pt-16 pb-8 md:pt-0 md:pb-0">
       <div className="container mx-auto px-6 md:px-12 h-full flex flex-col justify-center">
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-12 items-start md:items-center">
@@ -28,28 +28,28 @@ const Footer: React.FC = () => {
             {/* Links Column 1 */}
             <div className="md:col-span-2 md:col-start-6 flex flex-col items-center md:items-start space-y-4">
                <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-2">Shop</h3>
-               <Link to="/shop?category=Coffee" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Beans</Link>
-               <Link to="/shop?category=Brew Equipment" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Equipment</Link>
-               <Link to="/shop?category=Commercial" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Commercial</Link>
-               <Link to="/shop?category=Merchandise" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Merch</Link>
+               <Link to="/shop?category=Coffee" className="text-gray-400 hover:text-white transition-colors text-sm">Beans</Link>
+               <Link to="/shop?category=Brew Equipment" className="text-gray-400 hover:text-white transition-colors text-sm">Equipment</Link>
+               <Link to="/shop?category=Commercial" className="text-gray-400 hover:text-white transition-colors text-sm">Commercial</Link>
+               <Link to="/shop?category=Merchandise" className="text-gray-400 hover:text-white transition-colors text-sm">Merch</Link>
             </div>
 
             {/* Links Column 2 */}
             <div className="md:col-span-2 flex flex-col items-center md:items-start space-y-4">
                <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-2">Company</h3>
-               <Link to="/about" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Our Story</Link>
-               <Link to="/services" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Services</Link>
-               <Link to="/blogs" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Journal</Link>
-               <Link to="/contact" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Contact</Link>
+               <Link to="/about" className="text-gray-400 hover:text-white transition-colors text-sm">Our Story</Link>
+               <Link to="/services" className="text-gray-400 hover:text-white transition-colors text-sm">Services</Link>
+               <Link to="/blogs" className="text-gray-400 hover:text-white transition-colors text-sm">Journal</Link>
+               <Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm">Contact</Link>
             </div>
 
             {/* Links Column 3 */}
             <div className="md:col-span-2 flex flex-col items-center md:items-start space-y-4">
                <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-2">Legal</h3>
-               <Link to="/contact" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Shipping</Link>
-               <Link to="/contact" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Returns</Link>
-               <Link to="/contact" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Privacy</Link>
-               <Link to="/contact" className="text-gray-400 hover:text-nomad-hero transition-colors text-sm">Terms</Link>
+               <Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm">Shipping</Link>
+               <Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm">Returns</Link>
+               <Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy</Link>
+               <Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm">Terms</Link>
             </div>
         </div>
 

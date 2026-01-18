@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import RewardsButton from './components/RewardsButton';
+import WhatsAppWidget from './components/WhatsAppWidget';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Shop from './pages/Shop';
@@ -73,7 +73,7 @@ const App: React.FC = () => {
           {/* Fixed Footer (Revealed on Scroll on Desktop, Static on Mobile) */}
           <Footer />
           
-          <RewardsButton />
+          <WhatsAppWidget />
         </div>
       </PageWrapper>
     </Router>

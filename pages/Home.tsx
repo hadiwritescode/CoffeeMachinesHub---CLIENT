@@ -17,7 +17,7 @@ const Home: React.FC = () => {
   }, []);
 
   return (
-    <div className="animate-fade-in bg-nomad-paper">
+    <div className="bg-nomad-paper">
       
       {/* Hero Section Spacer */}
       <div className="relative w-full h-[90vh] md:h-[100vh]">
@@ -30,8 +30,8 @@ const Home: React.FC = () => {
                 pointerEvents: scrollY > 800 ? 'none' : 'auto'
             }}
         >
-            {/* Video Background */}
-            <div className="absolute inset-0 w-full h-full">
+            {/* Video Background with Reveal Animation */}
+            <div className="absolute inset-0 w-full h-full animate-hero-reveal origin-center">
                 <video 
                     autoPlay 
                     muted 
@@ -46,8 +46,8 @@ const Home: React.FC = () => {
             </div>
 
             {/* Hero Content */}
-            <div className="relative z-10 container mx-auto px-6 md:px-12 text-center text-white h-full flex flex-col justify-center items-center fade-up">
-                <div className="animate-slide-up space-y-6">
+            <div className="relative z-10 container mx-auto px-6 md:px-12 text-center text-white h-full flex flex-col justify-center items-center">
+                <div className="animate-slide-up space-y-6" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
                     <span className="inline-block px-4 py-1 border border-white/30 rounded-full text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase backdrop-blur-sm text-nomad-gold">
                         New Arrivals: Ethiopia Guji
                     </span>
@@ -58,7 +58,7 @@ const Home: React.FC = () => {
                         Purveyors of fine coffee and exceptional brewing equipment for the modern ritual.
                     </p>
                 </div>
-                <div className="flex flex-col md:flex-row gap-4 justify-center items-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                <div className="flex flex-col md:flex-row gap-4 justify-center items-center animate-slide-up" style={{ animationDelay: '0.8s', opacity: 0, animationFillMode: 'forwards' }}>
                     <Link 
                         to="/shop" 
                         className="bg-nomad-gold text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-nomad-black transition-all duration-300 min-w-[200px]"
@@ -80,7 +80,7 @@ const Home: React.FC = () => {
       </div>
 
       {/* Marquee Banner */}
-      <div className="relative z-10 bg-nomad-gold text-white py-4 overflow-hidden -mt-1 rounded-t-[2rem]">
+      <div className="relative z-10 bg-nomad-gold text-white py-4 overflow-hidden -mt-1 rounded-t-[2rem] animate-slide-up" style={{ animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
          <div className="flex animate-marquee whitespace-nowrap">
             {[...Array(10)].map((_, i) => (
                 <div key={i} className="flex items-center mx-8">
@@ -96,7 +96,7 @@ const Home: React.FC = () => {
       {/* Categories Section */}
       <section className="relative z-10 py-16 md:py-24 bg-nomad-paper">
         <div className="container mx-auto px-6 md:px-12">
-          <div className="flex justify-between items-end mb-12">
+          <div className="flex justify-between items-end mb-12 fade-up">
             <div className="max-w-xl">
                 <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block">Collections</span>
                 <h2 className="text-4xl md:text-5xl font-serif font-bold text-nomad-black">Curated for You</h2>
@@ -107,7 +107,7 @@ const Home: React.FC = () => {
           </div>
           
           {/* Updated Category Colors to Beige/Brown Tones */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 fade-up" style={{ transitionDelay: '0.2s' }}>
              <CategoryCard 
                 title="Blends" 
                 image="https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80&w=400" 

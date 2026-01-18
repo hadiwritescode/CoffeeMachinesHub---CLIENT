@@ -21,6 +21,8 @@ const Header: React.FC = () => {
   const isTransparentRoute = ['/', '/shop'].includes(location.pathname) || 
                              (location.pathname.startsWith('/blogs/') && location.pathname !== '/blogs') ||
                              (location.pathname.startsWith('/product/'));
+  
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -96,7 +98,8 @@ const Header: React.FC = () => {
   return (
     <>
       <header 
-        className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${getHeaderClasses()}`}
+        className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${getHeaderClasses()} ${isHomePage ? 'animate-slide-down' : ''}`}
+        style={{ animationDelay: isHomePage ? '0.2s' : '0s', opacity: isHomePage ? 0 : 1, animationFillMode: 'forwards' }}
       >
         <div className="container mx-auto px-6 md:px-12 flex items-center justify-between relative">
           
