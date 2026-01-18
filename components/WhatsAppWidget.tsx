@@ -23,12 +23,12 @@ const WhatsAppWidget: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
       
       {/* Chat Window */}
       <div 
         className={`bg-white rounded-2xl shadow-2xl w-80 mb-4 overflow-hidden border border-gray-100 transition-all duration-300 origin-bottom-right ${
-          isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+          isOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
         }`}
       >
         {/* Header */}
@@ -80,7 +80,7 @@ const WhatsAppWidget: React.FC = () => {
       {/* Toggle Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 ${isOpen ? 'bg-nomad-black rotate-90' : 'bg-green-500 rotate-0'}`}
+        className={`w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 pointer-events-auto ${isOpen ? 'bg-nomad-black rotate-90' : 'bg-green-500 rotate-0'}`}
       >
         {isOpen ? <X size={24} className="text-white" /> : <MessageCircle size={28} className="text-white" />}
       </button>
