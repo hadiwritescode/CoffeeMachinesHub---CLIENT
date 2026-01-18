@@ -2,7 +2,7 @@ import React from 'react';
 import ProductCard from '../components/ProductCard';
 import { ALL_PRODUCTS } from '../constants';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ChevronDown, SlidersHorizontal, X, Filter } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, X, Filter, Search } from 'lucide-react';
 
 const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -123,6 +123,5 @@ const Shop: React.FC = () => {
     </div>
   );
 };
-import { Search } from 'lucide-react';
 
 export default Shop;
