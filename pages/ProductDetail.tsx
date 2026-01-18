@@ -69,9 +69,9 @@ const ProductDetail: React.FC = () => {
         
         {/* Breadcrumbs */}
         <div className="flex items-center space-x-2 text-[10px] text-gray-400 mb-8 font-bold uppercase tracking-[0.2em] fade-up flex-wrap gap-y-2">
-          <Link to="/" className="hover:text-black transition-colors">Home</Link>
+          <Link to="/" className="hover:text-nomad-black transition-colors">Home</Link>
           <span>/</span>
-          <Link to="/shop" className="hover:text-black transition-colors">Shop</Link>
+          <Link to="/shop" className="hover:text-nomad-black transition-colors">Shop</Link>
           <span>/</span>
           <span className="text-nomad-black">{product.title}</span>
         </div>
@@ -139,7 +139,7 @@ const ProductDetail: React.FC = () => {
                     <div className="mb-8">
                         <div className="flex justify-between items-center mb-4">
                             <label className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400">Grind</label>
-                            <button className="text-[10px] underline text-gray-400 hover:text-black">Grind Guide</button>
+                            <button className="text-[10px] underline text-gray-400 hover:text-nomad-black">Grind Guide</button>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           {GRIND_OPTIONS.map(option => (
@@ -148,8 +148,8 @@ const ProductDetail: React.FC = () => {
                               onClick={() => setSelectedGrind(option)}
                               className={`py-4 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all duration-200 ${
                                 selectedGrind === option 
-                                  ? 'bg-black text-white border-black shadow-lg scale-[1.02]' 
-                                  : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'
+                                  ? 'bg-nomad-black text-white border-nomad-black shadow-lg scale-[1.02]' 
+                                  : 'bg-white text-gray-500 border-gray-200 hover:border-nomad-black hover:text-nomad-black'
                               }`}
                             >
                               {option}
@@ -167,8 +167,8 @@ const ProductDetail: React.FC = () => {
                               onClick={() => setSelectedWeight(option)}
                               className={`flex-1 py-4 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all duration-200 ${
                                 selectedWeight === option 
-                                  ? 'bg-black text-white border-black shadow-lg scale-[1.02]' 
-                                  : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'
+                                  ? 'bg-nomad-black text-white border-nomad-black shadow-lg scale-[1.02]' 
+                                  : 'bg-white text-gray-500 border-gray-200 hover:border-nomad-black hover:text-nomad-black'
                               }`}
                             >
                               {option}
@@ -180,7 +180,7 @@ const ProductDetail: React.FC = () => {
                     <div className="flex flex-col sm:flex-row gap-4 mb-8">
                         <button 
                             onClick={handleAddToCart}
-                            className="flex-grow bg-nomad-gold text-white py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200"
+                            className="flex-grow bg-nomad-gold text-white py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200"
                         >
                             Add to Cart — {formatPrice(product.price)}
                         </button>
@@ -214,7 +214,7 @@ const ProductDetail: React.FC = () => {
                         onClick={() => toggleAccordion('description')}
                         className="w-full py-6 flex justify-between items-center text-left hover:text-nomad-gold transition-colors group"
                       >
-                        <span className="text-sm font-bold uppercase tracking-widest text-gray-900 group-hover:text-nomad-gold">Description</span>
+                        <span className="text-sm font-bold uppercase tracking-widest text-nomad-black group-hover:text-nomad-gold">Description</span>
                         {openAccordion === 'description' ? <Minus size={16} /> : <Plus size={16} />}
                       </button>
                       <div className={`overflow-hidden transition-all duration-500 ease-in-out ${openAccordion === 'description' ? 'max-h-96 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
@@ -234,7 +234,7 @@ const ProductDetail: React.FC = () => {
                         onClick={() => toggleAccordion('details')}
                         className="w-full py-6 flex justify-between items-center text-left hover:text-nomad-gold transition-colors group"
                       >
-                        <span className="text-sm font-bold uppercase tracking-widest text-gray-900 group-hover:text-nomad-gold">Brew Guide</span>
+                        <span className="text-sm font-bold uppercase tracking-widest text-nomad-black group-hover:text-nomad-gold">Brew Guide</span>
                         {openAccordion === 'details' ? <Minus size={16} /> : <Plus size={16} />}
                       </button>
                       <div className={`overflow-hidden transition-all duration-500 ease-in-out ${openAccordion === 'details' ? 'max-h-96 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>

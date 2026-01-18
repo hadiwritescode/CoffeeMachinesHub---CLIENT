@@ -45,7 +45,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <PageWrapper>
-        <div className="flex flex-col min-h-screen font-sans text-nomad-black bg-[#1a1510] selection:bg-nomad-gold selection:text-white">
+        <div className="flex flex-col min-h-screen font-sans text-nomad-black bg-nomad-black selection:bg-nomad-gold selection:text-white">
           {/* Main Content Wrapper - Shadows Footer */}
           {/* mb-0 on mobile (footer stacks), mb-[450px] on desktop (footer reveals) */}
           <div className="relative z-10 bg-nomad-paper shadow-2xl rounded-b-[2rem] md:rounded-b-[4rem] mb-0 md:mb-[450px] overflow-hidden min-h-screen flex flex-col transition-all duration-300">

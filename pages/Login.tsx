@@ -7,8 +7,8 @@ const Login: React.FC = () => {
       
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#EBE5B9]/20 rounded-full blur-3xl opacity-60"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#C5A982]/10 rounded-full blur-3xl opacity-60"></div>
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#D4C5B0]/20 rounded-full blur-3xl opacity-60"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#B08B5B]/10 rounded-full blur-3xl opacity-60"></div>
       </div>
 
       <div className="w-full max-w-md px-8 relative z-10">
@@ -23,25 +23,25 @@ const Login: React.FC = () => {
             <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Email Address</label>
             <input 
               type="email" 
-              className="w-full bg-gray-50 border border-transparent focus:border-black rounded-xl px-5 py-4 text-sm focus:outline-none transition-all placeholder:text-gray-300 font-medium" 
+              className="w-full bg-nomad-gray border border-transparent focus:border-nomad-black rounded-xl px-5 py-4 text-sm focus:outline-none transition-all placeholder:text-gray-300 font-medium" 
               placeholder="name@example.com"
             />
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center ml-1">
                 <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Password</label>
-                <a href="#" className="text-[10px] font-bold uppercase tracking-wider text-nomad-gold hover:text-black transition-colors">Forgot?</a>
+                <a href="#" className="text-[10px] font-bold uppercase tracking-wider text-nomad-gold hover:text-nomad-black transition-colors">Forgot?</a>
             </div>
             <input 
               type="password" 
-              className="w-full bg-gray-50 border border-transparent focus:border-black rounded-xl px-5 py-4 text-sm focus:outline-none transition-all placeholder:text-gray-300 font-medium" 
+              className="w-full bg-nomad-gray border border-transparent focus:border-nomad-black rounded-xl px-5 py-4 text-sm focus:outline-none transition-all placeholder:text-gray-300 font-medium" 
               placeholder="••••••••"
             />
           </div>
           
           <div className="flex items-center space-x-3 cursor-pointer group py-2">
-              <input type="checkbox" id="remember" className="w-4 h-4 accent-black cursor-pointer rounded border-gray-300" />
-              <label htmlFor="remember" className="text-xs text-gray-500 cursor-pointer group-hover:text-black select-none font-medium">Keep me signed in</label>
+              <input type="checkbox" id="remember" className="w-4 h-4 accent-nomad-black cursor-pointer rounded border-gray-300" />
+              <label htmlFor="remember" className="text-xs text-gray-500 cursor-pointer group-hover:text-nomad-black select-none font-medium">Keep me signed in</label>
           </div>
 
           <button className="w-full bg-nomad-black text-white py-5 rounded-full text-xs font-bold uppercase tracking-[0.2em] hover:bg-nomad-gold transition-colors shadow-lg transform hover:-translate-y-1 duration-200">
@@ -50,7 +50,7 @@ const Login: React.FC = () => {
         </form>
 
         <div className="mt-10 text-center text-sm text-gray-500 fade-up" style={{ transitionDelay: '0.2s' }}>
-          New to Coffee Machines Hub? <Link to="/contact" className="font-bold text-nomad-black hover:text-nomad-gold transition-colors ml-1 border-b border-black pb-0.5 hover:border-nomad-gold">Create account</Link>
+          New to Coffee Machines Hub? <Link to="/contact" className="font-bold text-nomad-black hover:text-nomad-gold transition-colors ml-1 border-b border-nomad-black pb-0.5 hover:border-nomad-gold">Create account</Link>
         </div>
       </div>
     </div>

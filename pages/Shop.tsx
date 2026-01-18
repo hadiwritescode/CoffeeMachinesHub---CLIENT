@@ -165,7 +165,7 @@ const Shop: React.FC = () => {
                           <button
                             key={option.value}
                             onClick={() => { setSortBy(option.value as SortOption); setIsSortOpen(false); }}
-                            className={`w-full text-left px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-gray-50 flex justify-between items-center ${sortBy === option.value ? 'text-nomad-gold' : 'text-gray-600'}`}
+                            className={`w-full text-left px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-nomad-gray flex justify-between items-center ${sortBy === option.value ? 'text-nomad-gold' : 'text-gray-600'}`}
                           >
                             {option.label}
                             {sortBy === option.value && <Check size={12} />}
@@ -180,7 +180,7 @@ const Shop: React.FC = () => {
 
       {/* Filter Drawer (Mobile & Desktop) */}
       <div 
-        className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isFilterOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 z-[60] bg-nomad-black/50 backdrop-blur-sm transition-opacity duration-300 ${isFilterOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsFilterOpen(false)}
       ></div>
       <div className={`fixed inset-y-0 right-0 z-[61] w-full max-w-sm bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${isFilterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
@@ -199,7 +199,7 @@ const Shop: React.FC = () => {
                     <div className="space-y-3">
                         {['Coffee', 'Brew Equipment', 'Merchandise'].map(cat => (
                             <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${categoryParam === cat ? 'bg-nomad-black border-nomad-black' : 'border-gray-300 group-hover:border-black'}`}>
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${categoryParam === cat ? 'bg-nomad-black border-nomad-black' : 'border-gray-300 group-hover:border-nomad-black'}`}>
                                     {categoryParam === cat && <Check size={12} className="text-white" />}
                                 </div>
                                 <input 
@@ -218,8 +218,8 @@ const Shop: React.FC = () => {
                 <div>
                     <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Price Range</h3>
                     <div className="flex gap-4">
-                        <input type="number" placeholder="Min" className="w-1/2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black" />
-                        <input type="number" placeholder="Max" className="w-1/2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black" />
+                        <input type="number" placeholder="Min" className="w-1/2 bg-nomad-gray border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-nomad-black" />
+                        <input type="number" placeholder="Max" className="w-1/2 bg-nomad-gray border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-nomad-black" />
                     </div>
                 </div>
                 
@@ -229,7 +229,7 @@ const Shop: React.FC = () => {
                         <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Roast Level</h3>
                         <div className="flex flex-wrap gap-2">
                             {['Light', 'Medium', 'Dark', 'Espresso'].map(roast => (
-                                <button key={roast} className="px-4 py-2 bg-gray-50 rounded-full text-xs font-bold uppercase tracking-wider text-gray-600 hover:bg-black hover:text-white transition-colors">
+                                <button key={roast} className="px-4 py-2 bg-nomad-gray rounded-full text-xs font-bold uppercase tracking-wider text-gray-600 hover:bg-nomad-black hover:text-white transition-colors">
                                     {roast}
                                 </button>
                             ))}
@@ -238,7 +238,7 @@ const Shop: React.FC = () => {
                 )}
             </div>
 
-            <div className="p-6 border-t border-gray-100 bg-gray-50">
+            <div className="p-6 border-t border-gray-100 bg-nomad-gray">
                 <button 
                     onClick={() => setIsFilterOpen(false)}
                     className="w-full bg-nomad-black text-white py-4 rounded-full text-xs font-bold uppercase tracking-[0.2em] hover:bg-nomad-gold transition-colors"
@@ -247,7 +247,7 @@ const Shop: React.FC = () => {
                 </button>
                 <button 
                     onClick={clearFilters} 
-                    className="w-full mt-3 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
+                    className="w-full mt-3 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-nomad-black transition-colors"
                 >
                     Reset All Filters
                 </button>
@@ -271,7 +271,7 @@ const Shop: React.FC = () => {
                  </div>
                  <h3 className="text-3xl font-serif font-bold mb-4 text-gray-900">No matches found</h3>
                  <p className="text-gray-500 mb-8 max-w-md">We couldn't find any products matching your selection. Try checking for typos or browse our full collection.</p>
-                 <Link to="/shop" onClick={clearFilters} className="bg-black text-white px-10 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-nomad-gold transition-colors shadow-lg">
+                 <Link to="/shop" onClick={clearFilters} className="bg-nomad-black text-white px-10 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-nomad-gold transition-colors shadow-lg">
                     View All Products
                  </Link>
                </div>

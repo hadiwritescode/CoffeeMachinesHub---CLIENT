@@ -49,8 +49,8 @@ const Contact: React.FC = () => {
                     <h3 className="font-serif font-bold text-xl">Contact</h3>
                 </div>
                 <div className="pl-14 space-y-2">
-                    <a href="mailto:hello@nomadcoffeestudio.com" className="block text-gray-600 hover:text-black hover:underline transition-colors">hello@nomadcoffeestudio.com</a>
-                    <a href="tel:+923001234567" className="block text-gray-600 hover:text-black hover:underline transition-colors">+92 300 123 4567</a>
+                    <a href="mailto:hello@nomadcoffeestudio.com" className="block text-gray-600 hover:text-nomad-black hover:underline transition-colors">hello@nomadcoffeestudio.com</a>
+                    <a href="tel:+923001234567" className="block text-gray-600 hover:text-nomad-black hover:underline transition-colors">+92 300 123 4567</a>
                 </div>
              </div>
 
@@ -76,19 +76,19 @@ const Contact: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="space-y-2 group">
                      <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 group-focus-within:text-nomad-gold transition-colors">Name</label>
-                     <input type="text" className="w-full py-4 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent text-lg" placeholder="Jane Doe" />
+                     <input type="text" className="w-full py-4 border-b border-gray-200 focus:border-nomad-black focus:outline-none transition-colors bg-transparent text-lg" placeholder="Jane Doe" />
                    </div>
                    <div className="space-y-2 group">
                      <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 group-focus-within:text-nomad-gold transition-colors">Email</label>
-                     <input type="email" className="w-full py-4 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent text-lg" placeholder="jane@example.com" />
+                     <input type="email" className="w-full py-4 border-b border-gray-200 focus:border-nomad-black focus:outline-none transition-colors bg-transparent text-lg" placeholder="jane@example.com" />
                    </div>
                 </div>
                 <div className="space-y-2 group">
                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 group-focus-within:text-nomad-gold transition-colors">Message</label>
-                   <textarea rows={4} className="w-full py-4 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent text-lg resize-none" placeholder="How can we help you?"></textarea>
+                   <textarea rows={4} className="w-full py-4 border-b border-gray-200 focus:border-nomad-black focus:outline-none transition-colors bg-transparent text-lg resize-none" placeholder="How can we help you?"></textarea>
                 </div>
                 <div className="pt-4">
-                    <button type="button" className="group bg-black text-white px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold transition-all flex items-center shadow-lg hover:shadow-xl hover:-translate-y-1">
+                    <button type="button" className="group bg-nomad-black text-white px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold transition-all flex items-center shadow-lg hover:shadow-xl hover:-translate-y-1">
                       Send Message <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>

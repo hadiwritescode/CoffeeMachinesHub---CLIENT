@@ -80,7 +80,7 @@ const Header: React.FC = () => {
       return 'bg-nomad-paper/95 backdrop-blur-md shadow-sm py-3 text-nomad-black';
     }
     if (isTransparentRoute && !mobileMenuOpen) {
-      return 'bg-transparent py-6 text-white hover:bg-black/10';
+      return 'bg-transparent py-6 text-white hover:bg-nomad-black/10';
     }
     return 'bg-nomad-paper py-5 text-nomad-black';
   };
@@ -112,7 +112,7 @@ const Header: React.FC = () => {
           <Link to="/" className="flex-shrink-0 z-50 transition-transform duration-300 hover:scale-105">
             <Logo 
                 className={`transition-all duration-300 ${isScrolled ? 'h-8 md:h-10 w-auto' : 'h-10 md:h-12 w-auto'}`} 
-                fill={mobileMenuOpen ? '#121212' : getLogoFill()} // Force dark logo when menu open
+                fill={mobileMenuOpen ? '#3B261B' : getLogoFill()} // Force brown logo when menu open
             />
           </Link>
 
@@ -140,7 +140,7 @@ const Header: React.FC = () => {
                 {/* Mega Menu Dropdown */}
                 {link.subItems && activeDropdown === link.label && (
                   <div 
-                    className="fixed left-0 w-full bg-nomad-paper shadow-2xl z-40 border-t border-gray-100 animate-in fade-in slide-in-from-top-1 duration-200 cursor-default text-nomad-black"
+                    className="fixed left-0 w-full bg-nomad-paper shadow-2xl z-40 border-t border-nomad-gray animate-in fade-in slide-in-from-top-1 duration-200 cursor-default text-nomad-black"
                     style={{ top: dropdownTop }}
                     onMouseEnter={() => handleMouseEnter(link.label)}
                     onMouseLeave={handleMouseLeave}
@@ -168,14 +168,14 @@ const Header: React.FC = () => {
                             ))}
                         </div>
                         {/* Featured Item */}
-                        <div className="hidden lg:flex w-72 flex-col flex-shrink-0 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 group/card">
+                        <div className="hidden lg:flex w-72 flex-col flex-shrink-0 bg-white p-6 rounded-2xl shadow-sm border border-nomad-gray group/card">
                            <h4 className="text-[10px] font-bold tracking-widest uppercase mb-4 text-gray-400">Featured</h4>
                            <div className="overflow-hidden rounded-xl mb-4 aspect-square relative">
                               <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&q=80&w=400" className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110" alt="Featured" />
                            </div>
                            <p className="font-serif font-bold text-xl mb-1 text-nomad-black">New Arrivals</p>
                            <p className="text-gray-500 text-xs mb-3">Check out the latest beans from Ethiopia.</p>
-                           <Link to="/shop" className="text-xs underline font-bold uppercase tracking-wider text-nomad-gold hover:text-black transition-colors">Shop Now</Link>
+                           <Link to="/shop" className="text-xs underline font-bold uppercase tracking-wider text-nomad-gold hover:text-nomad-black transition-colors">Shop Now</Link>
                         </div>
                       </div>
                     </div>
@@ -206,13 +206,13 @@ const Header: React.FC = () => {
 
         {/* Search Overlay */}
         <div 
-            className={`fixed inset-0 bg-white/98 backdrop-blur-xl z-[60] flex items-center justify-center transition-all duration-500 ${
+            className={`fixed inset-0 bg-nomad-paper/98 backdrop-blur-xl z-[60] flex items-center justify-center transition-all duration-500 ${
                 searchOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
             }`}
         >
             <button 
                 onClick={() => setSearchOpen(false)}
-                className="absolute top-8 right-8 text-black hover:text-nomad-gold transition-colors p-2"
+                className="absolute top-8 right-8 text-nomad-black hover:text-nomad-gold transition-colors p-2"
             >
                 <X size={40} strokeWidth={0.5} />
             </button>
@@ -225,7 +225,7 @@ const Header: React.FC = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Type to search..." 
-                        className="w-full bg-transparent border-b border-gray-200 py-6 text-3xl md:text-5xl font-serif font-medium text-center focus:outline-none focus:border-black transition-colors placeholder:text-gray-200 text-black"
+                        className="w-full bg-transparent border-b border-gray-300 py-6 text-3xl md:text-5xl font-serif font-medium text-center focus:outline-none focus:border-nomad-black transition-colors placeholder:text-gray-300 text-nomad-black"
                     />
                     <button type="submit" className="absolute right-0 top-1/2 -translate-y-1/2 p-4 text-gray-400 hover:text-nomad-gold transition-colors">
                         <ArrowRight size={32} strokeWidth={1} />
@@ -242,7 +242,7 @@ const Header: React.FC = () => {
                                     navigate(`/shop?search=${term}`);
                                     setSearchOpen(false);
                                 }}
-                                className="px-6 py-3 bg-gray-50 rounded-full text-sm font-medium text-gray-600 hover:bg-black hover:text-white transition-all duration-300"
+                                className="px-6 py-3 bg-white border border-gray-100 rounded-full text-sm font-medium text-gray-600 hover:bg-nomad-black hover:text-white transition-all duration-300"
                             >
                                 {term}
                             </button>
@@ -253,17 +253,17 @@ const Header: React.FC = () => {
         </div>
 
         {/* Mobile Menu Overlay */}
-        <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 md:hidden ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setMobileMenuOpen(false)}></div>
+        <div className={`fixed inset-0 bg-nomad-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 md:hidden ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setMobileMenuOpen(false)}></div>
         
         {/* Mobile Menu Content */}
         <div className={`fixed top-0 left-0 w-[90%] max-w-sm h-full bg-nomad-paper z-50 transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="p-6 flex justify-between items-center border-b border-gray-100 bg-nomad-paper shrink-0">
+          <div className="p-6 flex justify-between items-center border-b border-gray-200 bg-nomad-paper shrink-0">
              <Logo className="h-10 w-auto" />
              {/* Close button is now handled by the toggle in the main header for visual consistency, but redundant button here for UX safety */}
           </div>
           <div className="flex-grow overflow-y-auto p-6 space-y-1">
              {NAVIGATION_LINKS.map((link) => (
-               <div key={link.label} className="border-b border-gray-100 last:border-0 pb-2 mb-2">
+               <div key={link.label} className="border-b border-gray-200 last:border-0 pb-2 mb-2">
                  <div className="flex justify-between items-center">
                     {link.subItems ? (
                         <button 
@@ -295,7 +295,7 @@ const Header: React.FC = () => {
                               <li key={item}>
                                 <Link 
                                   to={`/shop?category=${encodeURIComponent(sub.title)}&subcategory=${encodeURIComponent(item)}`} 
-                                  className="text-sm text-gray-600 block py-1.5 hover:text-black transition-colors"
+                                  className="text-sm text-gray-600 block py-1.5 hover:text-nomad-black transition-colors"
                                   onClick={() => setMobileMenuOpen(false)}
                                 >
                                   {item}
@@ -310,8 +310,8 @@ const Header: React.FC = () => {
                </div>
              ))}
           </div>
-          <div className="p-6 bg-gray-50 border-t border-gray-100 shrink-0">
-             <Link to="/login" className="flex items-center space-x-3 text-sm font-bold uppercase tracking-wider text-gray-600 mb-4 hover:text-black" onClick={() => setMobileMenuOpen(false)}>
+          <div className="p-6 bg-nomad-gray border-t border-gray-200 shrink-0">
+             <Link to="/login" className="flex items-center space-x-3 text-sm font-bold uppercase tracking-wider text-gray-600 mb-4 hover:text-nomad-black" onClick={() => setMobileMenuOpen(false)}>
                <User size={18} /> <span>Sign In / Register</span>
              </Link>
              <div className="flex items-center space-x-3 text-sm font-medium text-gray-500">

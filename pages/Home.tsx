@@ -42,7 +42,7 @@ const Home: React.FC = () => {
                 >
                     <source src="https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4" type="video/mp4" />
                 </video>
-                <div className="absolute inset-0 bg-black/40"></div>
+                <div className="absolute inset-0 bg-nomad-black/40"></div>
             </div>
 
             {/* Hero Content */}
@@ -61,7 +61,7 @@ const Home: React.FC = () => {
                 <div className="flex flex-col md:flex-row gap-4 justify-center items-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
                     <Link 
                         to="/shop" 
-                        className="bg-nomad-gold text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all duration-300 min-w-[200px]"
+                        className="bg-nomad-gold text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-nomad-black transition-all duration-300 min-w-[200px]"
                     >
                         Shop Coffee
                     </Link>
@@ -106,30 +106,31 @@ const Home: React.FC = () => {
             </Link>
           </div>
           
+          {/* Updated Category Colors to Beige/Brown Tones */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
              <CategoryCard 
                 title="Blends" 
                 image="https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80&w=400" 
                 video="https://videos.pexels.com/video-files/4828605/4828605-uhd_2560_1440_25fps.mp4"
-                bgColor="bg-[#EFEBE9]" 
+                bgColor="bg-nomad-cream" 
              />
              <CategoryCard 
                 title="Single Origin" 
                 image="https://images.unsplash.com/photo-1611854779393-1b2ae9be6017?auto=format&fit=crop&q=80&w=400" 
                 video="https://videos.pexels.com/video-files/4442999/4442999-uhd_2560_1440_25fps.mp4"
-                bgColor="bg-[#F3E5AB]" 
+                bgColor="bg-nomad-gray" 
              />
              <CategoryCard 
                 title="Brew Gear" 
                 image="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=400" 
                 video="https://videos.pexels.com/video-files/4443026/4443026-uhd_2560_1440_25fps.mp4"
-                bgColor="bg-[#E0F2F1]" 
+                bgColor="bg-nomad-hero" 
              />
              <CategoryCard 
                 title="Merch" 
                 image="https://images.unsplash.com/photo-1595928642581-f50f4f345668?auto=format&fit=crop&q=80&w=400" 
                 video="https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4"
-                bgColor="bg-[#FCE4EC]" 
+                bgColor="bg-[#EFEBE9]" 
              />
           </div>
           <Link to="/shop" className="md:hidden mt-8 flex items-center justify-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors pb-2 border-b border-gray-200">
@@ -142,8 +143,8 @@ const Home: React.FC = () => {
       <section className="relative z-10 py-24 bg-white fade-up rounded-t-[3rem] -mt-12 shadow-2xl">
         <div className="container mx-auto px-6 md:px-12">
            <div className="flex items-center justify-between mb-12">
-             <h2 className="text-3xl md:text-5xl font-serif font-medium">Signature Blends</h2>
-             <Link to="/shop?category=Coffee" className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors">
+             <h2 className="text-3xl md:text-5xl font-serif font-medium text-nomad-black">Signature Blends</h2>
+             <Link to="/shop?category=Coffee" className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors">
                 Shop Coffee
              </Link>
            </div>
@@ -179,7 +180,7 @@ const Home: React.FC = () => {
                 <p className="text-gray-400 text-lg mb-12 leading-relaxed max-w-md mx-auto md:mx-0 font-light">
                     We believe that the perfect cup is a balance of science and art. Our equipment collection is curated to give you total control over every variable of extraction.
                 </p>
-                <Link to="/shop?category=Brew Equipment" className="inline-block bg-white text-black px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                <Link to="/shop?category=Brew Equipment" className="inline-block bg-white text-nomad-black px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold hover:text-white transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                     Explore Equipment
                 </Link>
              </div>
@@ -191,7 +192,7 @@ const Home: React.FC = () => {
         <div className="container mx-auto px-6 md:px-12">
            <div className="text-center max-w-2xl mx-auto mb-16">
                <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block">Crowd Pleasers</span>
-               <h2 className="text-3xl md:text-5xl font-serif font-medium mb-4">Curated Favorites</h2>
+               <h2 className="text-3xl md:text-5xl font-serif font-medium mb-4 text-nomad-black">Curated Favorites</h2>
                <p className="text-gray-500 text-lg font-light">Hand-picked selections that our community loves the most.</p>
            </div>
            
@@ -212,7 +213,7 @@ const Home: React.FC = () => {
            
            <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-10 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
              {BRAND_LOGOS.slice(0, 12).map((brand, idx) => (
-               <span key={idx} className="text-lg md:text-2xl font-serif font-bold text-gray-500 hover:text-black cursor-default transition-colors">{brand}</span>
+               <span key={idx} className="text-lg md:text-2xl font-serif font-bold text-gray-500 hover:text-nomad-black cursor-default transition-colors">{brand}</span>
              ))}
            </div>
         </div>

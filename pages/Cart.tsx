@@ -27,7 +27,7 @@ const Cart: React.FC = () => {
         
         <Link 
             to="/shop" 
-            className="inline-block bg-black text-white px-12 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+            className="inline-block bg-nomad-black text-white px-12 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
         >
             Start Shopping
         </Link>
