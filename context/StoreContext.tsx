@@ -31,6 +31,12 @@ const defaultSiteContent: SiteContent = {
     email: "Coffeemachineshub@gmail.com",
     phone: "+92 310 481 1011"
   },
+  socials: {
+    instagram: "https://instagram.com",
+    facebook: "https://facebook.com",
+    youtube: "https://youtube.com",
+    twitter: "#"
+  },
   team: [
     { name: "Sarah Jenkins", role: "Head Roaster", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=400" },
     { name: "David Chen", role: "Equipment Specialist", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400" },

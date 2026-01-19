@@ -2,8 +2,11 @@ import React from 'react';
 import Logo from './Logo';
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Youtube, AtSign } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
 
 const Footer: React.FC = () => {
+  const { siteContent } = useStore();
+
   return (
     // md:fixed ensures it only uses the reveal effect on larger screens
     // The height matches the margin-bottom in App.tsx
@@ -61,10 +64,10 @@ const Footer: React.FC = () => {
             
             {/* Socials Centered */}
             <div className="flex space-x-8 order-1 md:order-2 md:absolute md:left-1/2 md:-translate-x-1/2">
-                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Instagram"><Instagram size={20} /></a>
-                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Facebook"><Facebook size={20} /></a>
-                <a href="https://youtube.com" target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="YouTube"><Youtube size={20} /></a>
-                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Threads"><AtSign size={20} /></a>
+                <a href={siteContent.socials.instagram} target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Instagram"><Instagram size={20} /></a>
+                <a href={siteContent.socials.facebook} target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Facebook"><Facebook size={20} /></a>
+                <a href={siteContent.socials.youtube} target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="YouTube"><Youtube size={20} /></a>
+                <a href={siteContent.socials.twitter} target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Threads"><AtSign size={20} /></a>
             </div>
 
             {/* Spacer for balance */}

@@ -4,11 +4,12 @@ import { useStore } from '../../context/StoreContext';
 
 const ContentManager: React.FC = () => {
   const { siteContent, updateSiteContent } = useStore();
-  const [activeTab, setActiveTab] = useState<'hero' | 'contact' | 'team'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'contact' | 'socials' | 'team'>('hero');
 
   // Local state for forms to avoid excessive re-renders, sync on save
   const [heroForm, setHeroForm] = useState(siteContent.hero);
   const [contactForm, setContactForm] = useState(siteContent.contact);
+  const [socialsForm, setSocialsForm] = useState(siteContent.socials);
 
   const handleSaveHero = () => {
     updateSiteContent('hero', heroForm);
@@ -20,12 +21,17 @@ const ContentManager: React.FC = () => {
     alert('Contact info updated!');
   };
 
+  const handleSaveSocials = () => {
+    updateSiteContent('socials', socialsForm);
+    alert('Social links updated!');
+  };
+
   return (
     <AdminLayout>
       <h1 className="text-3xl font-serif font-bold text-nomad-black mb-8">Content Management</h1>
       
       <div className="flex space-x-4 mb-8 border-b border-gray-200 pb-1">
-         {['hero', 'contact', 'team'].map((tab) => (
+         {['hero', 'contact', 'socials', 'team'].map((tab) => (
              <button 
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
@@ -70,6 +76,28 @@ const ContentManager: React.FC = () => {
                      <input className="w-full border p-3 rounded-xl" value={contactForm.phone} onChange={e => setContactForm({...contactForm, phone: e.target.value})} />
                  </div>
                  <button onClick={handleSaveContact} className="bg-nomad-black text-white px-8 py-3 rounded-xl font-bold uppercase">Save Contact Info</button>
+             </div>
+         )}
+
+         {activeTab === 'socials' && (
+             <div className="space-y-6">
+                 <div>
+                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Instagram URL</label>
+                     <input className="w-full border p-3 rounded-xl" value={socialsForm.instagram} onChange={e => setSocialsForm({...socialsForm, instagram: e.target.value})} />
+                 </div>
+                 <div>
+                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Facebook URL</label>
+                     <input className="w-full border p-3 rounded-xl" value={socialsForm.facebook} onChange={e => setSocialsForm({...socialsForm, facebook: e.target.value})} />
+                 </div>
+                 <div>
+                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">YouTube URL</label>
+                     <input className="w-full border p-3 rounded-xl" value={socialsForm.youtube} onChange={e => setSocialsForm({...socialsForm, youtube: e.target.value})} />
+                 </div>
+                 <div>
+                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Twitter/Threads URL</label>
+                     <input className="w-full border p-3 rounded-xl" value={socialsForm.twitter} onChange={e => setSocialsForm({...socialsForm, twitter: e.target.value})} />
+                 </div>
+                 <button onClick={handleSaveSocials} className="bg-nomad-black text-white px-8 py-3 rounded-xl font-bold uppercase">Save Social Links</button>
              </div>
          )}
          

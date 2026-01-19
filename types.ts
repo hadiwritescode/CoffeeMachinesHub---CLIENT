@@ -90,5 +90,11 @@ export interface SiteContent {
     email: string;
     phone: string;
   };
+  socials: {
+    instagram: string;
+    facebook: string;
+    youtube: string;
+    twitter: string;
+  };
   team: TeamMember[];
 }
