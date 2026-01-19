@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Edit, Trash, Plus } from 'lucide-react';
+import { Edit, Trash, Plus, Upload } from 'lucide-react';
 import { BlogPost } from '../../types';
 
 const BlogManager: React.FC = () => {
@@ -17,6 +17,17 @@ const BlogManager: React.FC = () => {
     date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     image: '',
     author: 'Nomad Team'
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingPost) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        setEditingPost({ ...editingPost, image: reader.result as string });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -84,8 +95,14 @@ const BlogManager: React.FC = () => {
                       </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Image URL</label>
-                    <input className="w-full border p-2 rounded-lg" value={editingPost.image} onChange={e => setEditingPost({...editingPost, image: e.target.value})} />
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Cover Image</label>
+                    <div className="flex gap-4 items-center">
+                        {editingPost.image && <img src={editingPost.image} alt="Preview" className="w-16 h-16 rounded object-cover border" />}
+                        <label className="cursor-pointer bg-gray-50 border border-dashed p-2 rounded-lg hover:bg-gray-100 flex items-center gap-2">
+                            <Upload size={16} /> <span className="text-sm">Choose File</span>
+                            <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
+                        </label>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Excerpt</label>

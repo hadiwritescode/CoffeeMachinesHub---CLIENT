@@ -9,6 +9,7 @@ export interface Product {
   title: string;
   price: number;
   image: string;
+  images?: string[]; // Multiple images support
   hoverImage?: string; 
   hoverVideo?: string; 
   category?: string;

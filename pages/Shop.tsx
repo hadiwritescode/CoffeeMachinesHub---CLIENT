@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
 import { useStore } from '../context/StoreContext';
 import { useSearchParams, Link, useParams } from 'react-router-dom';
-import { ChevronDown, SlidersHorizontal, X, Filter, Search, Check } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, X, Filter, Search, Check, ChevronRight } from 'lucide-react';
 
 type SortOption = 'featured' | 'newest';
 
@@ -12,12 +12,16 @@ const Shop: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('featured');
-  const { products } = useStore();
+  const { products, categories } = useStore();
 
   // Derived state from URL
   const categoryParam = searchParams.get('category');
   const subcategoryParam = searchParams.get('subcategory');
   const searchParam = searchParams.get('search');
+
+  // STRICT CATEGORY ENFORCEMENT
+  // Using categories from StoreContext which mirrors NAVIGATION_LINKS
+  const allCategories = categories;
 
   // Close drawers on resize or route change
   useEffect(() => {
@@ -46,28 +50,29 @@ const Shop: React.FC = () => {
         return matchesTitle || matchesDesc || matchesTags;
     }
 
-    // 1. Collection ID Path
+    // 1. Collection ID Path (Legacy / Direct Link)
     if (collectionId) {
        const normalizedCollection = collectionId.toLowerCase().replace(/-/g, ' ');
-       if (normalizedCollection === 'blends') return product.tags?.some(tag => tag.toLowerCase() === 'blends');
        if (normalizedCollection === 'all') return true;
+       // Check against category or tags
        const matchesCategory = product.category?.toLowerCase() === normalizedCollection;
        const matchesTag = product.tags?.some(tag => tag.toLowerCase() === normalizedCollection);
        return matchesCategory || matchesTag;
     }
 
-    // 2. Subcategory (Tag)
-    if (subcategoryParam) {
-      return product.tags?.some(tag => tag.toLowerCase() === subcategoryParam.toLowerCase() || tag.includes(subcategoryParam));
+    // 2. Main Category Filter
+    if (categoryParam) {
+      const matchCat = product.category === categoryParam;
+      // Also allow matching if the category name exists in tags (e.g. product is generic but tagged)
+      const matchTag = product.tags?.includes(categoryParam);
+      
+      if (!matchCat && !matchTag) return false;
     }
 
-    // 3. Category
-    if (categoryParam) {
-      if (categoryParam === 'Coffee' && product.category === 'Coffee') return true;
-      if (categoryParam === 'Brew Equipment' && product.category === 'Gear') return true;
-      if (categoryParam === 'Merchandise' && product.category === 'Merchandise') return true;
-      if (product.category === categoryParam) return true;
-      return false;
+    // 3. Subcategory Filter
+    if (subcategoryParam) {
+      const matchSub = product.tags?.some(t => t.toLowerCase() === subcategoryParam.toLowerCase());
+      if (!matchSub) return false;
     }
 
     return true;
@@ -76,26 +81,38 @@ const Shop: React.FC = () => {
   // Sorting Logic
   filteredProducts = [...filteredProducts].sort((a, b) => {
       switch (sortBy) {
-          case 'newest': return 0; // Assuming API order is newest or random. Real app would have date.
+          case 'newest': return 0; // Assuming API order is newest or random.
           default: return 0; // Featured
       }
   });
 
-  // Helper for filter links
+  // Toggle Main Category
   const toggleCategory = (cat: string) => {
+    const newParams = new URLSearchParams(searchParams);
     if (categoryParam === cat) {
-        const newParams = new URLSearchParams(searchParams);
         newParams.delete('category');
-        setSearchParams(newParams);
+        newParams.delete('subcategory'); // Clear sub if main is cleared
     } else {
-        setSearchParams({ category: cat });
+        newParams.set('category', cat);
+        newParams.delete('subcategory'); // Clear sub when switching main
     }
+    setSearchParams(newParams);
+  };
+
+  // Toggle Subcategory
+  const toggleSubcategory = (sub: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (subcategoryParam === sub) {
+        newParams.delete('subcategory');
+    } else {
+        newParams.set('subcategory', sub);
+    }
+    setSearchParams(newParams);
   };
 
   const getPageTitle = () => {
     if (searchParam) return `Search: "${searchParam}"`;
     if (collectionId) return collectionId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    if (subcategoryParam) return subcategoryParam;
     if (categoryParam) return categoryParam;
     return 'All Products';
   };
@@ -175,7 +192,7 @@ const Shop: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Drawer (Mobile & Desktop) */}
+      {/* Filter Drawer */}
       <div 
         className={`fixed inset-0 z-[60] bg-nomad-black/50 backdrop-blur-sm transition-opacity duration-300 ${isFilterOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsFilterOpen(false)}
@@ -190,40 +207,46 @@ const Shop: React.FC = () => {
             </div>
             
             <div className="flex-grow overflow-y-auto p-6 space-y-8">
-                {/* Categories */}
+                {/* Dynamic Category List */}
                 <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Category</h3>
-                    <div className="space-y-3">
-                        {['Coffee', 'Gear', 'Merchandise'].map(cat => (
-                            <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${categoryParam === cat ? 'bg-nomad-black border-nomad-black' : 'border-gray-300 group-hover:border-nomad-black'}`}>
-                                    {categoryParam === cat && <Check size={12} className="text-white" />}
-                                </div>
-                                <input 
-                                    type="checkbox" 
-                                    checked={categoryParam === cat} 
-                                    onChange={() => toggleCategory(cat)}
-                                    className="hidden" 
-                                />
-                                <span className={`text-sm font-medium transition-colors ${categoryParam === cat ? 'text-nomad-black' : 'text-gray-600'}`}>{cat}</span>
-                            </label>
-                        ))}
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Categories</h3>
+                    <div className="space-y-2">
+                        {allCategories.map(cat => {
+                           const isSelected = categoryParam === cat.title;
+                           
+                           return (
+                             <div key={cat.title} className="space-y-2">
+                                {/* Main Category */}
+                                <button 
+                                    onClick={() => toggleCategory(cat.title)}
+                                    className={`w-full flex items-center justify-between p-3 rounded-xl text-left transition-colors ${isSelected ? 'bg-nomad-black text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
+                                >
+                                    <span className="font-bold text-sm">{cat.title}</span>
+                                    {isSelected && <Check size={14} />}
+                                </button>
+                                
+                                {/* Subcategories (Visible only if Main is selected) */}
+                                {isSelected && (
+                                    <div className="pl-4 space-y-1 animate-slide-down">
+                                        {cat.items.map(sub => (
+                                            <button 
+                                                key={sub}
+                                                onClick={() => toggleSubcategory(sub)}
+                                                className={`w-full flex items-center gap-2 p-2 text-sm transition-colors ${subcategoryParam === sub ? 'text-nomad-gold font-bold' : 'text-gray-500 hover:text-nomad-black'}`}
+                                            >
+                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${subcategoryParam === sub ? 'border-nomad-gold bg-nomad-gold' : 'border-gray-300'}`}>
+                                                    {subcategoryParam === sub && <Check size={10} className="text-white" />}
+                                                </div>
+                                                {sub}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                             </div>
+                           );
+                        })}
                     </div>
                 </div>
-
-                {/* Roast Level (Mock - only shows if Coffee) */}
-                {(!categoryParam || categoryParam === 'Coffee') && (
-                    <div>
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Roast Level</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {['Light', 'Medium', 'Dark', 'Espresso'].map(roast => (
-                                <button key={roast} className="px-4 py-2 bg-nomad-gray rounded-full text-xs font-bold uppercase tracking-wider text-gray-600 hover:bg-nomad-black hover:text-white transition-colors">
-                                    {roast}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                )}
             </div>
 
             <div className="p-6 border-t border-gray-100 bg-nomad-gray">

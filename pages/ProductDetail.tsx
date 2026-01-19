@@ -29,9 +29,9 @@ const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { toggleWishlist, currentUser } = useStore();
   const product = ALL_PRODUCTS.find(p => p.id === id);
-  // Default to first feature open
   const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(0);
   const [showToast, setShowToast] = useState(false);
+  const [activeImage, setActiveImage] = useState(product?.image || '');
 
   // Suggest similar products based on category
   const relatedProducts = ALL_PRODUCTS
@@ -47,6 +47,8 @@ const ProductDetail: React.FC = () => {
     );
   }
 
+  const images = product.images && product.images.length > 0 ? product.images : [product.image, product.hoverImage].filter(Boolean) as string[];
+
   const toggleFeature = (index: number) => {
     setOpenFeatureIndex(openFeatureIndex === index ? null : index);
   };
@@ -54,7 +56,7 @@ const ProductDetail: React.FC = () => {
   const handleWhatsAppClick = () => {
     const phoneNumber = '923104811011';
     const productUrl = window.location.href;
-    const message = `Hi, I'm interested in ordering ${product.title}. \n\nLink: ${productUrl}`;
+    const message = `Hi, I'm interested in ordering ${product.title}. Can you please tell me the price? \n\nLink: ${productUrl}`;
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -129,7 +131,7 @@ const ProductDetail: React.FC = () => {
            <div className="bg-nomad-black text-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-4">
               <CheckCircle size={20} className="text-nomad-gold" />
               <div className="flex flex-col">
-                  <span className="text-sm font-bold tracking-wide">Added to Cart</span>
+                  <span className="text-sm font-bold tracking-wide">Saved to Wishlist</span>
                   <span className="text-xs text-gray-400">{product.title}</span>
               </div>
            </div>
@@ -152,7 +154,7 @@ const ProductDetail: React.FC = () => {
           {/* Left Side: Image Gallery */}
           <div className="w-full lg:w-[55%] flex flex-col gap-6">
              <div className="bg-[#F9F9F9] rounded-[2rem] overflow-hidden w-full aspect-[4/5] relative group shadow-sm">
-                <img src={product.image} alt={product.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <img src={activeImage || product.image} alt={product.title} className="w-full h-full object-cover transition-transform duration-700" />
                 {product.soldOut && (
                   <div className="absolute top-6 left-6 bg-white/90 backdrop-blur px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-gray-100">
                     Sold Out
@@ -160,20 +162,20 @@ const ProductDetail: React.FC = () => {
                 )}
              </div>
              
-             {/* Secondary Images Grid */}
-             <div className="grid grid-cols-2 gap-4 md:gap-6">
-                <div className="bg-[#F9F9F9] rounded-[2rem] overflow-hidden aspect-square cursor-pointer group">
-                    <img 
-                        src={product.hoverImage || product.image} 
-                        alt="Detail" 
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                    />
+             {/* Thumbnail Grid */}
+             {images.length > 1 && (
+                <div className="grid grid-cols-4 gap-4">
+                    {images.map((img, idx) => (
+                        <button 
+                            key={idx} 
+                            onClick={() => setActiveImage(img)}
+                            className={`bg-[#F9F9F9] rounded-xl overflow-hidden aspect-square cursor-pointer border-2 transition-all ${activeImage === img ? 'border-nomad-gold' : 'border-transparent hover:border-gray-200'}`}
+                        >
+                            <img src={img} alt={`Detail ${idx}`} className="w-full h-full object-cover" />
+                        </button>
+                    ))}
                 </div>
-                <div className="bg-nomad-cream/30 rounded-[2rem] flex flex-col items-center justify-center aspect-square p-4 md:p-8 text-center border border-nomad-gold/10">
-                    <p className="font-serif italic text-xl md:text-2xl text-nomad-dark-gold mb-2">Premium Quality</p>
-                    <p className="text-[10px] md:text-xs uppercase tracking-widest text-gray-500">Sustainably Sourced</p>
-                </div>
-             </div>
+             )}
           </div>
 
           {/* Right Side: Sticky Product Info */}
@@ -181,7 +183,7 @@ const ProductDetail: React.FC = () => {
              <div className="lg:sticky lg:top-32 h-fit">
                 
                 <div className="flex justify-between items-start mb-4">
-                    <div className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase">{product.category || 'Coffee'}</div>
+                    <div className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase">{product.category}</div>
                     <div className="flex text-nomad-gold">
                         {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
                     </div>

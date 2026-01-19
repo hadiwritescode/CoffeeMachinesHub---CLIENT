@@ -60,7 +60,7 @@ const STOCK_VIDEOS = {
   slow: 'https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4'
 };
 
-// COFFEE PRODUCTS
+// COFFEE PRODUCTS (Legacy data - kept for content but hidden from strict filters)
 export const BLENDS_PRODUCTS: Product[] = [
   {
     id: 'atlas',
@@ -70,7 +70,7 @@ export const BLENDS_PRODUCTS: Product[] = [
     hoverVideo: STOCK_VIDEOS.beans,
     subtitle: 'Dark Chocolate • Nutmeg • Spice',
     tags: ['Medium Roast', 'Blends'],
-    category: 'Coffee',
+    category: 'Coffee', 
     description: 'Our signature blend designed for the bold. Atlas brings together beans from South America and Africa to create a complex profile of dark chocolate, warming spices, and a hint of dried fruit sweetness.'
   },
   {
@@ -272,7 +272,7 @@ export const BEST_COFFEES: Product[] = [
   }
 ];
 
-// GEAR PRODUCTS
+// GEAR PRODUCTS UPDATED TO STRICT CATEGORIES
 export const GEAR_PRODUCTS: Product[] = [
   {
     id: 'aeropress-clear',
@@ -281,8 +281,9 @@ export const GEAR_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1642649041280-3cb834c442b3?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.grind,
     soldOut: false,
-    category: 'Gear',
-    tags: ['Brewers', 'Aeropress', 'Accessories'],
+    isFeatured: true,
+    category: 'Accessories', // Updated
+    tags: ['Barista Tools'],
     description: 'The iconic coffee press, now in crystal clear shatterproof Tritan. Make delicious American, espresso, and cold brew style coffee.'
   },
   {
@@ -291,8 +292,8 @@ export const GEAR_PRODUCTS: Product[] = [
     price: 22000,
     image: 'https://images.unsplash.com/photo-1544655615-5654316d2e61?auto=format&fit=crop&q=80&w=800',
     soldOut: false,
-    category: 'Gear',
-    tags: ['Brewers', 'Pour Over', 'Accessories'],
+    category: 'Accessories',
+    tags: ['Barista Tools'],
     description: 'The premium copper version of the V60 not only looks stunning but offers superior thermal conductivity for better extraction control.'
   },
   {
@@ -302,8 +303,8 @@ export const GEAR_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1595928642581-f50f4f345668?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.drip,
     soldOut: false,
-    category: 'Gear',
-    tags: ['Brewers', 'Pour Over', 'Accessories'],
+    category: 'Accessories',
+    tags: ['Barista Tools'],
     description: 'An elegant, one-piece, hourglass shaped vessel made of high quality, heat resistant glass. Delivers the purest flavor experience.'
   },
   {
@@ -313,8 +314,9 @@ export const GEAR_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1565458189033-93666eb9f388?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.drip,
     soldOut: false,
-    category: 'Gear',
-    tags: ['Kettles', 'Brewers', 'Accessories'],
+    isFeatured: true,
+    category: 'Accessories',
+    tags: ['Barista Tools'], // Kettles map to Tools here
     description: 'The electric pour-over kettle for coffee lovers. Variable temperature control, 1200 watts for a quick heat time, and a world of features for ultimate control.'
   },
   {
@@ -324,8 +326,9 @@ export const GEAR_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1618116523910-1840b2f69830?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.grind,
     soldOut: false,
-    category: 'Gear',
-    tags: ['Grinders', 'Brewers'],
+    isFeatured: true,
+    category: 'Grinders', // Updated
+    tags: ['Domestic Grinders'],
     description: 'Optimized for espresso but capable of brewing anything. The new standard for entry-level home grinding.'
   },
   {
@@ -335,8 +338,8 @@ export const GEAR_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1613529328577-49527f31c26b?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.grind,
     soldOut: false,
-    category: 'Gear',
-    tags: ['Scales', 'Tools', 'Accessories'],
+    category: 'Accessories',
+    tags: ['Barista Tools'],
     description: 'The professional grade smart scale. Real-time flow-rate indicator and optimized modes for espresso and pour-over.'
   },
   {
@@ -345,8 +348,8 @@ export const GEAR_PRODUCTS: Product[] = [
     price: 110000,
     image: 'https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&q=80&w=800',
     soldOut: false,
-    category: 'Gear',
-    tags: ['Blenders', 'Commercial'],
+    category: 'Blenders',
+    tags: ['High-Performance'],
     description: 'Professional grade performance for the home. Create smoothies, hot soups, and frozen desserts in minutes.'
   },
   {
@@ -356,8 +359,8 @@ export const GEAR_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.drip,
     soldOut: false,
-    category: 'Gear',
-    tags: ['Brewers', 'Pour Over', 'Accessories'],
+    category: 'Accessories',
+    tags: ['Barista Tools'],
     description: 'Designed by the founder of Trunk Coffee in Japan, this dripper features 20 ribs that create air channels for a smooth brew.'
   },
   {
@@ -366,8 +369,8 @@ export const GEAR_PRODUCTS: Product[] = [
     price: 98000,
     image: 'https://images.unsplash.com/photo-1595514013142-3e3c0d291e60?auto=format&fit=crop&q=80&w=800',
     soldOut: true,
-    category: 'Gear',
-    tags: ['Grinders', 'Brewers'],
+    category: 'Grinders',
+    tags: ['Domestic Grinders'],
     description: 'A powerful, precise, and quieter home coffee grinder with café capabilities. Specifically designed to perfect your daily brewed coffee.'
   },
   {
@@ -375,8 +378,8 @@ export const GEAR_PRODUCTS: Product[] = [
     title: 'Kalita Wave 185 Stainless',
     price: 11500,
     image: 'https://images.unsplash.com/photo-1563293815-58721c812d1c?auto=format&fit=crop&q=80&w=800',
-    category: 'Gear',
-    tags: ['Brewers', 'Pour Over', 'Accessories'],
+    category: 'Accessories',
+    tags: ['Barista Tools'],
     description: 'The flat-bottom geometry facilitates an even extraction that makes brewing a perfect cup accessible and consistent.'
   },
   {
@@ -384,8 +387,8 @@ export const GEAR_PRODUCTS: Product[] = [
     title: 'Flair 58 Espresso Maker',
     price: 165000,
     image: 'https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=800',
-    category: 'Gear',
-    tags: ['Brewers', 'Espresso', 'Machines'],
+    category: 'Machines',
+    tags: ['Manual Lever'],
     description: 'A fully manual, professional grade lever espresso press. Features a heated brew head and standard 58mm portafilter for cafe-quality shots at home.'
   }
 ];

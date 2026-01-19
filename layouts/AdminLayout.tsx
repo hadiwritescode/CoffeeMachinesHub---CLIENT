@@ -37,20 +37,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       {/* Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
 
       {/* Sidebar */}
-      <aside className={`w-64 bg-nomad-black text-white flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+      <aside className={`w-64 bg-nomad-black text-white flex flex-col fixed h-full z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         <div className="p-8 flex flex-col items-center border-b border-gray-700 hidden md:flex">
           <Logo className="h-12 w-auto text-nomad-gold mb-4" />
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Admin Panel</span>
         </div>
         
         {/* Mobile Sidebar Header (Visual Balance) */}
-        <div className="md:hidden p-6 border-b border-gray-700">
+        <div className="md:hidden p-6 border-b border-gray-700 pt-20">
            <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Navigation</span>
         </div>
         

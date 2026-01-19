@@ -38,11 +38,12 @@ const Home: React.FC = () => {
 
   const trendingTerms = ['Espresso Machines', 'Commercial Grinders', 'Coffee Blends', 'Barista Accessories'];
   
-  // Filter products from store for sections
-  const gearProducts = products.filter(p => p.category === 'Gear').slice(0, 5);
-  // Use isFeatured property for "Curated Favorites" or fallback to Coffee category
+  // Filter products for sections (Using strict categories)
+  const machineProducts = products.filter(p => p.category === 'Machines' || p.tags?.includes('Machines')).slice(0, 6);
+  
+  // "Curated Favorites" uses isFeatured flag, or falls back to 'Grinders' (since Coffee is legacy)
   const featuredProducts = products.filter(p => p.isFeatured);
-  const displayFavorites = featuredProducts.length > 0 ? featuredProducts : products.filter(p => p.category === 'Coffee').slice(0, 6);
+  const displayFavorites = featuredProducts.length > 0 ? featuredProducts : products.filter(p => p.category === 'Grinders').slice(0, 6);
 
   return (
     <div className="bg-nomad-paper overflow-hidden">
@@ -191,7 +192,7 @@ const Home: React.FC = () => {
            </div>
            
            <div className="flex overflow-x-auto gap-8 pb-10 no-scrollbar snap-x snap-mandatory">
-              {gearProducts.map((product, idx) => (
+              {machineProducts.map((product, idx) => (
                 <div key={product.id} className="min-w-[280px] md:min-w-[340px] snap-center fade-right" style={{ transitionDelay: `${200 + idx * 100}ms` }}>
                   <ProductCard product={product} variant="poster" />
                 </div>
