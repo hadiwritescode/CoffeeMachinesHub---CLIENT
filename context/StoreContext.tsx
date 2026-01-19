@@ -202,11 +202,13 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
         } catch (error) {
             console.error("Profile Error:", error);
             showToast("Failed to load user profile", "error");
+        } finally {
+            setLoading(false);
         }
       } else {
         setCurrentUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {
@@ -225,9 +227,15 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   }, [cart, currentUser]);
 
   const uploadFile = async (file: File, path: string): Promise<string> => {
-    const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
+    try {
+      const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+      return url;
+    } catch (error) {
+      console.error("Storage upload error:", error);
+      throw error;
+    }
   };
 
   const login = async (email: string, password: string) => {

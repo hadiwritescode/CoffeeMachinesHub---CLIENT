@@ -20,16 +20,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   useEffect(() => {
     if (!loading) {
         if (!currentUser) {
-            navigate('/login');
+            navigate('/login', { replace: true });
         } else if (currentUser.role !== 'admin') {
-            navigate('/profile');
+            navigate('/profile', { replace: true });
         }
     }
   }, [currentUser, loading, navigate]);
 
   if (loading || !currentUser || currentUser.role !== 'admin') {
       return (
-          <div className="min-h-screen bg-nomad-paper flex flex-col items-center justify-center">
+          <div className="fixed inset-0 z-50 bg-nomad-paper flex flex-col items-center justify-center">
               <Loader2 size={48} className="animate-spin text-nomad-gold mb-4" />
               <p className="text-nomad-black font-bold uppercase tracking-widest text-xs">Authenticating...</p>
           </div>
@@ -48,7 +48,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="flex min-h-screen bg-gray-100 font-sans animate-fade-in">
+    <div className="flex min-h-screen bg-gray-100 font-sans relative z-0">
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 w-full bg-nomad-black text-white z-40 px-6 py-4 flex justify-between items-center shadow-md">
         <Logo className="h-8 w-auto text-nomad-gold" />
@@ -103,7 +103,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-grow p-4 pt-20 md:p-10 md:pt-10 md:ml-64 transition-all duration-300 overflow-x-hidden">
+      <main className="flex-grow p-4 pt-24 md:p-10 md:pt-10 md:ml-64 transition-all duration-300 overflow-x-hidden bg-gray-100 min-h-screen">
         {children}
       </main>
     </div>
