@@ -7,6 +7,9 @@ const { Link } = ReactRouterDOM;
 const Services: React.FC = () => {
   const { siteContent } = useStore();
   const content = siteContent.services;
+  
+  // Fallback if list is empty in DB
+  const points = content.section1List || ["Custom Roasting Profiles", "Volume Discounts", "Reliable Logistics"];
 
   return (
     <div className="animate-fade-in bg-nomad-paper pt-40 pb-20">
@@ -48,9 +51,12 @@ const Services: React.FC = () => {
                {content.section1Text}
              </p>
              <ul className="space-y-4 mb-8">
-                <li className="flex items-center text-sm font-bold uppercase tracking-wider text-gray-800"><div className="w-2 h-2 bg-nomad-gold rounded-full mr-3"></div> Custom Roasting Profiles</li>
-                <li className="flex items-center text-sm font-bold uppercase tracking-wider text-gray-800"><div className="w-2 h-2 bg-nomad-gold rounded-full mr-3"></div> Volume Discounts</li>
-                <li className="flex items-center text-sm font-bold uppercase tracking-wider text-gray-800"><div className="w-2 h-2 bg-nomad-gold rounded-full mr-3"></div> Reliable Logistics</li>
+                {points.map((point, idx) => (
+                    <li key={idx} className="flex items-center text-sm font-bold uppercase tracking-wider text-gray-800">
+                        <div className="w-2 h-2 bg-nomad-gold rounded-full mr-3 shrink-0"></div> 
+                        {point}
+                    </li>
+                ))}
              </ul>
              <Link to="/contact" className="inline-block bg-black text-white px-8 py-4 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-nomad-gold transition-colors">
                Become a Partner

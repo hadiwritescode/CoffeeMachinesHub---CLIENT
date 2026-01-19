@@ -138,6 +138,7 @@ export interface SiteContent {
     heroImage: string;
     section1Title: string;
     section1Text: string;
+    section1List?: string[]; // Added for dynamic bullet points
     section1Image: string;
     section2Title: string;
     section2Text: string;

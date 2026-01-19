@@ -89,6 +89,7 @@ const defaultSiteContent: SiteContent = {
     heroImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1600",
     section1Title: "Wholesale Partner",
     section1Text: "We don't just supply beans; we supply consistency...",
+    section1List: ["Custom Roasting Profiles", "Volume Discounts", "Reliable Logistics"],
     section1Image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=800",
     section2Title: "Barista Training",
     section2Text: "Empower your staff...",

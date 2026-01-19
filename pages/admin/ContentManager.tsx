@@ -103,6 +103,21 @@ const ContentManager: React.FC = () => {
       }
   };
 
+  // Service List Helpers
+  const addServicePoint = () => {
+      const newList = [...(serviceForm.section1List || []), 'New Benefit'];
+      setServiceForm({ ...serviceForm, section1List: newList });
+  };
+  const updateServicePoint = (index: number, val: string) => {
+      const newList = [...(serviceForm.section1List || [])];
+      newList[index] = val;
+      setServiceForm({ ...serviceForm, section1List: newList });
+  };
+  const removeServicePoint = (index: number) => {
+      const newList = (serviceForm.section1List || []).filter((_, i) => i !== index);
+      setServiceForm({ ...serviceForm, section1List: newList });
+  };
+
   // FAQ Helpers
   const addFaq = () => {
      setContactForm({ 
@@ -322,6 +337,23 @@ const ContentManager: React.FC = () => {
                  <InputGroup label="Title" value={serviceForm.section1Title} onChange={v => setServiceForm({...serviceForm, section1Title: v})} />
                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Text</label>
                  <AutoTextarea className="w-full border p-2 rounded-lg mb-4" minRows={3} value={serviceForm.section1Text} onChange={(e: any) => setServiceForm({...serviceForm, section1Text: e.target.value})} />
+                 
+                 {/* DYNAMIC LIST ADDED HERE */}
+                 <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Key Benefits List</label>
+                 <div className="space-y-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    {(serviceForm.section1List || []).map((point, idx) => (
+                        <div key={idx} className="flex gap-2">
+                            <input 
+                                className="flex-grow border p-2 rounded-lg text-sm"
+                                value={point}
+                                onChange={(e) => updateServicePoint(idx, e.target.value)}
+                            />
+                            <button onClick={() => removeServicePoint(idx)} className="text-red-400 hover:text-red-600 p-2"><Trash size={16} /></button>
+                        </div>
+                    ))}
+                    <button onClick={addServicePoint} className="flex items-center gap-2 text-nomad-gold font-bold uppercase text-xs hover:bg-nomad-gold/10 p-2 rounded-lg transition-colors"><Plus size={14} /> Add Benefit</button>
+                 </div>
+
                  <ImageUploadGroup 
                     label="Image" 
                     preview={serviceForm.section1Image} 
