@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FAQS } from '../constants';
-import { Plus, Minus, MapPin, Mail, Phone, Clock, ArrowRight } from 'lucide-react';
+import { Plus, Minus, Instagram } from 'lucide-react';
 
 const Contact: React.FC = () => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
@@ -18,82 +18,65 @@ const Contact: React.FC = () => {
          <p className="text-gray-500 max-w-xl mx-auto text-lg">Have a question about our beans, shipping, or brewing equipment? Our team of coffee experts is ready to assist.</p>
       </div>
 
-      {/* Contact Section */}
+      {/* Main Content: Map & Details */}
       <div className="container mx-auto px-6 md:px-12 py-12">
-        <div className="flex flex-col lg:flex-row gap-16 items-start">
+        <div className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col lg:flex-row fade-up">
           
-          {/* Info Side */}
-          <div className="w-full lg:w-1/3 space-y-10 fade-up">
+          {/* Left: Map */}
+          <div className="w-full lg:w-1/2 min-h-[400px] lg:min-h-[650px] relative order-2 lg:order-1">
+             <iframe 
+               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3401.830694063854!2d74.29177197623126!3d31.49129534769024!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x391903d6d6014387%3A0x6b6697479707963!2sCity%20Star%20Mall!5e0!3m2!1sen!2s!4v1705678901234!5m2!1sen!2s" 
+               width="100%" 
+               height="100%" 
+               style={{ border: 0 }} 
+               allowFullScreen 
+               loading="lazy" 
+               referrerPolicy="no-referrer-when-downgrade"
+               className="absolute inset-0 grayscale hover:grayscale-0 transition-all duration-500"
+               title="Map Location"
+             ></iframe>
+          </div>
+
+          {/* Right: Details */}
+          <div className="w-full lg:w-1/2 p-10 md:p-16 lg:p-20 flex flex-col justify-center order-1 lg:order-2">
+             <h2 className="font-serif font-bold text-4xl lg:text-5xl mb-6 text-nomad-black">Reach Out to Us</h2>
+             <div className="w-20 h-1.5 bg-nomad-gold mb-8"></div>
              
-             {/* Card 1 */}
-             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="flex items-center mb-4">
-                    <div className="w-10 h-10 bg-nomad-gold/10 rounded-full flex items-center justify-center text-nomad-gold mr-4">
-                        <MapPin size={20} />
-                    </div>
-                    <h3 className="font-serif font-bold text-xl">Visit Us</h3>
-                </div>
-                <p className="text-gray-600 leading-relaxed pl-14">
-                   Nomad Coffee Studio<br/>
-                   Building 12, Lane 4, Phase 6<br/>
-                   DHA, Lahore, Pakistan
-                </p>
-             </div>
+             <p className="text-gray-600 text-lg leading-relaxed mb-12">
+               We’re here to assist you with any questions or concerns regarding your coffee machine needs.
+             </p>
 
-             {/* Card 2 */}
-             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="flex items-center mb-4">
-                    <div className="w-10 h-10 bg-nomad-gold/10 rounded-full flex items-center justify-center text-nomad-gold mr-4">
-                        <Mail size={20} />
-                    </div>
-                    <h3 className="font-serif font-bold text-xl">Contact</h3>
+             <div className="space-y-10">
+                <div>
+                   <h3 className="text-lg font-bold text-nomad-black mb-2">Phone</h3>
+                   <p className="text-gray-600 text-xl font-medium">+92 310 481 1011</p>
                 </div>
-                <div className="pl-14 space-y-2">
-                    <a href="mailto:hello@nomadcoffeestudio.com" className="block text-gray-600 hover:text-nomad-black hover:underline transition-colors">hello@nomadcoffeestudio.com</a>
-                    <a href="tel:+923001234567" className="block text-gray-600 hover:text-nomad-black hover:underline transition-colors">+92 300 123 4567</a>
-                </div>
-             </div>
 
-             {/* Card 3 */}
-             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="flex items-center mb-4">
-                    <div className="w-10 h-10 bg-nomad-gold/10 rounded-full flex items-center justify-center text-nomad-gold mr-4">
-                        <Clock size={20} />
-                    </div>
-                    <h3 className="font-serif font-bold text-xl">Opening Hours</h3>
+                <div>
+                   <h3 className="text-lg font-bold text-nomad-black mb-2">Email</h3>
+                   <a href="mailto:Coffeemachineshub@gmail.com" className="text-gray-600 text-xl hover:text-nomad-gold transition-colors block break-words">Coffeemachineshub@gmail.com</a>
                 </div>
-                <p className="text-gray-600 leading-relaxed pl-14">
-                   Mon - Fri: 8am - 10pm<br/>
-                   Sat - Sun: 9am - 11pm
-                </p>
+
+                <div>
+                   <h3 className="text-lg font-bold text-nomad-black mb-2">Address</h3>
+                   <p className="text-gray-600 text-lg max-w-sm leading-relaxed">G-22, City Star Mall, Model Town Link Road, Lahore</p>
+                </div>
+
+                <div>
+                   <h3 className="text-lg font-bold text-nomad-black mb-4">Social Media</h3>
+                   <a 
+                     href="https://www.instagram.com/" 
+                     target="_blank" 
+                     rel="noopener noreferrer" 
+                     className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-nomad-paper text-nomad-gold hover:bg-nomad-gold hover:text-white transition-all transform hover:scale-110 shadow-sm"
+                     aria-label="Instagram"
+                   >
+                      <Instagram size={28} />
+                   </a>
+                </div>
              </div>
           </div>
 
-          {/* Form Side */}
-          <div className="w-full lg:w-2/3 bg-white p-10 md:p-12 rounded-[2.5rem] shadow-xl fade-up" style={{ transitionDelay: '0.2s' }}>
-             <h3 className="font-serif font-bold text-2xl mb-8">Send us a message</h3>
-             <form className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                   <div className="space-y-2 group">
-                     <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 group-focus-within:text-nomad-gold transition-colors">Name</label>
-                     <input type="text" className="w-full py-4 border-b border-gray-200 focus:border-nomad-black focus:outline-none transition-colors bg-transparent text-lg" placeholder="Jane Doe" />
-                   </div>
-                   <div className="space-y-2 group">
-                     <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 group-focus-within:text-nomad-gold transition-colors">Email</label>
-                     <input type="email" className="w-full py-4 border-b border-gray-200 focus:border-nomad-black focus:outline-none transition-colors bg-transparent text-lg" placeholder="jane@example.com" />
-                   </div>
-                </div>
-                <div className="space-y-2 group">
-                   <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 group-focus-within:text-nomad-gold transition-colors">Message</label>
-                   <textarea rows={4} className="w-full py-4 border-b border-gray-200 focus:border-nomad-black focus:outline-none transition-colors bg-transparent text-lg resize-none" placeholder="How can we help you?"></textarea>
-                </div>
-                <div className="pt-4">
-                    <button type="button" className="group bg-nomad-black text-white px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold transition-all flex items-center shadow-lg hover:shadow-xl hover:-translate-y-1">
-                      Send Message <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                </div>
-             </form>
-          </div>
         </div>
       </div>
 

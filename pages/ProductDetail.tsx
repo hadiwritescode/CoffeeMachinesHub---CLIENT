@@ -12,8 +12,6 @@ const GRIND_OPTIONS = [
   'Whole Bean', 'Espresso', 'Pour Over', 'French Press', 'Aeropress', 'Cold Brew'
 ];
 
-const WEIGHT_OPTIONS = ['250g', '500g', '1kg'];
-
 // Icon mapping for features
 const IconMap = {
   flame: Flame,
@@ -36,7 +34,6 @@ const ProductDetail: React.FC = () => {
   // Default to first feature open
   const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(0);
   const [selectedGrind, setSelectedGrind] = useState('Whole Bean');
-  const [selectedWeight, setSelectedWeight] = useState('250g');
   const [showToast, setShowToast] = useState(false);
 
   // Suggest similar products based on category
@@ -60,7 +57,7 @@ const ProductDetail: React.FC = () => {
   const handleWhatsAppClick = () => {
     const phoneNumber = '923001234567';
     const productUrl = window.location.href;
-    const message = `Hi, I'm interested in ordering ${product.title}. \n\nOptions selected: \n- Grind: ${selectedGrind} \n- Size: ${selectedWeight} \n\nLink: ${productUrl}`;
+    const message = `Hi, I'm interested in ordering ${product.title}. \n\nOptions selected: \n- Grind: ${selectedGrind} \n\nLink: ${productUrl}`;
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -216,7 +213,7 @@ const ProductDetail: React.FC = () => {
                 {/* Selectors */}
                 {!product.soldOut && (
                   <>
-                    <div className="mb-8">
+                    <div className="mb-10">
                         <div className="flex justify-between items-center mb-4">
                             <label className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400">Grind</label>
                             <button className="text-[10px] underline text-gray-400 hover:text-nomad-black">Grind Guide</button>
@@ -228,25 +225,6 @@ const ProductDetail: React.FC = () => {
                               onClick={() => setSelectedGrind(option)}
                               className={`py-4 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all duration-200 ${
                                 selectedGrind === option 
-                                  ? 'bg-nomad-black text-white border-nomad-black shadow-lg scale-[1.02]' 
-                                  : 'bg-white text-gray-500 border-gray-200 hover:border-nomad-black hover:text-nomad-black'
-                              }`}
-                            >
-                              {option}
-                            </button>
-                          ))}
-                        </div>
-                    </div>
-
-                    <div className="mb-10">
-                        <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-4">Size</label>
-                        <div className="flex gap-4">
-                          {WEIGHT_OPTIONS.map(option => (
-                            <button
-                              key={option}
-                              onClick={() => setSelectedWeight(option)}
-                              className={`flex-1 py-4 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all duration-200 ${
-                                selectedWeight === option 
                                   ? 'bg-nomad-black text-white border-nomad-black shadow-lg scale-[1.02]' 
                                   : 'bg-white text-gray-500 border-gray-200 hover:border-nomad-black hover:text-nomad-black'
                               }`}
