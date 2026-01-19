@@ -28,10 +28,10 @@ const Footer: React.FC = () => {
             {/* Links Column 1 */}
             <div className="md:col-span-2 md:col-start-6 flex flex-col items-center md:items-start space-y-4">
                <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-2">Shop</h3>
-               <Link to="/shop?category=Coffee" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Beans</Link>
-               <Link to="/shop?category=Gear" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Equipment</Link>
-               <Link to="/services" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Commercial</Link>
-               <Link to="/shop?category=Merchandise" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Merch</Link>
+               <Link to="/collections/machines" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Machines</Link>
+               <Link to="/collections/grinders" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Grinders</Link>
+               <Link to="/collections/blenders" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Blenders</Link>
+               <Link to="/collections/accessories" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Accessories</Link>
             </div>
 
             {/* Links Column 2 */}

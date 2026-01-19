@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { MapPin, Mail, Phone, Clock, Send, Map, Plus, Minus } from 'lucide-react';
 import { FAQS } from '../constants';
+import { useStore } from '../context/StoreContext';
 
 const Contact: React.FC = () => {
+  const { siteContent } = useStore();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -46,9 +48,7 @@ const Contact: React.FC = () => {
                </div>
                <h3 className="font-serif font-bold text-xl mb-4 text-nomad-black">Visit Us</h3>
                <p className="text-gray-500 mb-6 leading-relaxed">
-                 G-22, City Star Mall,<br/>
-                 Model Town Link Road,<br/>
-                 Lahore, Pakistan
+                 {siteContent.contact.address}
                </p>
                <a 
                  href="https://www.google.com/maps/search/?api=1&query=City+Star+Mall+Model+Town+Link+Road+Lahore" 
@@ -68,11 +68,11 @@ const Contact: React.FC = () => {
                </div>
                <h3 className="font-serif font-bold text-xl mb-4 text-nomad-black">Contact</h3>
                <div className="space-y-2">
-                 <a href="mailto:Coffeemachineshub@gmail.com" className="block text-gray-500 hover:text-nomad-gold transition-colors">
-                   Coffeemachineshub@gmail.com
+                 <a href={`mailto:${siteContent.contact.email}`} className="block text-gray-500 hover:text-nomad-gold transition-colors">
+                   {siteContent.contact.email}
                  </a>
-                 <a href="tel:+923104811011" className="block text-gray-500 hover:text-nomad-gold transition-colors">
-                   +92 310 481 1011
+                 <a href={`tel:${siteContent.contact.phone}`} className="block text-gray-500 hover:text-nomad-gold transition-colors">
+                   {siteContent.contact.phone}
                  </a>
                </div>
             </div>

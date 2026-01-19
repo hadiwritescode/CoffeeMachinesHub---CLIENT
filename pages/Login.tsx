@@ -1,7 +1,24 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useStore } from '../context/StoreContext';
 
 const Login: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const { login } = useStore();
+  const navigate = useNavigate();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+        login(email);
+        if (email.includes('admin')) {
+            navigate('/admin');
+        } else {
+            navigate('/profile');
+        }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-nomad-paper flex flex-col items-center justify-center py-32 animate-fade-in relative overflow-hidden">
       
@@ -15,16 +32,22 @@ const Login: React.FC = () => {
         <div className="text-center mb-12 fade-up">
             <span className="text-nomad-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4 block">Members Only</span>
             <h1 className="text-4xl md:text-5xl font-serif font-medium mb-3 text-nomad-black">Welcome Back</h1>
-            <p className="text-gray-500 font-sans font-light">Sign in to access your rewards, history, and exclusive roasts.</p>
+            <p className="text-gray-500 font-sans font-light">
+                Sign in to access your rewards. <br/>
+                <span className="text-xs opacity-60">(Hint: Use 'admin@nomad.com' for Admin Panel)</span>
+            </p>
         </div>
 
-        <form className="space-y-6 bg-white p-10 md:p-12 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-white fade-up" style={{ transitionDelay: '0.1s' }}>
+        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-10 md:p-12 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-white fade-up" style={{ transitionDelay: '0.1s' }}>
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Email Address</label>
             <input 
-              type="email" 
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-nomad-gray border border-transparent focus:border-nomad-black rounded-xl px-5 py-4 text-sm focus:outline-none transition-all placeholder:text-gray-300 font-medium" 
               placeholder="name@example.com"
+              required
             />
           </div>
           <div className="space-y-3">
@@ -36,15 +59,11 @@ const Login: React.FC = () => {
               type="password" 
               className="w-full bg-nomad-gray border border-transparent focus:border-nomad-black rounded-xl px-5 py-4 text-sm focus:outline-none transition-all placeholder:text-gray-300 font-medium" 
               placeholder="••••••••"
+              defaultValue="password" // Mock password
             />
           </div>
           
-          <div className="flex items-center space-x-3 cursor-pointer group py-2">
-              <input type="checkbox" id="remember" className="w-4 h-4 accent-nomad-black cursor-pointer rounded border-gray-300" />
-              <label htmlFor="remember" className="text-xs text-gray-500 cursor-pointer group-hover:text-nomad-black select-none font-medium">Keep me signed in</label>
-          </div>
-
-          <button className="w-full bg-nomad-black text-white py-5 rounded-full text-xs font-bold uppercase tracking-[0.2em] hover:bg-nomad-gold transition-colors shadow-lg transform hover:-translate-y-1 duration-200">
+          <button type="submit" className="w-full bg-nomad-black text-white py-5 rounded-full text-xs font-bold uppercase tracking-[0.2em] hover:bg-nomad-gold transition-colors shadow-lg transform hover:-translate-y-1 duration-200">
             Sign In
           </button>
         </form>

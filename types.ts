@@ -9,12 +9,12 @@ export interface Product {
   title: string;
   price: number;
   image: string;
-  hoverImage?: string; // Image to show on hover
-  hoverVideo?: string; // Video to show on hover
+  hoverImage?: string; 
+  hoverVideo?: string; 
   category?: string;
   tags?: string[];
   soldOut?: boolean;
-  subtitle?: string; // For things like "Candy • Lychee • Pineapple"
+  subtitle?: string; 
   roastLevel?: string;
   origin?: string;
   description?: string;
@@ -45,4 +45,50 @@ export interface BlogPost {
 export interface FAQItem {
   question: string;
   answer: string;
+}
+
+// --- NEW TYPES ---
+
+export interface Order {
+  id: string;
+  date: string;
+  customerName: string;
+  email: string;
+  total: number;
+  status: 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+  items: {
+    productId: string;
+    productTitle: string;
+    quantity: number;
+    price: number;
+  }[];
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'customer';
+  wishlist: string[]; // Product IDs
+}
+
+export interface TeamMember {
+  name: string;
+  role: string;
+  img: string;
+}
+
+export interface SiteContent {
+  hero: {
+    title: string;
+    subtitle: string;
+    videoUrl: string;
+    buttonText: string;
+  };
+  contact: {
+    address: string;
+    email: string;
+    phone: string;
+  };
+  team: TeamMember[];
 }

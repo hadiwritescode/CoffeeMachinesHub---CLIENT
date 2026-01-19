@@ -282,7 +282,7 @@ export const GEAR_PRODUCTS: Product[] = [
     hoverVideo: STOCK_VIDEOS.grind,
     soldOut: false,
     category: 'Gear',
-    tags: ['Brewers', 'Aeropress'],
+    tags: ['Brewers', 'Aeropress', 'Accessories'],
     description: 'The iconic coffee press, now in crystal clear shatterproof Tritan. Make delicious American, espresso, and cold brew style coffee.'
   },
   {
@@ -292,7 +292,7 @@ export const GEAR_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1544655615-5654316d2e61?auto=format&fit=crop&q=80&w=800',
     soldOut: false,
     category: 'Gear',
-    tags: ['Brewers', 'Pour Over'],
+    tags: ['Brewers', 'Pour Over', 'Accessories'],
     description: 'The premium copper version of the V60 not only looks stunning but offers superior thermal conductivity for better extraction control.'
   },
   {
@@ -303,7 +303,7 @@ export const GEAR_PRODUCTS: Product[] = [
     hoverVideo: STOCK_VIDEOS.drip,
     soldOut: false,
     category: 'Gear',
-    tags: ['Brewers', 'Pour Over'],
+    tags: ['Brewers', 'Pour Over', 'Accessories'],
     description: 'An elegant, one-piece, hourglass shaped vessel made of high quality, heat resistant glass. Delivers the purest flavor experience.'
   },
   {
@@ -314,7 +314,7 @@ export const GEAR_PRODUCTS: Product[] = [
     hoverVideo: STOCK_VIDEOS.drip,
     soldOut: false,
     category: 'Gear',
-    tags: ['Kettles', 'Brewers'],
+    tags: ['Kettles', 'Brewers', 'Accessories'],
     description: 'The electric pour-over kettle for coffee lovers. Variable temperature control, 1200 watts for a quick heat time, and a world of features for ultimate control.'
   },
   {
@@ -336,8 +336,18 @@ export const GEAR_PRODUCTS: Product[] = [
     hoverVideo: STOCK_VIDEOS.grind,
     soldOut: false,
     category: 'Gear',
-    tags: ['Scales', 'Tools'],
+    tags: ['Scales', 'Tools', 'Accessories'],
     description: 'The professional grade smart scale. Real-time flow-rate indicator and optimized modes for espresso and pour-over.'
+  },
+  {
+    id: 'vitamix-e310',
+    title: 'Vitamix E310 Explorian',
+    price: 110000,
+    image: 'https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&q=80&w=800',
+    soldOut: false,
+    category: 'Gear',
+    tags: ['Blenders', 'Commercial'],
+    description: 'Professional grade performance for the home. Create smoothies, hot soups, and frozen desserts in minutes.'
   },
   {
     id: 'origami-dripper-s',
@@ -347,7 +357,7 @@ export const GEAR_PRODUCTS: Product[] = [
     hoverVideo: STOCK_VIDEOS.drip,
     soldOut: false,
     category: 'Gear',
-    tags: ['Brewers', 'Pour Over'],
+    tags: ['Brewers', 'Pour Over', 'Accessories'],
     description: 'Designed by the founder of Trunk Coffee in Japan, this dripper features 20 ribs that create air channels for a smooth brew.'
   },
   {
@@ -366,7 +376,7 @@ export const GEAR_PRODUCTS: Product[] = [
     price: 11500,
     image: 'https://images.unsplash.com/photo-1563293815-58721c812d1c?auto=format&fit=crop&q=80&w=800',
     category: 'Gear',
-    tags: ['Brewers', 'Pour Over'],
+    tags: ['Brewers', 'Pour Over', 'Accessories'],
     description: 'The flat-bottom geometry facilitates an even extraction that makes brewing a perfect cup accessible and consistent.'
   },
   {
@@ -375,7 +385,7 @@ export const GEAR_PRODUCTS: Product[] = [
     price: 165000,
     image: 'https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=800',
     category: 'Gear',
-    tags: ['Brewers', 'Espresso'],
+    tags: ['Brewers', 'Espresso', 'Machines'],
     description: 'A fully manual, professional grade lever espresso press. Features a heated brew head and standard 58mm portafilter for cafe-quality shots at home.'
   }
 ];

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
-import { ALL_PRODUCTS } from '../constants';
+import { useStore } from '../context/StoreContext';
 import { useSearchParams, Link, useParams } from 'react-router-dom';
 import { ChevronDown, SlidersHorizontal, X, Filter, Search, Check } from 'lucide-react';
 
@@ -12,6 +12,7 @@ const Shop: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('featured');
+  const { products } = useStore();
 
   // Derived state from URL
   const categoryParam = searchParams.get('category');
@@ -35,7 +36,7 @@ const Shop: React.FC = () => {
   }, [isFilterOpen]);
 
   // Filtering Logic
-  let filteredProducts = ALL_PRODUCTS.filter(product => {
+  let filteredProducts = products.filter(product => {
     // 0. Search Filter
     if (searchParam) {
         const query = searchParam.toLowerCase();
@@ -193,7 +194,7 @@ const Shop: React.FC = () => {
                 <div>
                     <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Category</h3>
                     <div className="space-y-3">
-                        {['Coffee', 'Brew Equipment', 'Merchandise'].map(cat => (
+                        {['Coffee', 'Gear', 'Merchandise'].map(cat => (
                             <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
                                 <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${categoryParam === cat ? 'bg-nomad-black border-nomad-black' : 'border-gray-300 group-hover:border-nomad-black'}`}>
                                     {categoryParam === cat && <Check size={12} className="text-white" />}

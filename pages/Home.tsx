@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import CategoryCard from '../components/CategoryCard';
-import { BEST_COFFEES, GEAR_PRODUCTS, BRAND_LOGOS, TESTIMONIALS } from '../constants';
+import { BRAND_LOGOS, TESTIMONIALS } from '../constants';
+import { useStore } from '../context/StoreContext';
 import { ArrowRight, Play, Search, Star, Quote } from 'lucide-react';
 
 const Home: React.FC = () => {
@@ -10,6 +11,7 @@ const Home: React.FC = () => {
   const [heroSearch, setHeroSearch] = useState('');
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const navigate = useNavigate();
+  const { products, siteContent } = useStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,6 +36,10 @@ const Home: React.FC = () => {
   };
 
   const trendingTerms = ['Espresso Machines', 'Commercial Grinders', 'Coffee Blends', 'Barista Accessories'];
+  
+  // Filter products from store for sections
+  const gearProducts = products.filter(p => p.category === 'Gear').slice(0, 5);
+  const coffeeProducts = products.filter(p => p.category === 'Coffee').slice(0, 6);
 
   return (
     <div className="bg-nomad-paper overflow-hidden">
@@ -59,7 +65,7 @@ const Home: React.FC = () => {
                     className="w-full h-full object-cover"
                     poster="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1600"
                 >
-                    <source src="https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+                    <source src={siteContent.hero.videoUrl} type="video/mp4" />
                 </video>
                 <div className="absolute inset-0 bg-nomad-black/40"></div>
             </div>
@@ -67,9 +73,9 @@ const Home: React.FC = () => {
             {/* Hero Content */}
             <div className="relative z-10 container mx-auto px-6 md:px-12 text-center text-white h-full flex flex-col justify-center items-center pt-20">
                 <div className="w-full max-w-6xl mx-auto space-y-12">
-                    {/* Updated Title: One line, smaller font, no overlap */}
+                    {/* Dynamic Title */}
                     <h1 className="text-4xl md:text-6xl lg:text-8xl font-serif font-medium leading-none tracking-tight animate-slide-right whitespace-nowrap" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
-                        Coffee Machines Hub
+                        {siteContent.hero.title}
                     </h1>
 
                     {/* Hero Search Bar */}
@@ -107,7 +113,7 @@ const Home: React.FC = () => {
                             to="/shop" 
                             className="bg-nomad-gold text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-nomad-black transition-all duration-300 min-w-[200px]"
                         >
-                            Shop Now
+                            {siteContent.hero.buttonText}
                         </Link>
                         <Link 
                             to="/about" 
@@ -182,7 +188,7 @@ const Home: React.FC = () => {
            </div>
            
            <div className="flex overflow-x-auto gap-8 pb-10 no-scrollbar snap-x snap-mandatory">
-              {GEAR_PRODUCTS.slice(0, 5).map((product, idx) => (
+              {gearProducts.map((product, idx) => (
                 <div key={product.id} className="min-w-[280px] md:min-w-[340px] snap-center fade-right" style={{ transitionDelay: `${200 + idx * 100}ms` }}>
                   <ProductCard product={product} variant="poster" />
                 </div>
@@ -201,7 +207,7 @@ const Home: React.FC = () => {
            </div>
            
            <div className="flex overflow-x-auto gap-8 pb-10 no-scrollbar snap-x snap-mandatory">
-              {BEST_COFFEES.map((product, idx) => (
+              {coffeeProducts.map((product, idx) => (
                 <div key={product.id} className="min-w-[280px] md:min-w-[320px] snap-center fade-right">
                   <ProductCard product={product} />
                 </div>
