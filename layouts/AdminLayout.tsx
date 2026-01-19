@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee, List, BookOpen, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee, List, BookOpen, Menu, X, Loader2 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import Logo from '../components/Logo';
 
-const { Link, useLocation } = ReactRouterDOM;
+const { Link, useLocation, useNavigate } = ReactRouterDOM;
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -12,8 +12,29 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
-  const { logout } = useStore();
+  const navigate = useNavigate();
+  const { logout, currentUser, loading } = useStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Security Gate
+  useEffect(() => {
+    if (!loading) {
+        if (!currentUser) {
+            navigate('/login');
+        } else if (currentUser.role !== 'admin') {
+            navigate('/profile');
+        }
+    }
+  }, [currentUser, loading, navigate]);
+
+  if (loading || !currentUser || currentUser.role !== 'admin') {
+      return (
+          <div className="min-h-screen bg-nomad-paper flex flex-col items-center justify-center">
+              <Loader2 size={48} className="animate-spin text-nomad-gold mb-4" />
+              <p className="text-nomad-black font-bold uppercase tracking-widest text-xs">Authenticating...</p>
+          </div>
+      );
+  }
 
   const links = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
@@ -27,7 +48,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="flex min-h-screen bg-gray-100 font-sans">
+    <div className="flex min-h-screen bg-gray-100 font-sans animate-fade-in">
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 w-full bg-nomad-black text-white z-40 px-6 py-4 flex justify-between items-center shadow-md">
         <Logo className="h-8 w-auto text-nomad-gold" />
@@ -51,7 +72,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Admin Panel</span>
         </div>
         
-        {/* Mobile Sidebar Header (Visual Balance) */}
         <div className="md:hidden p-6 border-b border-gray-700 pt-20">
            <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Navigation</span>
         </div>
@@ -75,10 +95,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </nav>
 
         <div className="p-4 border-t border-gray-700">
-           <Link to="/" onClick={logout} className="flex items-center space-x-3 px-6 py-4 text-red-400 hover:text-red-300 transition-colors cursor-pointer">
+           <button onClick={() => { logout(); navigate('/'); }} className="w-full flex items-center space-x-3 px-6 py-4 text-red-400 hover:text-red-300 transition-colors cursor-pointer text-left">
               <LogOut size={20} />
               <span className="font-bold text-sm tracking-wide">Log Out</span>
-           </Link>
+           </button>
         </div>
       </aside>
 

@@ -28,7 +28,7 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10); // Lower threshold for quicker reaction
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -44,7 +44,6 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     if (searchOpen) {
-        // Slight delay to allow animation to start
         setTimeout(() => searchInputRef.current?.focus(), 100);
     }
     
@@ -84,9 +83,9 @@ const Header: React.FC = () => {
       return 'bg-nomad-paper/95 backdrop-blur-md shadow-sm py-3 text-nomad-black';
     }
     if (isTransparentRoute && !mobileMenuOpen) {
-      return 'bg-transparent py-6 text-white hover:bg-nomad-black/10';
+      return 'bg-transparent py-4 md:py-6 text-white hover:bg-nomad-black/10';
     }
-    return 'bg-nomad-paper py-5 text-nomad-black shadow-sm border-b border-nomad-black/5';
+    return 'bg-nomad-paper py-4 md:py-5 text-nomad-black shadow-sm border-b border-nomad-black/5';
   };
 
   const getLogoFill = () => {
@@ -105,22 +104,24 @@ const Header: React.FC = () => {
       >
         <div className="container mx-auto px-6 md:px-12 flex items-center justify-between relative">
           
-          {/* Mobile Toggle */}
-          <button 
-            className="md:hidden mr-4 focus:outline-none transition-colors p-1"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle Menu"
-          >
-            {mobileMenuOpen ? <X size={24} className="text-nomad-black z-50 relative" /> : <Menu size={24} />}
-          </button>
+          {/* Mobile Toggle & Logo Group */}
+          <div className="flex items-center gap-4 md:hidden z-[60]">
+            <button 
+                className="focus:outline-none transition-colors p-1"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Toggle Menu"
+            >
+                {mobileMenuOpen ? <X size={24} className="text-nomad-black" /> : <Menu size={24} />}
+            </button>
+          </div>
 
-          {/* Logo */}
+          {/* Logo - Centered on mobile, Left on Desktop */}
           <Link 
             to="/" 
-            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:transform-none md:translate-x-0 md:translate-y-0 z-50 transition-transform duration-300 hover:scale-105"
+            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:transform-none md:translate-x-0 md:translate-y-0 z-50"
           >
             <Logo 
-                className={`transition-all duration-300 ${isScrolled ? 'h-12 md:h-16 w-auto' : 'h-16 md:h-20 w-auto'}`} 
+                className={`transition-all duration-300 ${isScrolled ? 'h-10 md:h-16 w-auto' : 'h-12 md:h-20 w-auto'}`} 
                 fill={mobileMenuOpen ? '#3B261B' : getLogoFill()}
             />
           </Link>
@@ -221,9 +222,9 @@ const Header: React.FC = () => {
         >
             <button 
                 onClick={() => setSearchOpen(false)}
-                className="absolute top-8 right-8 text-nomad-black hover:text-nomad-gold transition-colors p-2"
+                className="absolute top-6 right-6 md:top-8 md:right-8 text-nomad-black hover:text-nomad-gold transition-colors p-2"
             >
-                <X size={40} strokeWidth={0.5} />
+                <X size={32} strokeWidth={0.5} className="md:w-10 md:h-10" />
             </button>
             
             <div className="w-full max-w-4xl px-6 animate-slide-up">
@@ -234,15 +235,15 @@ const Header: React.FC = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Type to search..." 
-                        className="w-full bg-transparent border-b border-gray-300 py-6 text-3xl md:text-5xl font-serif font-medium text-center focus:outline-none focus:border-nomad-black transition-colors placeholder:text-gray-300 text-nomad-black"
+                        className="w-full bg-transparent border-b border-gray-300 py-4 md:py-6 text-2xl md:text-5xl font-serif font-medium text-center focus:outline-none focus:border-nomad-black transition-colors placeholder:text-gray-300 text-nomad-black"
                     />
-                    <button type="submit" className="absolute right-0 top-1/2 -translate-y-1/2 p-4 text-gray-400 hover:text-nomad-gold transition-colors">
-                        <ArrowRight size={32} strokeWidth={1} />
+                    <button type="submit" className="absolute right-0 top-1/2 -translate-y-1/2 p-2 md:p-4 text-gray-400 hover:text-nomad-gold transition-colors">
+                        <ArrowRight size={24} strokeWidth={1} className="md:w-8 md:h-8" />
                     </button>
                 </form>
-                <div className="mt-12 text-center">
-                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-6">Trending Now</p>
-                    <div className="flex flex-wrap justify-center gap-4">
+                <div className="mt-8 md:mt-12 text-center">
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4 md:mb-6">Trending Now</p>
+                    <div className="flex flex-wrap justify-center gap-3 md:gap-4">
                         {['Espresso', 'Hario V60', 'Ethiopia', 'Decaf', 'Scale'].map(term => (
                             <button 
                                 key={term}
@@ -251,7 +252,7 @@ const Header: React.FC = () => {
                                     navigate(`/shop?search=${term}`);
                                     setSearchOpen(false);
                                 }}
-                                className="px-6 py-3 bg-white border border-gray-100 rounded-full text-sm font-medium text-gray-600 hover:bg-nomad-black hover:text-white transition-all duration-300 hover:-translate-y-0.5"
+                                className="px-4 py-2 md:px-6 md:py-3 bg-white border border-gray-100 rounded-full text-xs md:text-sm font-medium text-gray-600 hover:bg-nomad-black hover:text-white transition-all duration-300 hover:-translate-y-0.5"
                             >
                                 {term}
                             </button>
@@ -265,12 +266,10 @@ const Header: React.FC = () => {
         <div className={`fixed inset-0 bg-nomad-black/60 backdrop-blur-sm z-[55] transition-opacity duration-300 md:hidden ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setMobileMenuOpen(false)}></div>
         
         {/* Mobile Menu Content */}
-        <div className={`fixed inset-y-0 left-0 w-[90%] max-w-sm h-[100dvh] bg-nomad-paper z-[60] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={`fixed inset-y-0 left-0 w-[85%] max-w-sm h-[100dvh] bg-nomad-paper z-[60] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="p-6 flex justify-between items-center border-b border-gray-200 bg-nomad-paper shrink-0">
-             <Logo className="h-14 w-auto" fill="#3B261B" />
-             <button onClick={() => setMobileMenuOpen(false)} className="text-nomad-black p-2 hover:rotate-90 transition-transform duration-300">
-                 <X size={24} />
-             </button>
+             <Logo className="h-10 w-auto" fill="#3B261B" />
+             {/* Close button handled by header toggle, but can add redundant close here if needed, or rely on outer click */}
           </div>
           <div className="flex-grow overflow-y-auto p-6 space-y-1">
              {NAVIGATION_LINKS.map((link) => (

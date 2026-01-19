@@ -10,15 +10,15 @@ const Footer: React.FC = () => {
   const { siteContent } = useStore();
 
   return (
-    <footer className="w-full bg-nomad-black text-nomad-paper pt-20 pb-10">
+    <footer className="w-full bg-nomad-black text-nomad-paper pt-16 md:pt-20 pb-10">
       <div className="container mx-auto px-6 md:px-12">
         
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 mb-12 md:mb-16 items-start">
             
             {/* Brand Column */}
             <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left">
                 <div className="mb-6 inline-block">
-                    <Logo className="h-32 w-auto text-nomad-gold" />
+                    <Logo className="h-24 md:h-32 w-auto text-nomad-gold" />
                 </div>
                 <h2 className="text-2xl font-serif font-bold text-nomad-gold mb-4">
                   Coffee Machines Hub

@@ -129,7 +129,7 @@ const Shop: React.FC = () => {
     <div className="animate-fade-in min-h-screen bg-nomad-paper">
       
       {/* Editorial Header */}
-      <div className="bg-nomad-black text-white pt-32 md:pt-40 pb-16 md:pb-20 rounded-b-[2rem] md:rounded-b-[3rem] shadow-xl relative overflow-hidden">
+      <div className="bg-nomad-black text-white pt-28 md:pt-40 pb-16 md:pb-20 rounded-b-[2rem] md:rounded-b-[3rem] shadow-xl relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
         <div className="container mx-auto px-6 md:px-12 text-center md:text-left relative z-10">
            <span className="block text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-4 md:mb-6 animate-slide-up">Collection</span>
@@ -143,9 +143,9 @@ const Shop: React.FC = () => {
       </div>
 
       {/* Sticky Filter Bar */}
-      <div className="sticky top-[64px] z-30 bg-nomad-paper/95 backdrop-blur-md border-b border-gray-200 transition-all duration-300">
-        <div className="container mx-auto px-6 md:px-12 py-4 flex flex-row justify-between items-center gap-4">
-           <div className="flex items-center space-x-4 md:space-x-6">
+      <div className="sticky top-[72px] md:top-[74px] z-30 bg-nomad-paper/95 backdrop-blur-md border-b border-gray-200 transition-all duration-300">
+        <div className="container mx-auto px-6 md:px-12 py-3 md:py-4 flex flex-row justify-between items-center gap-4">
+           <div className="flex items-center space-x-2 md:space-x-6">
                 <button 
                   onClick={() => setIsFilterOpen(true)}
                   className="flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors group bg-white md:bg-transparent px-4 py-2 md:p-0 rounded-full border border-gray-100 md:border-none shadow-sm md:shadow-none"
@@ -153,7 +153,7 @@ const Shop: React.FC = () => {
                     <SlidersHorizontal size={14} className="mr-2" /> Filter
                 </button>
                 {(searchParam || categoryParam || subcategoryParam) && (
-                    <button onClick={clearFilters} className="hidden md:flex items-center text-xs font-bold uppercase tracking-widest text-red-400 hover:text-red-600 transition-colors">
+                    <button onClick={clearFilters} className="flex items-center text-xs font-bold uppercase tracking-widest text-red-400 hover:text-red-600 transition-colors">
                         <X size={14} className="mr-1" /> Clear
                     </button>
                 )}
@@ -167,13 +167,13 @@ const Shop: React.FC = () => {
                     onClick={() => setIsSortOpen(!isSortOpen)}
                     className="flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors group"
                   >
-                        Sort by <span className="hidden md:inline ml-1 text-gray-400 font-normal capitalize">({sortBy})</span>
+                        Sort <span className="hidden md:inline text-inherit">by</span> <span className="hidden md:inline ml-1 text-gray-400 font-normal capitalize">({sortBy})</span>
                         <ChevronDown size={14} className={`ml-1 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
                   {/* Sort Dropdown */}
                   {isSortOpen && (
-                    <div className="absolute right-0 top-full mt-4 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-40 animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute right-0 top-full mt-4 w-40 md:w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-40 animate-in fade-in slide-in-from-top-2">
                         {[
                           { label: 'Featured', value: 'featured' },
                           { label: 'Newest', value: 'newest' }

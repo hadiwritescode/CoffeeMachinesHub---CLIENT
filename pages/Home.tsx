@@ -51,11 +51,11 @@ const Home: React.FC = () => {
     <div className="bg-nomad-paper overflow-hidden">
       
       {/* Hero Section Spacer */}
-      <div className="relative w-full h-[90vh] md:h-[100vh]">
+      <div className="relative w-full h-[100dvh]">
         
         {/* Fixed Hero Content */}
         <div 
-            className="fixed top-0 left-0 w-full h-[90vh] md:h-[100vh] flex items-center justify-center overflow-hidden z-0"
+            className="fixed top-0 left-0 w-full h-[100dvh] flex items-center justify-center overflow-hidden z-0"
             style={{ 
                 opacity: Math.max(0, 1 - scrollY / 900),
                 pointerEvents: scrollY > 800 ? 'none' : 'auto'
@@ -78,9 +78,9 @@ const Home: React.FC = () => {
 
             {/* Hero Content */}
             <div className="relative z-10 container mx-auto px-6 md:px-12 text-center text-white h-full flex flex-col justify-center items-center pt-20">
-                <div className="w-full max-w-6xl mx-auto space-y-12">
+                <div className="w-full max-w-6xl mx-auto space-y-8 md:space-y-12">
                     {/* Dynamic Title */}
-                    <h1 className="text-4xl md:text-6xl lg:text-8xl font-serif font-medium leading-none tracking-tight animate-slide-right whitespace-nowrap" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
+                    <h1 className="text-4xl md:text-6xl lg:text-8xl font-serif font-medium leading-tight md:leading-none tracking-tight animate-slide-right whitespace-normal md:whitespace-nowrap" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
                         {siteContent.hero.title}
                     </h1>
 
@@ -91,22 +91,22 @@ const Home: React.FC = () => {
                                 type="text"
                                 value={heroSearch}
                                 onChange={(e) => setHeroSearch(e.target.value)}
-                                placeholder="Search machines, grinders, and more..."
-                                className="w-full bg-white/10 backdrop-blur-xl border border-white/30 rounded-full py-5 px-10 text-white placeholder:text-white/60 focus:outline-none focus:bg-white/20 focus:border-white transition-all duration-300 text-lg md:text-xl shadow-2xl text-center md:text-left"
+                                placeholder="Search machines, grinders..."
+                                className="w-full bg-white/10 backdrop-blur-xl border border-white/30 rounded-full py-4 px-8 md:py-5 md:px-10 text-white placeholder:text-white/60 focus:outline-none focus:bg-white/20 focus:border-white transition-all duration-300 text-base md:text-xl shadow-2xl text-center md:text-left"
                             />
-                            <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 bg-nomad-gold text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-white hover:text-nomad-black transition-all">
-                                <Search size={24} />
+                            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-nomad-gold text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center hover:bg-white hover:text-nomad-black transition-all">
+                                <Search size={20} className="md:w-6 md:h-6" />
                             </button>
                         </form>
                         
                         {/* Recommendations */}
-                        <div className="mt-6 flex flex-wrap justify-center gap-3">
+                        <div className="mt-6 flex flex-wrap justify-center gap-2 md:gap-3">
                             <span className="text-xs font-bold uppercase tracking-widest text-white/50 w-full mb-2 block">Trending</span>
                             {trendingTerms.map(term => (
                                 <button 
                                     key={term}
                                     onClick={() => navigate(`/shop?search=${encodeURIComponent(term)}`)}
-                                    className="px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-nomad-black transition-all"
+                                    className="px-3 py-1.5 md:px-4 md:py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-nomad-black transition-all"
                                 >
                                     {term}
                                 </button>
@@ -117,16 +117,16 @@ const Home: React.FC = () => {
                     <div className="flex flex-col md:flex-row gap-4 justify-center items-center animate-slide-up" style={{ animationDelay: '1.1s', opacity: 0, animationFillMode: 'forwards' }}>
                         <Link 
                             to="/shop" 
-                            className="bg-nomad-gold text-white px-10 py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-nomad-black transition-all duration-300 min-w-[200px]"
+                            className="bg-nomad-gold text-white px-8 py-3 md:px-10 md:py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-nomad-black transition-all duration-300 w-full md:w-auto min-w-[200px]"
                         >
                             {siteContent.hero.buttonText}
                         </Link>
                         <Link 
                             to="/about" 
-                            className="group flex items-center gap-3 text-white px-10 py-4 text-xs font-bold tracking-[0.2em] uppercase hover:text-nomad-gold transition-colors duration-300"
+                            className="group flex items-center justify-center gap-3 text-white px-8 py-3 md:px-10 md:py-4 text-xs font-bold tracking-[0.2em] uppercase hover:text-nomad-gold transition-colors duration-300"
                         >
-                            <span className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center group-hover:border-nomad-gold transition-colors bg-white/5 backdrop-blur-sm">
-                                <Play size={12} fill="currentColor" className="ml-0.5" />
+                            <span className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/30 flex items-center justify-center group-hover:border-nomad-gold transition-colors bg-white/5 backdrop-blur-sm">
+                                <Play size={10} fill="currentColor" className="ml-0.5 md:w-3 md:h-3" />
                             </span>
                             About Us
                         </Link>
@@ -137,14 +137,14 @@ const Home: React.FC = () => {
       </div>
 
       {/* Marquee Banner */}
-      <div className="relative z-10 bg-nomad-gold text-white py-4 overflow-hidden -mt-1 rounded-t-[2rem] animate-slide-up" style={{ animationDelay: '1.3s', opacity: 0, animationFillMode: 'forwards' }}>
+      <div className="relative z-10 bg-nomad-gold text-white py-3 md:py-4 overflow-hidden -mt-1 rounded-t-[2rem] animate-slide-up" style={{ animationDelay: '1.3s', opacity: 0, animationFillMode: 'forwards' }}>
          <div className="flex animate-marquee whitespace-nowrap [animation-duration:15s] md:[animation-duration:25s]">
             {[...Array(10)].map((_, i) => (
-                <div key={i} className="flex items-center mx-8">
-                    <span className="text-xs font-bold uppercase tracking-[0.3em]">Free Shipping on Orders Over Rs. 5000</span>
-                    <span className="mx-8 text-white/50">•</span>
-                    <span className="text-xs font-bold uppercase tracking-[0.3em]">Direct Import from Italy</span>
-                    <span className="mx-8 text-white/50">•</span>
+                <div key={i} className="flex items-center mx-4 md:mx-8">
+                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em]">Free Shipping on Orders Over Rs. 5000</span>
+                    <span className="mx-4 md:mx-8 text-white/50">•</span>
+                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em]">Direct Import from Italy</span>
+                    <span className="mx-4 md:mx-8 text-white/50">•</span>
                 </div>
             ))}
          </div>
@@ -153,7 +153,7 @@ const Home: React.FC = () => {
       {/* Categories Photo Section */}
       <section className="relative z-10 py-16 md:py-24 bg-nomad-paper">
         <div className="container mx-auto px-6 md:px-12">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-12 gap-6">
             <div className="max-w-xl text-center md:text-left mx-auto md:mx-0">
                 <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block fade-right">Collections</span>
                 <h2 className="text-4xl md:text-5xl font-serif font-bold text-nomad-black fade-right leading-tight">Curated Excellence</h2>
@@ -163,7 +163,7 @@ const Home: React.FC = () => {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-[120vh] md:h-[60vh]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 h-[120vh] md:h-[60vh]">
              {[
                 { title: "Machines", image: "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=800", video: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4" },
                 { title: "Grinders", image: "https://images.unsplash.com/photo-1618116523910-1840b2f69830?auto=format&fit=crop&q=80&w=800", video: "https://videos.pexels.com/video-files/4443026/4443026-uhd_2560_1440_25fps.mp4" },
@@ -179,41 +179,53 @@ const Home: React.FC = () => {
                 </div>
              ))}
           </div>
+          <div className="mt-8 flex justify-center md:hidden">
+              <Link to="/shop" className="items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors pb-1 border-b border-nomad-black hover:border-nomad-gold inline-flex">
+                  View All Categories <ArrowRight size={14} className="ml-2" />
+              </Link>
+          </div>
         </div>
       </section>
 
       {/* Featured Collection - Top Rated Machines */}
-      <section className="relative z-10 py-24 bg-white rounded-t-[3rem] -mt-12 shadow-2xl overflow-hidden">
-        <div className="container mx-auto px-6 md:px-12">
-           <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+      <section className="relative z-10 py-16 md:py-24 bg-white rounded-t-[3rem] -mt-12 shadow-2xl overflow-hidden">
+        <div className="container mx-auto px-0 md:px-12">
+           <div className="flex flex-col md:flex-row items-center justify-between mb-8 md:mb-12 gap-6 px-6 md:px-0">
              <h2 className="text-3xl md:text-5xl font-serif font-medium text-nomad-black fade-right text-center md:text-left">Top Rated Machines</h2>
-             <Link to="/shop?category=Machines" className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors fade-right whitespace-nowrap">
+             <Link to="/shop?category=Machines" className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors fade-right whitespace-nowrap hidden md:inline-block">
                 View Catalog
              </Link>
            </div>
            
-           <div className="flex overflow-x-auto gap-8 pb-10 no-scrollbar snap-x snap-mandatory">
+           {/* Mobile Horizontal Scroll Snap */}
+           <div className="flex overflow-x-auto gap-4 md:gap-8 pb-10 no-scrollbar snap-x snap-mandatory px-6 md:px-0 scroll-pl-6">
               {machineProducts.map((product, idx) => (
-                <div key={product.id} className="min-w-[280px] md:min-w-[340px] snap-center fade-right" style={{ transitionDelay: `${200 + idx * 100}ms` }}>
+                <div key={product.id} className="min-w-[260px] md:min-w-[340px] snap-start fade-right" style={{ transitionDelay: `${200 + idx * 100}ms` }}>
                   <ProductCard product={product} variant="poster" />
                 </div>
               ))}
+           </div>
+           
+           <div className="px-6 md:hidden text-center mt-2">
+             <Link to="/shop?category=Machines" className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors">
+                View Catalog
+             </Link>
            </div>
         </div>
       </section>
 
       {/* Curated Favorites (Managed via Admin) */}
-      <section className="relative z-10 py-24 bg-white border-t border-gray-100">
-        <div className="container mx-auto px-6 md:px-12">
-           <div className="text-center max-w-2xl mx-auto mb-16">
+      <section className="relative z-10 py-16 md:py-24 bg-white border-t border-gray-100">
+        <div className="container mx-auto px-0 md:px-12">
+           <div className="text-center max-w-2xl mx-auto mb-12 px-6">
                <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block">Essentials</span>
                <h2 className="text-3xl md:text-5xl font-serif font-medium mb-4 text-nomad-black">Curated Favorites</h2>
                <p className="text-gray-500 text-lg font-light">Hand-picked selections that our community loves the most.</p>
            </div>
            
-           <div className="flex overflow-x-auto gap-8 pb-10 no-scrollbar snap-x snap-mandatory">
+           <div className="flex overflow-x-auto gap-4 md:gap-8 pb-10 no-scrollbar snap-x snap-mandatory px-6 md:px-0 scroll-pl-6">
               {displayFavorites.map((product, idx) => (
-                <div key={product.id} className="min-w-[280px] md:min-w-[320px] snap-center fade-right">
+                <div key={product.id} className="min-w-[260px] md:min-w-[320px] snap-start fade-right">
                   <ProductCard product={product} />
                 </div>
               ))}
@@ -222,7 +234,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Opposite Rotating Brand Logos */}
-      <section className="relative z-10 py-24 bg-nomad-paper border-t border-gray-100 overflow-hidden">
+      <section className="relative z-10 py-16 md:py-24 bg-nomad-paper border-t border-gray-100 overflow-hidden">
         <div className="container mx-auto px-6 md:px-12 mb-12">
            <p className="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase text-center fade-right">Trusted Partners & Global Brands</p>
         </div>
@@ -231,7 +243,7 @@ const Home: React.FC = () => {
             {/* Top Row - Moves Left */}
             <div className="flex animate-marquee whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700 [animation-duration:10s] md:[animation-duration:25s]">
                 {[...siteContent.home.brands, ...siteContent.home.brands].map((brand, idx) => (
-                    <span key={`top-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-16 hover:text-nomad-gold cursor-default transition-colors">
+                    <span key={`top-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-8 md:mx-16 hover:text-nomad-gold cursor-default transition-colors">
                         {brand}
                     </span>
                 ))}
@@ -240,7 +252,7 @@ const Home: React.FC = () => {
             {/* Bottom Row - Moves Right */}
             <div className="flex animate-marquee-reverse whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700 [animation-duration:10s] md:[animation-duration:25s]">
                 {[...siteContent.home.brands, ...siteContent.home.brands].map((brand, idx) => (
-                    <span key={`bottom-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-16 hover:text-nomad-gold cursor-default transition-colors">
+                    <span key={`bottom-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-8 md:mx-16 hover:text-nomad-gold cursor-default transition-colors">
                         {brand}
                     </span>
                 ))}
@@ -266,7 +278,7 @@ const Home: React.FC = () => {
                         <div className="flex gap-1 mb-6">
                             {[...Array(t.rating)].map((_, i) => <Star key={i} size={20} fill="#B08B5B" stroke="none" />)}
                         </div>
-                        <p className="text-2xl md:text-3xl font-serif italic text-nomad-black mb-8 leading-relaxed">
+                        <p className="text-xl md:text-3xl font-serif italic text-nomad-black mb-8 leading-relaxed px-4">
                             "{t.text}"
                         </p>
                         <div className="space-y-1">

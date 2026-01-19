@@ -129,16 +129,16 @@ const ProductDetail = () => {
   const features = getFeatures(product);
 
   return (
-    <div className="pt-32 pb-20 animate-fade-in bg-nomad-paper min-h-screen">
+    <div className="pt-24 md:pt-32 pb-20 animate-fade-in bg-nomad-paper min-h-screen">
       
       {/* Toast Notification */}
       {showToast && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[70] animate-toast-in">
-           <div className="bg-nomad-black text-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-4">
-              <CheckCircle size={20} className="text-nomad-gold" />
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[70] animate-toast-in w-[90%] md:w-auto">
+           <div className="bg-nomad-black text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-4">
+              <CheckCircle size={20} className="text-nomad-gold shrink-0" />
               <div className="flex flex-col">
                   <span className="text-sm font-bold tracking-wide">Saved to Wishlist</span>
-                  <span className="text-xs text-gray-400">{product.title}</span>
+                  <span className="text-xs text-gray-400 line-clamp-1">{product.title}</span>
               </div>
            </div>
         </div>
@@ -147,19 +147,19 @@ const ProductDetail = () => {
       <div className="container mx-auto px-6 md:px-12 max-w-7xl">
         
         {/* Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-[10px] text-gray-400 mb-8 font-bold uppercase tracking-[0.2em] fade-up flex-wrap gap-y-2">
+        <div className="flex items-center space-x-2 text-[10px] text-gray-400 mb-6 md:mb-8 font-bold uppercase tracking-[0.2em] fade-up flex-wrap gap-y-2">
           <Link to="/" className="hover:text-nomad-black transition-colors">Home</Link>
           <span>/</span>
           <Link to="/shop" className="hover:text-nomad-black transition-colors">Shop</Link>
           <span>/</span>
-          <span className="text-nomad-black">{product.title}</span>
+          <span className="text-nomad-black line-clamp-1">{product.title}</span>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-12 xl:gap-24 mb-24 fade-up" style={{ transitionDelay: '0.1s' }}>
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 xl:gap-24 mb-16 md:mb-24 fade-up" style={{ transitionDelay: '0.1s' }}>
           
           {/* Left Side: Image Gallery */}
-          <div className="w-full lg:w-[55%] flex flex-col gap-6">
-             <div className="bg-[#F9F9F9] rounded-[2rem] overflow-hidden w-full aspect-[4/5] relative group shadow-sm">
+          <div className="w-full lg:w-[55%] flex flex-col gap-4 md:gap-6">
+             <div className="bg-[#F9F9F9] rounded-[2rem] overflow-hidden w-full aspect-[4/5] md:aspect-square lg:aspect-[4/5] relative group shadow-sm">
                 <img src={currentImage} alt={product.title} className="w-full h-full object-cover transition-transform duration-700" />
                 {product.soldOut && (
                   <div className="absolute top-6 left-6 bg-white/90 backdrop-blur px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-gray-100">
@@ -170,7 +170,7 @@ const ProductDetail = () => {
              
              {/* Thumbnail Grid */}
              {images.length > 1 && (
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-4 gap-2 md:gap-4">
                     {images.map((img, idx) => (
                         <button 
                             key={idx} 
@@ -195,10 +195,10 @@ const ProductDetail = () => {
                     </div>
                 </div>
 
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium mb-6 text-nomad-black leading-none">{product.title}</h1>
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium mb-4 md:mb-6 text-nomad-black leading-none">{product.title}</h1>
                 
-                <div className="flex items-center gap-6 mb-8 border-b border-gray-100 pb-8">
-                  <div className="flex items-center gap-2 text-xl font-bold text-green-600 uppercase tracking-wider">
+                <div className="flex flex-wrap items-center gap-4 md:gap-6 mb-6 md:mb-8 border-b border-gray-100 pb-6 md:pb-8">
+                  <div className="flex items-center gap-2 text-lg md:text-xl font-bold text-green-600 uppercase tracking-wider">
                       <MessageCircle size={24} />
                       WhatsApp for Price
                   </div>
@@ -210,13 +210,13 @@ const ProductDetail = () => {
                 </div>
 
                 {product.subtitle && (
-                  <div className="text-gray-600 mb-8 font-medium leading-relaxed text-lg">
+                  <div className="text-gray-600 mb-6 md:mb-8 font-medium leading-relaxed text-base md:text-lg">
                     {product.subtitle}
                   </div>
                 )}
                 
                 {product.description && (
-                  <p className="text-gray-500 mb-10 leading-relaxed font-light">
+                  <p className="text-gray-500 mb-8 md:mb-10 leading-relaxed font-light text-sm md:text-base">
                     {product.description}
                   </p>
                 )}
@@ -224,10 +224,10 @@ const ProductDetail = () => {
                 {/* Selectors */}
                 {!product.soldOut && (
                   <>
-                    <div className="flex flex-col sm:flex-row gap-4 mb-12">
+                    <div className="flex flex-col sm:flex-row gap-4 mb-8 md:mb-12">
                         <button 
                             onClick={handleWhatsAppClick}
-                            className="flex-grow bg-green-600 text-white py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-green-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200 flex items-center justify-center gap-3"
+                            className="flex-grow bg-green-600 text-white py-4 md:py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-green-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200 flex items-center justify-center gap-3"
                         >
                             <MessageCircle size={20} />
                             Order via WhatsApp
@@ -259,7 +259,7 @@ const ProductDetail = () => {
                           className={`w-full py-5 px-6 flex items-center justify-between text-left transition-colors ${isOpen ? 'bg-nomad-paper/30' : 'hover:bg-gray-50'}`}
                         >
                           <div className="flex items-center gap-4">
-                             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isOpen ? 'bg-nomad-gold text-white' : 'bg-nomad-gold/10 text-nomad-gold'}`}>
+                             <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-colors ${isOpen ? 'bg-nomad-gold text-white' : 'bg-nomad-gold/10 text-nomad-gold'}`}>
                                 <Icon size={20} strokeWidth={1.5} />
                              </div>
                              <span className={`font-serif font-bold text-base ${isOpen ? 'text-nomad-black' : 'text-gray-700'}`}>
@@ -289,12 +289,12 @@ const ProductDetail = () => {
         </div>
 
         {/* You May Also Like */}
-        <div className="pt-24 border-t border-gray-200">
-           <div className="text-center mb-16">
+        <div className="pt-16 md:pt-24 border-t border-gray-200">
+           <div className="text-center mb-12 md:mb-16">
               <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block">Complete Your Setup</span>
               <h3 className="text-3xl font-serif font-bold">You Might Also Like</h3>
            </div>
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {relatedProducts.map(p => (
                  <div key={p.id}>
                     <ProductCard product={p} />
