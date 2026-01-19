@@ -1,116 +1,143 @@
 import React, { useState } from 'react';
-import { FAQS } from '../constants';
-import { Plus, Minus, Instagram } from 'lucide-react';
+import { MapPin, Mail, Phone, Clock, Send, Map } from 'lucide-react';
 
 const Contact: React.FC = () => {
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
 
-  const toggleFaq = (index: number) => {
-    setOpenFaqIndex(openFaqIndex === index ? null : index);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Use WhatsApp for message submission demo
+    const whatsappMessage = `Name: ${formData.name}%0AEmail: ${formData.email}%0AMessage: ${formData.message}`;
+    window.open(`https://wa.me/923104811011?text=${whatsappMessage}`, '_blank');
   };
 
   return (
-    <div className="animate-fade-in bg-nomad-paper pt-32">
-      {/* Header */}
-      <div className="container mx-auto px-6 md:px-12 py-12 text-center fade-up">
-         <span className="block text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-4">We're here to help</span>
-         <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 text-nomad-black">Get in Touch</h1>
-         <p className="text-gray-500 max-w-xl mx-auto text-lg">Have a question about our beans, shipping, or brewing equipment? Our team of coffee experts is ready to assist.</p>
-      </div>
+    <div className="animate-fade-in bg-nomad-paper pt-32 pb-20 min-h-screen">
+      <div className="container mx-auto px-6 md:px-12 max-w-7xl">
+        
+        {/* Header */}
+        <div className="text-center mb-16 fade-up">
+           <span className="text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-4 block">Get in Touch</span>
+           <h1 className="text-5xl md:text-6xl font-serif font-bold mb-6 text-nomad-black">Contact Us</h1>
+           <p className="text-gray-500 text-lg max-w-xl mx-auto">
+             Have questions about our machines or need brewing advice? We're here to help.
+           </p>
+        </div>
 
-      {/* Main Content: Map & Details */}
-      <div className="container mx-auto px-6 md:px-12 py-12">
-        <div className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col lg:flex-row fade-up">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
           
-          {/* Left: Map */}
-          <div className="w-full lg:w-1/2 min-h-[400px] lg:min-h-[650px] relative order-2 lg:order-1">
-             <iframe 
-               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3401.830694063854!2d74.29177197623126!3d31.49129534769024!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x391903d6d6014387%3A0x6b6697479707963!2sCity%20Star%20Mall!5e0!3m2!1sen!2s!4v1705678901234!5m2!1sen!2s" 
-               width="100%" 
-               height="100%" 
-               style={{ border: 0 }} 
-               allowFullScreen 
-               loading="lazy" 
-               referrerPolicy="no-referrer-when-downgrade"
-               className="absolute inset-0 grayscale hover:grayscale-0 transition-all duration-500"
-               title="Map Location"
-             ></iframe>
+          {/* Left Column: Info Cards */}
+          <div className="w-full lg:w-1/3 flex flex-col gap-6 fade-up">
+            
+            {/* Address Card */}
+            <div className="bg-white p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow group">
+               <div className="w-12 h-12 bg-nomad-paper rounded-full flex items-center justify-center mb-6 text-nomad-gold group-hover:bg-nomad-gold group-hover:text-white transition-colors">
+                  <MapPin size={24} />
+               </div>
+               <h3 className="font-serif font-bold text-xl mb-4 text-nomad-black">Visit Us</h3>
+               <p className="text-gray-500 mb-6 leading-relaxed">
+                 G-22, City Star Mall,<br/>
+                 Model Town Link Road,<br/>
+                 Lahore, Pakistan
+               </p>
+               <a 
+                 href="https://www.google.com/maps/search/?api=1&query=City+Star+Mall+Model+Town+Link+Road+Lahore" 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="inline-flex items-center text-xs font-bold uppercase tracking-widest text-nomad-gold hover:text-nomad-black transition-colors border-b border-nomad-gold pb-1 hover:border-nomad-black"
+               >
+                 <Map size={14} className="mr-2" />
+                 View on Map
+               </a>
+            </div>
+
+            {/* Contact Card */}
+            <div className="bg-white p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow group">
+               <div className="w-12 h-12 bg-nomad-paper rounded-full flex items-center justify-center mb-6 text-nomad-gold group-hover:bg-nomad-gold group-hover:text-white transition-colors">
+                  <Mail size={24} />
+               </div>
+               <h3 className="font-serif font-bold text-xl mb-4 text-nomad-black">Contact</h3>
+               <div className="space-y-2">
+                 <a href="mailto:Coffeemachineshub@gmail.com" className="block text-gray-500 hover:text-nomad-gold transition-colors">
+                   Coffeemachineshub@gmail.com
+                 </a>
+                 <a href="tel:+923104811011" className="block text-gray-500 hover:text-nomad-gold transition-colors">
+                   +92 310 481 1011
+                 </a>
+               </div>
+            </div>
+
+            {/* Hours Card (3rd Card) */}
+            <div className="bg-white p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow group">
+               <div className="w-12 h-12 bg-nomad-paper rounded-full flex items-center justify-center mb-6 text-nomad-gold group-hover:bg-nomad-gold group-hover:text-white transition-colors">
+                  <Clock size={24} />
+               </div>
+               <h3 className="font-serif font-bold text-xl mb-4 text-nomad-black">Opening Hours</h3>
+               <p className="text-gray-500 mb-1">Mon - Sat: 11:00 AM - 10:00 PM</p>
+               <p className="text-gray-400 text-sm">Sunday: Closed</p>
+            </div>
+
           </div>
 
-          {/* Right: Details */}
-          <div className="w-full lg:w-1/2 p-10 md:p-16 lg:p-20 flex flex-col justify-center order-1 lg:order-2">
-             <h2 className="font-serif font-bold text-4xl lg:text-5xl mb-6 text-nomad-black">Reach Out to Us</h2>
-             <div className="w-20 h-1.5 bg-nomad-gold mb-8"></div>
-             
-             <p className="text-gray-600 text-lg leading-relaxed mb-12">
-               We’re here to assist you with any questions or concerns regarding your coffee machine needs.
-             </p>
+          {/* Right Column: Form */}
+          <div className="w-full lg:w-2/3 fade-up" style={{ transitionDelay: '0.1s' }}>
+             <div className="bg-white p-8 md:p-12 lg:p-16 rounded-[2.5rem] shadow-xl h-full">
+                <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8 text-nomad-black">Send us a message</h2>
+                
+                <form onSubmit={handleSubmit} className="space-y-8">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Name</label>
+                         <input 
+                           type="text"
+                           value={formData.name}
+                           onChange={(e) => setFormData({...formData, name: e.target.value})}
+                           placeholder="Your name"
+                           className="w-full bg-nomad-paper border-0 rounded-xl px-6 py-4 focus:ring-2 focus:ring-nomad-gold/20 transition-all placeholder:text-gray-300 text-nomad-black font-medium"
+                           required
+                         />
+                      </div>
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Email</label>
+                         <input 
+                           type="email"
+                           value={formData.email}
+                           onChange={(e) => setFormData({...formData, email: e.target.value})}
+                           placeholder="email@example.com"
+                           className="w-full bg-nomad-paper border-0 rounded-xl px-6 py-4 focus:ring-2 focus:ring-nomad-gold/20 transition-all placeholder:text-gray-300 text-nomad-black font-medium"
+                           required
+                         />
+                      </div>
+                   </div>
 
-             <div className="space-y-10">
-                <div>
-                   <h3 className="text-lg font-bold text-nomad-black mb-2">Phone</h3>
-                   <p className="text-gray-600 text-xl font-medium">+92 310 481 1011</p>
-                </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Message</label>
+                      <textarea 
+                        rows={6}
+                        value={formData.message}
+                        onChange={(e) => setFormData({...formData, message: e.target.value})}
+                        placeholder="How can we help you?"
+                        className="w-full bg-nomad-paper border-0 rounded-xl px-6 py-4 focus:ring-2 focus:ring-nomad-gold/20 transition-all placeholder:text-gray-300 text-nomad-black font-medium resize-none"
+                        required
+                      ></textarea>
+                   </div>
 
-                <div>
-                   <h3 className="text-lg font-bold text-nomad-black mb-2">Email</h3>
-                   <a href="mailto:Coffeemachineshub@gmail.com" className="text-gray-600 text-xl hover:text-nomad-gold transition-colors block break-words">Coffeemachineshub@gmail.com</a>
-                </div>
-
-                <div>
-                   <h3 className="text-lg font-bold text-nomad-black mb-2">Address</h3>
-                   <p className="text-gray-600 text-lg max-w-sm leading-relaxed">G-22, City Star Mall, Model Town Link Road, Lahore</p>
-                </div>
-
-                <div>
-                   <h3 className="text-lg font-bold text-nomad-black mb-4">Social Media</h3>
-                   <a 
-                     href="https://www.instagram.com/" 
-                     target="_blank" 
-                     rel="noopener noreferrer" 
-                     className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-nomad-paper text-nomad-gold hover:bg-nomad-gold hover:text-white transition-all transform hover:scale-110 shadow-sm"
-                     aria-label="Instagram"
+                   <button 
+                     type="submit" 
+                     className="bg-nomad-black text-white px-10 py-5 rounded-full text-xs font-bold uppercase tracking-[0.2em] hover:bg-nomad-gold transition-colors shadow-lg flex items-center gap-3 group"
                    >
-                      <Instagram size={28} />
-                   </a>
-                </div>
+                     Send Message
+                     <Send size={16} className="group-hover:translate-x-1 transition-transform" />
+                   </button>
+                </form>
              </div>
           </div>
 
         </div>
-      </div>
-
-      {/* FAQ Section */}
-      <div className="bg-white border-t border-gray-100 py-24 mt-12 fade-up">
-         <div className="container mx-auto px-6 md:px-12 max-w-4xl">
-            <div className="text-center mb-16">
-                 <span className="text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-4 block">Help Center</span>
-                 <h2 className="text-3xl md:text-4xl font-serif font-bold">Frequently Asked Questions</h2>
-            </div>
-            
-            <div className="space-y-4">
-              {FAQS.map((faq, index) => (
-                <div key={index} className="bg-nomad-paper rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-300 transition-colors">
-                  <button 
-                    onClick={() => toggleFaq(index)}
-                    className="w-full flex justify-between items-center p-6 text-left"
-                  >
-                    <span className="font-bold text-lg font-serif">{faq.question}</span>
-                    <span className={`transition-transform duration-300 ${openFaqIndex === index ? 'rotate-180' : ''}`}>
-                         {openFaqIndex === index ? <Minus size={20} /> : <Plus size={20} />}
-                    </span>
-                  </button>
-                  <div 
-                    className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${openFaqIndex === index ? 'max-h-40 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}
-                  >
-                    <p className="text-gray-600 leading-relaxed">
-                      {faq.answer}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-         </div>
       </div>
     </div>
   );
