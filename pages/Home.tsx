@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import CategoryCard from '../components/CategoryCard';
-import { BRAND_LOGOS, TESTIMONIALS } from '../constants';
 import { useStore } from '../context/StoreContext';
 import { ArrowRight, Play, Search, Star, Quote } from 'lucide-react';
 
@@ -11,7 +10,7 @@ const Home: React.FC = () => {
   const [heroSearch, setHeroSearch] = useState('');
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const navigate = useNavigate();
-  const { products, siteContent } = useStore();
+  const { products, siteContent, testimonials } = useStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,11 +21,13 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveTestimonial(prev => (prev + 1) % TESTIMONIALS.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, []);
+    if (testimonials.length > 0) {
+        const interval = setInterval(() => {
+        setActiveTestimonial(prev => (prev + 1) % testimonials.length);
+        }, 6000);
+        return () => clearInterval(interval);
+    }
+  }, [testimonials]);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +40,9 @@ const Home: React.FC = () => {
   
   // Filter products from store for sections
   const gearProducts = products.filter(p => p.category === 'Gear').slice(0, 5);
-  const coffeeProducts = products.filter(p => p.category === 'Coffee').slice(0, 6);
+  // Use isFeatured property for "Curated Favorites" or fallback to Coffee category
+  const featuredProducts = products.filter(p => p.isFeatured);
+  const displayFavorites = featuredProducts.length > 0 ? featuredProducts : products.filter(p => p.category === 'Coffee').slice(0, 6);
 
   return (
     <div className="bg-nomad-paper overflow-hidden">
@@ -197,7 +200,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Curated Favorites (Moved Up) */}
+      {/* Curated Favorites (Managed via Admin) */}
       <section className="relative z-10 py-24 bg-white border-t border-gray-100">
         <div className="container mx-auto px-6 md:px-12">
            <div className="text-center max-w-2xl mx-auto mb-16">
@@ -207,7 +210,7 @@ const Home: React.FC = () => {
            </div>
            
            <div className="flex overflow-x-auto gap-8 pb-10 no-scrollbar snap-x snap-mandatory">
-              {coffeeProducts.map((product, idx) => (
+              {displayFavorites.map((product, idx) => (
                 <div key={product.id} className="min-w-[280px] md:min-w-[320px] snap-center fade-right">
                   <ProductCard product={product} />
                 </div>
@@ -225,7 +228,7 @@ const Home: React.FC = () => {
         <div className="space-y-12">
             {/* Top Row - Moves Left */}
             <div className="flex animate-marquee whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
-                {[...BRAND_LOGOS, ...BRAND_LOGOS].map((brand, idx) => (
+                {[...siteContent.home.brands, ...siteContent.home.brands].map((brand, idx) => (
                     <span key={`top-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-16 hover:text-nomad-gold cursor-default transition-colors">
                         {brand}
                     </span>
@@ -234,7 +237,7 @@ const Home: React.FC = () => {
 
             {/* Bottom Row - Moves Right */}
             <div className="flex animate-marquee-reverse whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
-                {[...BRAND_LOGOS, ...BRAND_LOGOS].map((brand, idx) => (
+                {[...siteContent.home.brands, ...siteContent.home.brands].map((brand, idx) => (
                     <span key={`bottom-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-16 hover:text-nomad-gold cursor-default transition-colors">
                         {brand}
                     </span>
@@ -251,7 +254,7 @@ const Home: React.FC = () => {
             </div>
             
             <div className="relative min-h-[300px] flex items-center justify-center">
-                {TESTIMONIALS.map((t, idx) => (
+                {testimonials.map((t, idx) => (
                     <div 
                         key={idx}
                         className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out ${
@@ -274,7 +277,7 @@ const Home: React.FC = () => {
 
             {/* Pagination Dots */}
             <div className="flex justify-center gap-3 mt-12">
-                {TESTIMONIALS.map((_, idx) => (
+                {testimonials.map((_, idx) => (
                     <button 
                         key={idx}
                         onClick={() => setActiveTestimonial(idx)}

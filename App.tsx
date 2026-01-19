@@ -22,6 +22,8 @@ import Dashboard from './pages/admin/Dashboard';
 import ProductManager from './pages/admin/ProductManager';
 import OrderManager from './pages/admin/OrderManager';
 import ContentManager from './pages/admin/ContentManager';
+import BlogManager from './pages/admin/BlogManager';
+import CategoryManager from './pages/admin/CategoryManager';
 
 // Wrapper component to handle ScrollToTop and Animations
 const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
@@ -84,7 +86,9 @@ const App: React.FC = () => {
             {/* Admin Routes (No Header/Footer) */}
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/products" element={<ProductManager />} />
+            <Route path="/admin/categories" element={<CategoryManager />} />
             <Route path="/admin/orders" element={<OrderManager />} />
+            <Route path="/admin/blogs" element={<BlogManager />} />
             <Route path="/admin/content" element={<ContentManager />} />
             
             {/* Public Routes */}

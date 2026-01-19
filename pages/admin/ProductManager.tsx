@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Edit, Trash, Plus, Search } from 'lucide-react';
+import { Edit, Trash, Plus, Search, Star } from 'lucide-react';
 import { Product } from '../../types';
 
 const ProductManager: React.FC = () => {
@@ -19,7 +19,8 @@ const ProductManager: React.FC = () => {
     category: 'Coffee',
     tags: [],
     description: '',
-    soldOut: false
+    soldOut: false,
+    isFeatured: false
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -42,6 +43,11 @@ const ProductManager: React.FC = () => {
     if (confirm('Are you sure?')) {
       setProducts(products.filter(p => p.id !== id));
     }
+  };
+
+  const toggleFeatured = (product: Product) => {
+      const updated = { ...product, isFeatured: !product.isFeatured };
+      setProducts(products.map(p => p.id === product.id ? updated : p));
   };
 
   const filtered = products.filter(p => p.title.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -77,6 +83,7 @@ const ProductManager: React.FC = () => {
                    <th className="px-6 py-4">Image</th>
                    <th className="px-6 py-4">Name</th>
                    <th className="px-6 py-4">Category</th>
+                   <th className="px-6 py-4">Featured</th>
                    <th className="px-6 py-4">Price</th>
                    <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
@@ -89,6 +96,11 @@ const ProductManager: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 font-bold text-nomad-black">{product.title}</td>
                       <td className="px-6 py-4 text-gray-500">{product.category}</td>
+                      <td className="px-6 py-4">
+                          <button onClick={() => toggleFeatured(product)} className={`p-1 rounded-full ${product.isFeatured ? 'text-nomad-gold bg-yellow-50' : 'text-gray-300'}`}>
+                             <Star size={20} fill={product.isFeatured ? 'currentColor' : 'none'} />
+                          </button>
+                      </td>
                       <td className="px-6 py-4 text-gray-500">Rs. {product.price.toLocaleString()}</td>
                       <td className="px-6 py-4 text-right space-x-2">
                          <button onClick={() => { setEditingProduct(product); setIsModalOpen(true); }} className="p-2 text-gray-400 hover:text-nomad-black"><Edit size={18} /></button>
@@ -131,6 +143,10 @@ const ProductManager: React.FC = () => {
                   <div>
                     <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Description</label>
                     <textarea className="w-full border p-2 rounded-lg" rows={4} value={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <input type="checkbox" checked={editingProduct.isFeatured} onChange={e => setEditingProduct({...editingProduct, isFeatured: e.target.checked})} />
+                     <label className="text-sm">Feature on Home Page</label>
                   </div>
                   <div className="flex gap-4 pt-4">
                      <button type="submit" className="flex-1 bg-nomad-black text-white py-3 rounded-xl font-bold uppercase">Save</button>

@@ -4,7 +4,7 @@ import { FAQS } from '../constants';
 import { useStore } from '../context/StoreContext';
 
 const Contact: React.FC = () => {
-  const { siteContent } = useStore();
+  const { siteContent, addMessage } = useStore();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,9 +18,20 @@ const Contact: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Use WhatsApp for message submission demo
+    // 1. Save to internal admin store
+    addMessage({
+        name: formData.name,
+        email: formData.email,
+        message: formData.message
+    });
+    
+    // 2. Open WhatsApp
     const whatsappMessage = `Name: ${formData.name}%0AEmail: ${formData.email}%0AMessage: ${formData.message}`;
     window.open(`https://wa.me/923104811011?text=${whatsappMessage}`, '_blank');
+    
+    // Reset
+    setFormData({ name: '', email: '', message: '' });
+    alert('Message sent! We will get back to you shortly.');
   };
 
   return (

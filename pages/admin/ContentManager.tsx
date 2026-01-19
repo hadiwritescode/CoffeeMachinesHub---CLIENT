@@ -1,125 +1,218 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
+import { Plus, Trash, User } from 'lucide-react';
+import { TeamMember, Testimonial } from '../../types';
 
 const ContentManager: React.FC = () => {
-  const { siteContent, updateSiteContent } = useStore();
-  const [activeTab, setActiveTab] = useState<'hero' | 'contact' | 'socials' | 'team'>('hero');
+  const { siteContent, updateSiteContent, testimonials, setTestimonials } = useStore();
+  const [activeTab, setActiveTab] = useState<'home' | 'services' | 'about' | 'contact' | 'socials'>('home');
+  const [subTab, setSubTab] = useState<string>('hero');
 
-  // Local state for forms to avoid excessive re-renders, sync on save
+  // Form States
   const [heroForm, setHeroForm] = useState(siteContent.hero);
+  const [brands, setBrands] = useState(siteContent.home.brands);
+  const [serviceForm, setServiceForm] = useState(siteContent.services);
+  const [aboutForm, setAboutForm] = useState(siteContent.about);
   const [contactForm, setContactForm] = useState(siteContent.contact);
   const [socialsForm, setSocialsForm] = useState(siteContent.socials);
+  const [teamList, setTeamList] = useState<TeamMember[]>(siteContent.team);
 
-  const handleSaveHero = () => {
-    updateSiteContent('hero', heroForm);
-    alert('Hero section updated!');
+  const saveHomeHero = () => { updateSiteContent('hero', heroForm); alert('Saved!'); };
+  const saveBrands = () => { updateSiteContent('home', { ...siteContent.home, brands }); alert('Saved!'); };
+  const saveServices = () => { updateSiteContent('services', serviceForm); alert('Saved!'); };
+  const saveAbout = () => { updateSiteContent('about', aboutForm); alert('Saved!'); };
+  const saveTeam = () => { updateSiteContent('team', teamList); alert('Saved!'); };
+  const saveContact = () => { updateSiteContent('contact', contactForm); alert('Saved!'); };
+  const saveSocials = () => { updateSiteContent('socials', socialsForm); alert('Saved!'); };
+
+  // Testimonial Helpers
+  const addTestimonial = () => {
+    setTestimonials([...testimonials, { id: `new-${Date.now()}`, name: 'New User', role: 'Customer', text: 'Great service!', rating: 5 }]);
+  };
+  const updateTestimonial = (id: string, field: keyof Testimonial, value: any) => {
+    setTestimonials(testimonials.map(t => t.id === id ? { ...t, [field]: value } : t));
+  };
+  const deleteTestimonial = (id: string) => {
+    setTestimonials(testimonials.filter(t => t.id !== id));
   };
 
-  const handleSaveContact = () => {
-    updateSiteContent('contact', contactForm);
-    alert('Contact info updated!');
+  // Team Helpers
+  const addTeamMember = () => setTeamList([...teamList, { name: 'Name', role: 'Role', img: 'https://via.placeholder.com/150' }]);
+  const updateTeamMember = (index: number, field: keyof TeamMember, value: string) => {
+    const newList = [...teamList];
+    newList[index] = { ...newList[index], [field]: value };
+    setTeamList(newList);
   };
-
-  const handleSaveSocials = () => {
-    updateSiteContent('socials', socialsForm);
-    alert('Social links updated!');
-  };
+  const removeTeamMember = (index: number) => setTeamList(teamList.filter((_, i) => i !== index));
 
   return (
     <AdminLayout>
       <h1 className="text-3xl font-serif font-bold text-nomad-black mb-8">Content Management</h1>
       
-      <div className="flex space-x-4 mb-8 border-b border-gray-200 pb-1">
-         {['hero', 'contact', 'socials', 'team'].map((tab) => (
+      {/* Top Tabs */}
+      <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-200">
+         {['home', 'services', 'about', 'contact', 'socials'].map((tab) => (
              <button 
                 key={tab}
-                onClick={() => setActiveTab(tab as any)}
-                className={`pb-3 px-4 text-sm font-bold uppercase tracking-widest transition-colors ${activeTab === tab ? 'border-b-2 border-nomad-gold text-nomad-black' : 'text-gray-400 hover:text-nomad-black'}`}
+                onClick={() => { setActiveTab(tab as any); setSubTab('hero'); }} // Reset subtab
+                className={`pb-3 px-6 text-sm font-bold uppercase tracking-widest transition-colors ${activeTab === tab ? 'border-b-2 border-nomad-gold text-nomad-black' : 'text-gray-400 hover:text-nomad-black'}`}
              >
                  {tab}
              </button>
          ))}
       </div>
 
-      <div className="bg-white p-8 rounded-3xl shadow-sm max-w-3xl">
-         {activeTab === 'hero' && (
-             <div className="space-y-6">
-                 <div>
-                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Main Title</label>
-                     <input className="w-full border p-3 rounded-xl" value={heroForm.title} onChange={e => setHeroForm({...heroForm, title: e.target.value})} />
-                 </div>
-                 <div>
-                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Subtitle</label>
-                     <input className="w-full border p-3 rounded-xl" value={heroForm.subtitle} onChange={e => setHeroForm({...heroForm, subtitle: e.target.value})} />
-                 </div>
-                 <div>
-                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Video URL (MP4)</label>
-                     <input className="w-full border p-3 rounded-xl" value={heroForm.videoUrl} onChange={e => setHeroForm({...heroForm, videoUrl: e.target.value})} />
-                 </div>
-                 <button onClick={handleSaveHero} className="bg-nomad-black text-white px-8 py-3 rounded-xl font-bold uppercase">Save Changes</button>
-             </div>
-         )}
-
-         {activeTab === 'contact' && (
-             <div className="space-y-6">
-                 <div>
-                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Address</label>
-                     <input className="w-full border p-3 rounded-xl" value={contactForm.address} onChange={e => setContactForm({...contactForm, address: e.target.value})} />
-                 </div>
-                 <div>
-                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Email</label>
-                     <input className="w-full border p-3 rounded-xl" value={contactForm.email} onChange={e => setContactForm({...contactForm, email: e.target.value})} />
-                 </div>
-                 <div>
-                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Phone</label>
-                     <input className="w-full border p-3 rounded-xl" value={contactForm.phone} onChange={e => setContactForm({...contactForm, phone: e.target.value})} />
-                 </div>
-                 <button onClick={handleSaveContact} className="bg-nomad-black text-white px-8 py-3 rounded-xl font-bold uppercase">Save Contact Info</button>
-             </div>
-         )}
-
-         {activeTab === 'socials' && (
-             <div className="space-y-6">
-                 <div>
-                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Instagram URL</label>
-                     <input className="w-full border p-3 rounded-xl" value={socialsForm.instagram} onChange={e => setSocialsForm({...socialsForm, instagram: e.target.value})} />
-                 </div>
-                 <div>
-                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Facebook URL</label>
-                     <input className="w-full border p-3 rounded-xl" value={socialsForm.facebook} onChange={e => setSocialsForm({...socialsForm, facebook: e.target.value})} />
-                 </div>
-                 <div>
-                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">YouTube URL</label>
-                     <input className="w-full border p-3 rounded-xl" value={socialsForm.youtube} onChange={e => setSocialsForm({...socialsForm, youtube: e.target.value})} />
-                 </div>
-                 <div>
-                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Twitter/Threads URL</label>
-                     <input className="w-full border p-3 rounded-xl" value={socialsForm.twitter} onChange={e => setSocialsForm({...socialsForm, twitter: e.target.value})} />
-                 </div>
-                 <button onClick={handleSaveSocials} className="bg-nomad-black text-white px-8 py-3 rounded-xl font-bold uppercase">Save Social Links</button>
-             </div>
-         )}
+      <div className="bg-white p-8 rounded-3xl shadow-sm max-w-5xl">
          
-         {activeTab === 'team' && (
+         {/* HOME TAB */}
+         {activeTab === 'home' && (
              <div>
-                 <p className="text-gray-500 italic mb-4">Team management coming soon. For now, edit in constants.tsx or StoreContext.</p>
-                 <div className="grid grid-cols-1 gap-4">
-                     {siteContent.team.map((member, i) => (
-                         <div key={i} className="flex items-center gap-4 p-4 border rounded-xl">
-                             <img src={member.img} className="w-12 h-12 rounded-full object-cover" alt="" />
-                             <div>
-                                 <h4 className="font-bold">{member.name}</h4>
-                                 <p className="text-xs text-gray-500 uppercase">{member.role}</p>
-                             </div>
-                         </div>
-                     ))}
+                <div className="flex gap-4 mb-6">
+                    {['hero', 'brands', 'testimonials'].map(st => (
+                        <button key={st} onClick={() => setSubTab(st)} className={`px-4 py-2 rounded-lg text-xs font-bold uppercase ${subTab === st ? 'bg-nomad-black text-white' : 'bg-gray-100 text-gray-500'}`}>{st}</button>
+                    ))}
+                </div>
+
+                {subTab === 'hero' && (
+                    <div className="space-y-6 animate-fade-in">
+                        <InputGroup label="Title" value={heroForm.title} onChange={v => setHeroForm({...heroForm, title: v})} />
+                        <InputGroup label="Subtitle" value={heroForm.subtitle} onChange={v => setHeroForm({...heroForm, subtitle: v})} />
+                        <InputGroup label="Video URL" value={heroForm.videoUrl} onChange={v => setHeroForm({...heroForm, videoUrl: v})} />
+                        <InputGroup label="Button Text" value={heroForm.buttonText} onChange={v => setHeroForm({...heroForm, buttonText: v})} />
+                        <SaveButton onClick={saveHomeHero} />
+                    </div>
+                )}
+
+                {subTab === 'brands' && (
+                    <div className="space-y-4 animate-fade-in">
+                        <p className="text-gray-500 text-sm">Enter brand names (text only for this demo).</p>
+                        <textarea className="w-full border p-4 rounded-xl" rows={5} value={brands.join(', ')} onChange={e => setBrands(e.target.value.split(',').map(s => s.trim()))} />
+                        <SaveButton onClick={saveBrands} />
+                    </div>
+                )}
+
+                {subTab === 'testimonials' && (
+                    <div className="space-y-6 animate-fade-in">
+                        {testimonials.map(t => (
+                            <div key={t.id} className="border p-4 rounded-xl flex gap-4 items-start">
+                                <div className="flex-grow grid grid-cols-2 gap-4">
+                                    <InputGroup label="Name" value={t.name} onChange={v => updateTestimonial(t.id, 'name', v)} />
+                                    <InputGroup label="Role" value={t.role} onChange={v => updateTestimonial(t.id, 'role', v)} />
+                                    <div className="col-span-2">
+                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Review</label>
+                                        <textarea className="w-full border p-2 rounded-lg" value={t.text} onChange={e => updateTestimonial(t.id, 'text', e.target.value)} />
+                                    </div>
+                                </div>
+                                <button onClick={() => deleteTestimonial(t.id)} className="text-red-400 hover:text-red-600 p-2"><Trash size={18} /></button>
+                            </div>
+                        ))}
+                        <button onClick={addTestimonial} className="flex items-center gap-2 text-nomad-gold font-bold uppercase text-xs"><Plus size={16} /> Add Testimonial</button>
+                    </div>
+                )}
+             </div>
+         )}
+
+         {/* SERVICES TAB */}
+         {activeTab === 'services' && (
+             <div className="space-y-6 animate-fade-in">
+                 <h3 className="font-bold text-lg border-b pb-2">Hero Section</h3>
+                 <InputGroup label="Title" value={serviceForm.heroTitle} onChange={v => setServiceForm({...serviceForm, heroTitle: v})} />
+                 <InputGroup label="Subtitle" value={serviceForm.heroSubtitle} onChange={v => setServiceForm({...serviceForm, heroSubtitle: v})} />
+                 <InputGroup label="Hero Image URL" value={serviceForm.heroImage} onChange={v => setServiceForm({...serviceForm, heroImage: v})} />
+                 
+                 <h3 className="font-bold text-lg border-b pb-2 pt-6">Section 1 (Wholesale)</h3>
+                 <InputGroup label="Title" value={serviceForm.section1Title} onChange={v => setServiceForm({...serviceForm, section1Title: v})} />
+                 <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Text</label>
+                 <textarea className="w-full border p-2 rounded-lg mb-4" rows={3} value={serviceForm.section1Text} onChange={e => setServiceForm({...serviceForm, section1Text: e.target.value})} />
+                 <InputGroup label="Image URL" value={serviceForm.section1Image} onChange={v => setServiceForm({...serviceForm, section1Image: v})} />
+
+                 <h3 className="font-bold text-lg border-b pb-2 pt-6">Section 2 (Training)</h3>
+                 <InputGroup label="Title" value={serviceForm.section2Title} onChange={v => setServiceForm({...serviceForm, section2Title: v})} />
+                 <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Text</label>
+                 <textarea className="w-full border p-2 rounded-lg mb-4" rows={3} value={serviceForm.section2Text} onChange={e => setServiceForm({...serviceForm, section2Text: e.target.value})} />
+                 <InputGroup label="Image URL" value={serviceForm.section2Image} onChange={v => setServiceForm({...serviceForm, section2Image: v})} />
+
+                 <SaveButton onClick={saveServices} />
+             </div>
+         )}
+
+         {/* ABOUT TAB */}
+         {activeTab === 'about' && (
+             <div>
+                 <div className="flex gap-4 mb-6">
+                    {['content', 'team'].map(st => (
+                        <button key={st} onClick={() => setSubTab(st)} className={`px-4 py-2 rounded-lg text-xs font-bold uppercase ${subTab === st ? 'bg-nomad-black text-white' : 'bg-gray-100 text-gray-500'}`}>{st}</button>
+                    ))}
                  </div>
+
+                 {subTab === 'content' && (
+                     <div className="space-y-6 animate-fade-in">
+                         <InputGroup label="Hero Title" value={aboutForm.heroTitle} onChange={v => setAboutForm({...aboutForm, heroTitle: v})} />
+                         <InputGroup label="Hero Subtitle" value={aboutForm.heroSubtitle} onChange={v => setAboutForm({...aboutForm, heroSubtitle: v})} />
+                         <InputGroup label="Hero Image" value={aboutForm.heroImage} onChange={v => setAboutForm({...aboutForm, heroImage: v})} />
+                         <InputGroup label="Story Title" value={aboutForm.storyTitle} onChange={v => setAboutForm({...aboutForm, storyTitle: v})} />
+                         <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Story Text</label>
+                         <textarea className="w-full border p-2 rounded-lg" rows={4} value={aboutForm.storyText} onChange={e => setAboutForm({...aboutForm, storyText: e.target.value})} />
+                         <SaveButton onClick={saveAbout} />
+                     </div>
+                 )}
+
+                 {subTab === 'team' && (
+                     <div className="space-y-6 animate-fade-in">
+                         {teamList.map((member, i) => (
+                             <div key={i} className="flex gap-4 items-center border p-4 rounded-xl">
+                                 <img src={member.img} alt="" className="w-12 h-12 rounded-full object-cover bg-gray-200" />
+                                 <div className="flex-grow grid grid-cols-3 gap-4">
+                                     <InputGroup label="Name" value={member.name} onChange={v => updateTeamMember(i, 'name', v)} />
+                                     <InputGroup label="Role" value={member.role} onChange={v => updateTeamMember(i, 'role', v)} />
+                                     <InputGroup label="Image URL" value={member.img} onChange={v => updateTeamMember(i, 'img', v)} />
+                                 </div>
+                                 <button onClick={() => removeTeamMember(i)} className="text-red-400 p-2"><Trash size={18} /></button>
+                             </div>
+                         ))}
+                         <button onClick={addTeamMember} className="flex items-center gap-2 text-nomad-gold font-bold uppercase text-xs"><Plus size={16} /> Add Member</button>
+                         <SaveButton onClick={saveTeam} />
+                     </div>
+                 )}
+             </div>
+         )}
+
+         {/* CONTACT TAB */}
+         {activeTab === 'contact' && (
+             <div className="space-y-6 animate-fade-in">
+                 <InputGroup label="Address" value={contactForm.address} onChange={v => setContactForm({...contactForm, address: v})} />
+                 <InputGroup label="Email" value={contactForm.email} onChange={v => setContactForm({...contactForm, email: v})} />
+                 <InputGroup label="Phone" value={contactForm.phone} onChange={v => setContactForm({...contactForm, phone: v})} />
+                 <SaveButton onClick={saveContact} />
+             </div>
+         )}
+
+         {/* SOCIALS TAB */}
+         {activeTab === 'socials' && (
+             <div className="space-y-6 animate-fade-in">
+                 <InputGroup label="Instagram" value={socialsForm.instagram} onChange={v => setSocialsForm({...socialsForm, instagram: v})} />
+                 <InputGroup label="Facebook" value={socialsForm.facebook} onChange={v => setSocialsForm({...socialsForm, facebook: v})} />
+                 <InputGroup label="YouTube" value={socialsForm.youtube} onChange={v => setSocialsForm({...socialsForm, youtube: v})} />
+                 <InputGroup label="Twitter" value={socialsForm.twitter} onChange={v => setSocialsForm({...socialsForm, twitter: v})} />
+                 <SaveButton onClick={saveSocials} />
              </div>
          )}
       </div>
     </AdminLayout>
   );
 };
+
+// Helper Components
+const InputGroup = ({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) => (
+    <div>
+        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{label}</label>
+        <input className="w-full border p-3 rounded-xl" value={value} onChange={e => onChange(e.target.value)} />
+    </div>
+);
+
+const SaveButton = ({ onClick }: { onClick: () => void }) => (
+    <button onClick={onClick} className="bg-nomad-black text-white px-8 py-3 rounded-xl font-bold uppercase hover:bg-nomad-gold transition-colors">Save Changes</button>
+);
 
 export default ContentManager;

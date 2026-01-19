@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee, List, BookOpen } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import Logo from '../components/Logo';
 
@@ -15,15 +15,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const links = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
     { label: 'Products', path: '/admin/products', icon: Coffee },
+    { label: 'Categories', path: '/admin/categories', icon: List },
     { label: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+    { label: 'Blogs', path: '/admin/blogs', icon: BookOpen },
     { label: 'Content', path: '/admin/content', icon: FileText },
-    { label: 'Blogs', path: '/admin/blogs', icon: Settings }, // Reusing icon for brevity
   ];
 
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans">
       {/* Sidebar */}
-      <aside className="w-64 bg-nomad-black text-white flex flex-col fixed h-full z-20">
+      <aside className="w-64 bg-nomad-black text-white flex flex-col fixed h-full z-20 overflow-y-auto">
         <div className="p-8 flex flex-col items-center border-b border-gray-700">
           <Logo className="h-12 w-auto text-nomad-gold mb-4" />
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Admin Panel</span>

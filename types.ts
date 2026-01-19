@@ -14,6 +14,7 @@ export interface Product {
   category?: string;
   tags?: string[];
   soldOut?: boolean;
+  isFeatured?: boolean; // New for Home page curation
   subtitle?: string; 
   roastLevel?: string;
   origin?: string;
@@ -47,8 +48,6 @@ export interface FAQItem {
   answer: string;
 }
 
-// --- NEW TYPES ---
-
 export interface Order {
   id: string;
   date: string;
@@ -78,12 +77,50 @@ export interface TeamMember {
   img: string;
 }
 
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  text: string;
+  rating: number;
+}
+
+export interface Message {
+  id: string;
+  date: string;
+  name: string;
+  email: string;
+  message: string;
+  read: boolean;
+}
+
 export interface SiteContent {
   hero: {
     title: string;
     subtitle: string;
     videoUrl: string;
     buttonText: string;
+  };
+  home: {
+    brands: string[];
+  };
+  services: {
+    heroTitle: string;
+    heroSubtitle: string;
+    heroImage: string;
+    section1Title: string;
+    section1Text: string;
+    section1Image: string;
+    section2Title: string;
+    section2Text: string;
+    section2Image: string;
+  };
+  about: {
+    heroTitle: string;
+    heroSubtitle: string;
+    heroImage: string;
+    storyTitle: string;
+    storyText: string;
   };
   contact: {
     address: string;

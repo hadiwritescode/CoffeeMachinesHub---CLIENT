@@ -1,27 +1,31 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useStore } from '../context/StoreContext';
 
 const Services: React.FC = () => {
+  const { siteContent } = useStore();
+  const content = siteContent.services;
+
   return (
     <div className="animate-fade-in bg-nomad-paper pt-40 pb-20">
       <div className="container mx-auto px-6 md:px-12 max-w-6xl">
         
-        {/* Header Section (Matching About Page Style) */}
+        {/* Header Section */}
         <div className="text-center mb-24 fade-up">
             <span className="text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-6 block">Expert Solutions</span>
-            <h1 className="text-5xl md:text-7xl font-serif font-bold mb-8 text-nomad-black">
-                Elevate Your <br/> Coffee Business
+            <h1 className="text-5xl md:text-7xl font-serif font-bold mb-8 text-nomad-black whitespace-pre-line">
+                {content.heroTitle}
             </h1>
             <div className="w-24 h-1 bg-nomad-gold mx-auto mb-8"></div>
             <p className="text-xl md:text-2xl font-serif italic text-gray-500 max-w-3xl mx-auto leading-relaxed">
-                Comprehensive consulting, wholesale, and training services designed to help cafes and restaurants serve world-class coffee.
+                {content.heroSubtitle}
             </p>
         </div>
 
         {/* Feature Image */}
         <div className="w-full h-[60vh] overflow-hidden rounded-[3rem] mb-24 shadow-2xl fade-up">
            <img 
-             src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1600" 
+             src={content.heroImage} 
              alt="Service Hero" 
              className="w-full h-full object-cover parallax-effect scale-105"
            />
@@ -31,16 +35,15 @@ const Services: React.FC = () => {
         <div className="flex flex-col lg:flex-row items-center gap-20 mb-32 fade-up">
            <div className="w-full lg:w-1/2 relative group">
              <div className="absolute top-4 -left-4 w-full h-full border-2 border-nomad-gold rounded-3xl z-0 transition-transform group-hover:translate-x-2 group-hover:translate-y-2"></div>
-             <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=800" alt="Wholesale" className="rounded-3xl shadow-xl relative z-10 w-full" />
+             <img src={content.section1Image} alt="Wholesale" className="rounded-3xl shadow-xl relative z-10 w-full" />
            </div>
            <div className="w-full lg:w-1/2">
              <div className="flex items-center gap-4 mb-6">
                 <span className="text-4xl font-serif font-bold text-gray-200">01</span>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold">Wholesale Partner</h2>
+                <h2 className="text-3xl md:text-4xl font-serif font-bold">{content.section1Title}</h2>
              </div>
              <p className="text-gray-600 text-lg leading-relaxed mb-8">
-               We don't just supply beans; we supply consistency. Our wholesale partners receive priority access to our seasonal roasts, custom blend development, and volume pricing.
-               We work with you to create a flavor profile that matches your brand identity.
+               {content.section1Text}
              </p>
              <ul className="space-y-4 mb-8">
                 <li className="flex items-center text-sm font-bold uppercase tracking-wider text-gray-800"><div className="w-2 h-2 bg-nomad-gold rounded-full mr-3"></div> Custom Roasting Profiles</li>
@@ -57,16 +60,15 @@ const Services: React.FC = () => {
         <div className="flex flex-col lg:flex-row-reverse items-center gap-20 mb-32 fade-up">
            <div className="w-full lg:w-1/2 relative group">
              <div className="absolute top-4 -right-4 w-full h-full border-2 border-nomad-black rounded-3xl z-0 transition-transform group-hover:-translate-x-2 group-hover:translate-y-2"></div>
-             <img src="https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&q=80&w=800" alt="Training" className="rounded-3xl shadow-xl relative z-10 w-full" />
+             <img src={content.section2Image} alt="Training" className="rounded-3xl shadow-xl relative z-10 w-full" />
            </div>
            <div className="w-full lg:w-1/2">
              <div className="flex items-center gap-4 mb-6">
                 <span className="text-4xl font-serif font-bold text-gray-200">02</span>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold">Barista Training</h2>
+                <h2 className="text-3xl md:text-4xl font-serif font-bold">{content.section2Title}</h2>
              </div>
              <p className="text-gray-600 text-lg leading-relaxed mb-8">
-               Empower your staff with the knowledge they need to pull the perfect shot. Our training curriculum covers everything from green bean sourcing to latte art mastery.
-               Available both on-site at your cafe or at our dedicated training lab.
+               {content.section2Text}
              </p>
              <Link to="/contact" className="inline-block bg-transparent border border-black text-black px-8 py-4 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors">
                Schedule Training
