@@ -76,6 +76,10 @@ export interface User {
   email: string;
   role: 'admin' | 'customer';
   wishlist: string[]; 
+  cart?: CartItem[]; // Persistent Cart
+  phone?: string;
+  address?: string;
+  city?: string;
 }
 
 export interface TeamMember {

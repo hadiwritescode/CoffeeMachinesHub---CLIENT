@@ -71,21 +71,21 @@ const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
   );
 };
 
-const LayoutWithHeaderFooter = ({ children }: { children: React.ReactNode }) => (
+const LayoutWithHeaderFooter = ({ children }: { children?: React.ReactNode }) => (
   <div className="flex flex-col min-h-screen font-sans text-nomad-black bg-nomad-black selection:bg-nomad-gold selection:text-white">
     <Header />
-    <div className="relative z-10 bg-nomad-paper shadow-2xl rounded-b-[2rem] md:rounded-b-[4rem] mb-0 md:mb-[450px] overflow-hidden min-h-screen flex flex-col transition-all duration-300 w-full">
+    <div className="relative z-10 bg-nomad-paper shadow-2xl flex flex-col transition-all duration-300 w-full min-h-screen">
       <main className="flex-grow">
         {children}
       </main>
       <FeaturesBanner />
+      <Footer />
     </div>
-    <Footer />
     <WhatsAppWidget />
   </div>
 );
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <StoreProvider>
       <Router>

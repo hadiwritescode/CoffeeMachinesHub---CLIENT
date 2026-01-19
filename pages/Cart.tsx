@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { ShoppingBag, ArrowRight, Trash, Plus, Minus, CheckCircle, MessageCircle } from 'lucide-react';
@@ -10,11 +10,23 @@ const Cart: React.FC = () => {
   const { cart, removeFromCart, updateCartQuantity, clearCart, createOrder, currentUser, products } = useStore();
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'details' | 'success'>('cart');
   const [formData, setFormData] = useState({
-      name: currentUser?.name || '',
-      email: currentUser?.email || '',
+      name: '',
+      email: '',
       phone: '',
       address: ''
   });
+
+  // Pre-fill form with user data if available
+  useEffect(() => {
+      if (currentUser) {
+          setFormData({
+              name: currentUser.name || '',
+              email: currentUser.email || '',
+              phone: currentUser.phone || '',
+              address: `${currentUser.address || ''} ${currentUser.city || ''}`.trim()
+          });
+      }
+  }, [currentUser]);
 
   const recommendations = products.filter(p => p.isFeatured).slice(0, 3);
 

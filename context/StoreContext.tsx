@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, BlogPost, Order, User, SiteContent, NavCategory, Testimonial, Message, CartItem } from '../types';
-import { ALL_PRODUCTS, BLOG_POSTS, TESTIMONIALS, BRAND_LOGOS, NAVIGATION_LINKS } from '../constants';
+import { BRAND_LOGOS, NAVIGATION_LINKS } from '../constants';
 import { 
   collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc 
 } from 'firebase/firestore';
@@ -11,6 +11,7 @@ import {
   ref, uploadBytes, getDownloadURL 
 } from 'firebase/storage';
 import { db, auth, storage } from '../firebase';
+import { useToast } from './ToastContext';
 
 interface StoreContextType {
   products: Product[];
@@ -46,6 +47,7 @@ interface StoreContextType {
   currentUser: User | null;
   login: (email: string, password?: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUserProfile: (data: Partial<User>) => Promise<void>;
   toggleWishlist: (productId: string) => Promise<void>;
   
   cart: CartItem[];
@@ -104,7 +106,8 @@ const defaultSiteContent: SiteContent = {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
+  const { showToast } = useToast();
   const [products, setProductsState] = useState<Product[]>([]);
   const [categories, setCategoriesState] = useState<NavCategory[]>([]);
   const [blogPosts, setBlogPostsState] = useState<BlogPost[]>([]);
@@ -114,38 +117,35 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [siteContent, setSiteContentState] = useState<SiteContent>(defaultSiteContent);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
-  // Cart State with LocalStorage
   const [cart, setCartState] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('nomad_cart');
-    return saved ? JSON.parse(saved) : [];
+    try {
+        const saved = localStorage.getItem('nomad_cart');
+        return saved ? JSON.parse(saved) : [];
+    } catch {
+        return [];
+    }
   });
+  
   const [loading, setLoading] = useState(true);
 
   // --- Real-time Listeners ---
-
-  useEffect(() => {
-    localStorage.setItem('nomad_cart', JSON.stringify(cart));
-  }, [cart]);
 
   useEffect(() => {
     // 1. Products
     const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
       const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
       setProductsState(prods);
-      // Auto-seed
-      if (prods.length === 0 && !loading) {
-         ALL_PRODUCTS.forEach(async p => { await setDoc(doc(db, 'products', p.id), p); });
-      }
+      // Removed automatic seeding logic for production safety
     });
 
-    // 2. Categories (Fetched from a single config document 'content/navigation')
+    // 2. Categories
     const unsubCats = onSnapshot(doc(db, 'content', 'navigation'), (docSnap) => {
       if (docSnap.exists()) {
         setCategoriesState(docSnap.data().categories as NavCategory[]);
       } else {
-         // Seed
          const initialCategories = NAVIGATION_LINKS.find(l => l.label === 'SHOP')?.subItems || [];
-         setDoc(doc(db, 'content', 'navigation'), { categories: initialCategories });
+         // Create navigation doc if missing
+         setDoc(doc(db, 'content', 'navigation'), { categories: initialCategories }).catch(console.error);
       }
     });
 
@@ -153,9 +153,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const unsubBlogs = onSnapshot(collection(db, 'blogs'), (snapshot) => {
       const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
       setBlogPostsState(posts);
-      if (posts.length === 0 && !loading) {
-          BLOG_POSTS.forEach(async b => { await setDoc(doc(db, 'blogs', b.id), b); });
-      }
     });
 
     // 4. Orders
@@ -172,43 +169,52 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const unsubTestimonials = onSnapshot(collection(db, 'testimonials'), (snapshot) => {
         const tests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial));
         setTestimonialsState(tests);
-        if (tests.length === 0 && !loading) {
-            TESTIMONIALS.forEach(async t => await addDoc(collection(db, 'testimonials'), t));
-        }
     });
 
     // 7. Site Content
     const unsubContent = onSnapshot(collection(db, 'content'), (snapshot) => {
         const contentData: any = { ...defaultSiteContent };
         snapshot.docs.forEach(doc => {
-            if (doc.id !== 'navigation') { // Skip navigation doc
+            if (doc.id !== 'navigation') { 
                 contentData[doc.id] = doc.data();
             }
         });
-        setSiteContentState(contentData);
+        setSiteContentState(prev => ({ ...prev, ...contentData }));
     });
 
-    // 8. Auth Listener
+    // 8. Auth & Persistent Cart
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const snapshot = await getDoc(userDocRef);
-        
-        if (snapshot.exists()) {
-            setCurrentUser(snapshot.data() as User);
-        } else {
-            const newUser: User = {
-                id: user.uid,
-                name: user.displayName || user.email?.split('@')[0] || 'User',
-                email: user.email || '',
-                role: user.email?.includes('admin') ? 'admin' : 'customer',
-                wishlist: []
-            };
-            await setDoc(userDocRef, newUser);
-            setCurrentUser(newUser);
+        try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const snapshot = await getDoc(userDocRef);
+            
+            if (snapshot.exists()) {
+                const userData = snapshot.data() as User;
+                setCurrentUser(userData);
+                if (userData.cart) {
+                    setCartState(userData.cart);
+                }
+            } else {
+                const newUser: User = {
+                    id: user.uid,
+                    name: user.displayName || user.email?.split('@')[0] || 'User',
+                    email: user.email || '',
+                    role: user.email?.includes('admin') ? 'admin' : 'customer',
+                    wishlist: [],
+                    cart: []
+                };
+                await setDoc(userDocRef, newUser);
+                setCurrentUser(newUser);
+                setCartState([]);
+            }
+        } catch (error) {
+            console.error("Auth Error", error);
+            showToast("Failed to load user profile", "error");
         }
       } else {
         setCurrentUser(null);
+        setCartState([]);
       }
       setLoading(false);
     });
@@ -218,24 +224,68 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, []);
 
-  // --- Actions ---
+  // --- Cart Sync Effect ---
+  useEffect(() => {
+      if (currentUser) {
+          const userRef = doc(db, 'users', currentUser.id);
+          updateDoc(userRef, { cart: cart }).catch(err => console.error("Error syncing cart", err));
+      } else {
+          localStorage.setItem('nomad_cart', JSON.stringify(cart));
+      }
+  }, [cart, currentUser]);
+
+
+  // --- Actions with Toast & Error Handling ---
 
   const uploadFile = async (file: File, path: string): Promise<string> => {
-    const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
+    try {
+        const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        return await getDownloadURL(storageRef);
+    } catch (e) {
+        showToast("File upload failed", "error");
+        throw e;
+    }
   };
 
-  const addProduct = async (product: Product) => { await setDoc(doc(db, 'products', product.id), product); };
-  const updateProduct = async (product: Product) => { await updateDoc(doc(db, 'products', product.id), { ...product }); };
-  const removeProduct = async (id: string) => { await deleteDoc(doc(db, 'products', id)); };
-  const setProducts = () => {};
+  const addProduct = async (product: Product) => { 
+      try {
+        await setDoc(doc(db, 'products', product.id), product);
+        showToast("Product added successfully");
+      } catch (e) {
+          showToast("Failed to add product", "error");
+      }
+  };
+  
+  const updateProduct = async (product: Product) => { 
+      try {
+        await updateDoc(doc(db, 'products', product.id), { ...product });
+        showToast("Product updated");
+      } catch (e) {
+        showToast("Update failed", "error");
+      }
+  };
+  
+  const removeProduct = async (id: string) => { 
+      try {
+        await deleteDoc(doc(db, 'products', id));
+        showToast("Product deleted");
+      } catch (e) {
+          showToast("Delete failed", "error");
+      }
+  };
+
+  const setProducts = () => {}; // Managed by snapshot
 
   const setCategories = async (cats: NavCategory[]) => {
-      await setDoc(doc(db, 'content', 'navigation'), { categories: cats });
+      try {
+        await setDoc(doc(db, 'content', 'navigation'), { categories: cats });
+        showToast("Navigation updated");
+      } catch (e) {
+        showToast("Failed to update navigation", "error");
+      }
   };
 
-  // Orders
   const createOrder = async (orderData: Omit<Order, 'id' | 'date' | 'status'>) => {
       const orderId = `ORD-${Date.now().toString().slice(-6)}`;
       const newOrder: Order = {
@@ -249,12 +299,35 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateOrderStatus = async (orderId: string, status: Order['status']) => {
-    await updateDoc(doc(db, 'orders', orderId), { status });
+    try {
+        await updateDoc(doc(db, 'orders', orderId), { status });
+        showToast(`Order status updated to ${status}`);
+    } catch (e) {
+        showToast("Failed to update status", "error");
+    }
   };
 
-  const addBlogPost = async (post: BlogPost) => { await setDoc(doc(db, 'blogs', post.id), post); };
-  const updateBlogPost = async (post: BlogPost) => { await updateDoc(doc(db, 'blogs', post.id), { ...post }); };
-  const removeBlogPost = async (id: string) => { await deleteDoc(doc(db, 'blogs', id)); };
+  const addBlogPost = async (post: BlogPost) => { 
+      try {
+        await setDoc(doc(db, 'blogs', post.id), post);
+        showToast("Post published");
+      } catch(e) { showToast("Failed to publish", "error"); }
+  };
+  
+  const updateBlogPost = async (post: BlogPost) => { 
+      try {
+        await updateDoc(doc(db, 'blogs', post.id), { ...post });
+        showToast("Post updated");
+      } catch(e) { showToast("Update failed", "error"); }
+  };
+  
+  const removeBlogPost = async (id: string) => { 
+      try {
+        await deleteDoc(doc(db, 'blogs', id));
+        showToast("Post deleted");
+      } catch (e) { showToast("Delete failed", "error"); }
+  };
+  
   const setBlogPosts = async () => {};
 
   const addTestimonial = async (t: Testimonial) => { await addDoc(collection(db, 'testimonials'), t); };
@@ -266,31 +339,61 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateSiteContent = async (section: keyof SiteContent, data: any) => {
-      await setDoc(doc(db, 'content', section), data);
+      try {
+        await setDoc(doc(db, 'content', section), data);
+        showToast("Content saved");
+      } catch (e) { showToast("Failed to save content", "error"); }
   };
 
   const login = async (email: string, password?: string) => {
       const pass = password || "password123"; 
       try {
         await signInWithEmailAndPassword(auth, email, pass);
+        showToast("Welcome back!");
       } catch (error: any) {
-          alert(error.message);
+          showToast(error.message, "error");
       }
   };
 
-  const logout = async () => { await signOut(auth); };
+  const logout = async () => { 
+      await signOut(auth);
+      showToast("Signed out successfully");
+  };
 
   const toggleWishlist = async (productId: string) => {
-      if (!currentUser) return;
+      if (!currentUser) {
+          showToast("Please sign in to save items", "info");
+          return;
+      }
       const isIn = currentUser.wishlist.includes(productId);
       const newWishlist = isIn ? currentUser.wishlist.filter(id => id !== productId) : [...currentUser.wishlist, productId];
-      await updateDoc(doc(db, 'users', currentUser.id), { wishlist: newWishlist });
+      
+      try {
+        await updateDoc(doc(db, 'users', currentUser.id), { wishlist: newWishlist });
+        // Local update for immediate UI response
+        setCurrentUser(prev => prev ? { ...prev, wishlist: newWishlist } : null);
+        if (!isIn) showToast("Added to wishlist");
+      } catch (e) {
+          showToast("Failed to update wishlist", "error");
+      }
+  };
+
+  const updateUserProfile = async (data: Partial<User>) => {
+      if (!currentUser) return;
+      try {
+        await updateDoc(doc(db, 'users', currentUser.id), data);
+        setCurrentUser(prev => prev ? { ...prev, ...data } : null);
+        showToast("Profile updated");
+      } catch (e) {
+          showToast("Update failed", "error");
+      }
   };
 
   // Cart Logic
   const addToCart = (product: Product) => {
       setCartState(prev => {
           const existing = prev.find(p => p.id === product.id);
+          showToast(`Added ${product.title} to inquiry`);
           if (existing) {
               return prev.map(p => p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p);
           }
@@ -323,7 +426,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       testimonials, setTestimonials: setTestimonials as any, addTestimonial, removeTestimonial,
       messages, addMessage,
       siteContent, updateSiteContent,
-      currentUser, login, logout, toggleWishlist,
+      currentUser, login, logout, toggleWishlist, updateUserProfile,
       cart, addToCart, removeFromCart, updateCartQuantity, clearCart,
       uploadFile, loading
     }}>

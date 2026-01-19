@@ -15,7 +15,7 @@ const StatCard = ({ title, value, icon: Icon, color }: any) => (
   </div>
 );
 
-const Dashboard: React.FC = () => {
+const Dashboard = () => {
   const { orders, products, messages } = useStore();
   
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);

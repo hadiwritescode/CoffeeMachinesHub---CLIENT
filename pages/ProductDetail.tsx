@@ -26,7 +26,7 @@ const IconMap = {
   box: Box
 };
 
-const ProductDetail: React.FC = () => {
+const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { toggleWishlist, currentUser, products } = useStore();
   const product = products.find(p => p.id === id);

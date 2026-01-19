@@ -150,7 +150,7 @@ const Home: React.FC = () => {
          </div>
       </div>
 
-      {/* Categories Section */}
+      {/* Categories Photo Section */}
       <section className="relative z-10 py-16 md:py-24 bg-nomad-paper">
         <div className="container mx-auto px-6 md:px-12">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
@@ -163,19 +163,18 @@ const Home: React.FC = () => {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-[120vh] md:h-[60vh]">
              {[
-                { title: "Machines", image: "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=400", video: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4", bgColor: "bg-nomad-cream" },
-                { title: "Grinders", image: "https://images.unsplash.com/photo-1618116523910-1840b2f69830?auto=format&fit=crop&q=80&w=400", video: "https://videos.pexels.com/video-files/4443026/4443026-uhd_2560_1440_25fps.mp4", bgColor: "bg-nomad-gray" },
-                { title: "Blenders", image: "https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&q=80&w=400", video: "https://videos.pexels.com/video-files/3195979/3195979-uhd_2560_1440_25fps.mp4", bgColor: "bg-nomad-hero" },
-                { title: "Accessories", image: "https://images.unsplash.com/photo-1544655615-5654316d2e61?auto=format&fit=crop&q=80&w=400", video: "https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4", bgColor: "bg-[#EFEBE9]" }
+                { title: "Machines", image: "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=800", video: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4" },
+                { title: "Grinders", image: "https://images.unsplash.com/photo-1618116523910-1840b2f69830?auto=format&fit=crop&q=80&w=800", video: "https://videos.pexels.com/video-files/4443026/4443026-uhd_2560_1440_25fps.mp4" },
+                { title: "Blenders", image: "https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&q=80&w=800", video: "https://videos.pexels.com/video-files/3195979/3195979-uhd_2560_1440_25fps.mp4" },
+                { title: "Accessories", image: "https://images.unsplash.com/photo-1544655615-5654316d2e61?auto=format&fit=crop&q=80&w=800", video: "https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4" }
              ].map((cat, idx) => (
-                <div key={idx} className="fade-right" style={{ transitionDelay: `${300 + idx * 100}ms` }}>
+                <div key={idx} className="fade-right h-full" style={{ transitionDelay: `${300 + idx * 100}ms` }}>
                     <CategoryCard 
                         title={cat.title} 
                         image={cat.image} 
                         video={cat.video}
-                        bgColor={cat.bgColor} 
                     />
                 </div>
              ))}

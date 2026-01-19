@@ -7,6 +7,7 @@ import { NavCategory } from '../../types';
 const CategoryManager: React.FC = () => {
   const { categories, setCategories } = useStore();
   const [editingCategory, setEditingCategory] = useState<NavCategory | null>(null);
+  const [originalTitle, setOriginalTitle] = useState<string>(''); // Track original name to prevent dupes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newItemInput, setNewItemInput] = useState('');
 
@@ -18,20 +19,28 @@ const CategoryManager: React.FC = () => {
   const handleSave = async () => {
     if (!editingCategory || !editingCategory.title) return;
     
-    // Check if updating or creating (Match by title)
-    const index = categories.findIndex(c => c.title === editingCategory.title);
     let newCats = [...categories];
     
-    if (index >= 0) {
-        // Update existing (merging items logic or full replace?) -> Full replace for simplicity in admin
-        newCats[index] = editingCategory;
+    // Find index by original title if editing, or check if title already exists for new
+    if (originalTitle) {
+        const index = newCats.findIndex(c => c.title === originalTitle);
+        if (index >= 0) {
+            newCats[index] = editingCategory;
+        }
     } else {
+        // New category
+        // Simple check to see if it already exists
+        if (newCats.some(c => c.title === editingCategory.title)) {
+            alert('Category with this name already exists');
+            return;
+        }
         newCats.push(editingCategory);
     }
     
     await setCategories(newCats);
     setIsModalOpen(false);
     setEditingCategory(null);
+    setOriginalTitle('');
   };
 
   const handleDelete = async (title: string) => {
@@ -62,11 +71,13 @@ const CategoryManager: React.FC = () => {
 
   const startEdit = (cat: NavCategory) => {
     setEditingCategory({ ...cat }); 
+    setOriginalTitle(cat.title);
     setIsModalOpen(true);
   };
 
   const startNew = () => {
     setEditingCategory({ ...newCategory });
+    setOriginalTitle('');
     setIsModalOpen(true);
   };
 
@@ -102,8 +113,8 @@ const CategoryManager: React.FC = () => {
        </div>
 
        {isModalOpen && editingCategory && (
-         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-8 max-w-lg w-full">
+         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl">
                <h2 className="text-2xl font-bold mb-6">Manage Category</h2>
                
                <div className="space-y-4">

@@ -57,6 +57,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }
             <img 
               src={product.image} 
               alt={product.title}
+              loading="lazy"
               className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isHovered && (product.hoverImage || product.hoverVideo) ? 'opacity-0' : 'scale-100 group-hover:scale-110'}`}
             />
             
@@ -77,6 +78,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }
               <img 
                   src={product.hoverImage} 
                   alt={`${product.title} alternate`}
+                  loading="lazy"
                   className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isHovered ? 'opacity-100' : 'opacity-0'}`}
               />
             )}
