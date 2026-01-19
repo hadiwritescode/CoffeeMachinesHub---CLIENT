@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ALL_PRODUCTS, BLENDS_PRODUCTS } from '../constants';
 import { 
   Plus, Minus, Heart, Truck, ShieldCheck, Coffee, CheckCircle, Star, 
-  Flame, MapPin, Droplet, Settings, Award, Cpu, Wifi, Layers, Thermometer, Box, ChevronDown, ChevronUp 
+  Flame, MapPin, Droplet, Settings, Award, Cpu, Wifi, Layers, Thermometer, Box, ChevronDown, ChevronUp, MessageCircle
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { Product, Feature } from '../types';
@@ -53,21 +53,15 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-PK', {
-      style: 'currency',
-      currency: 'PKR',
-      minimumFractionDigits: 0
-    }).format(price).replace('PKR', 'Rs.');
-  };
-
   const toggleFeature = (index: number) => {
     setOpenFeatureIndex(openFeatureIndex === index ? null : index);
   };
 
-  const handleAddToCart = () => {
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+  const handleWhatsAppClick = () => {
+    const phoneNumber = '923001234567';
+    const productUrl = window.location.href;
+    const message = `Hi, I'm interested in ordering ${product.title}. \n\nOptions selected: \n- Grind: ${selectedGrind} \n- Size: ${selectedWeight} \n\nLink: ${productUrl}`;
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   // Generate default features if none exist
@@ -196,7 +190,10 @@ const ProductDetail: React.FC = () => {
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium mb-6 text-nomad-black leading-none">{product.title}</h1>
                 
                 <div className="flex items-center gap-6 mb-8 border-b border-gray-100 pb-8">
-                  <span className="text-2xl font-sans font-medium text-gray-900">{formatPrice(product.price)}</span>
+                  <div className="flex items-center gap-2 text-xl font-bold text-green-600 uppercase tracking-wider">
+                      <MessageCircle size={24} />
+                      WhatsApp for Price
+                  </div>
                   {product.soldOut ? (
                        <span className="text-red-500 text-xs font-bold uppercase tracking-widest px-3 py-1 bg-red-50 rounded-full">Out of Stock</span>
                   ) : (
@@ -262,10 +259,11 @@ const ProductDetail: React.FC = () => {
 
                     <div className="flex flex-col sm:flex-row gap-4 mb-12">
                         <button 
-                            onClick={handleAddToCart}
-                            className="flex-grow bg-nomad-gold text-white py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200"
+                            onClick={handleWhatsAppClick}
+                            className="flex-grow bg-green-600 text-white py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-green-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200 flex items-center justify-center gap-3"
                         >
-                            Add to Cart — {formatPrice(product.price)}
+                            <MessageCircle size={20} />
+                            Order via WhatsApp
                         </button>
                         <button className="w-full sm:w-14 h-14 flex items-center justify-center border border-gray-200 rounded-full hover:border-nomad-gold hover:text-nomad-gold transition-colors">
                             <Heart size={20} />

@@ -14,8 +14,8 @@ const Footer: React.FC = () => {
             
             {/* Brand Column */}
             <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left">
-                <div className="mb-6 p-4 rounded-full border border-nomad-gold/30 bg-nomad-gold/5 inline-block">
-                    <Logo className="h-16 w-16 text-nomad-gold" />
+                <div className="mb-6 inline-block">
+                    <Logo className="h-32 w-auto text-nomad-gold" />
                 </div>
                 <h2 className="text-2xl font-serif font-bold text-nomad-gold mb-4">
                   Coffee Machines Hub

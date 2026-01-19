@@ -116,10 +116,13 @@ const Header: React.FC = () => {
             {mobileMenuOpen ? <X size={24} className="text-nomad-black z-50 relative" /> : <Menu size={24} />}
           </button>
 
-          {/* Logo */}
-          <Link to="/" className="flex-shrink-0 z-50 transition-transform duration-300 hover:scale-105">
+          {/* Logo - Centered on mobile via absolute positioning */}
+          <Link 
+            to="/" 
+            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:transform-none md:translate-x-0 md:translate-y-0 z-50 transition-transform duration-300 hover:scale-105"
+          >
             <Logo 
-                className={`transition-all duration-300 ${isScrolled ? 'h-8 md:h-10 w-auto' : 'h-10 md:h-12 w-auto'}`} 
+                className={`transition-all duration-300 ${isScrolled ? 'h-12 md:h-14 w-auto' : 'h-16 md:h-20 w-auto'}`} 
                 fill={mobileMenuOpen ? '#3B261B' : getLogoFill()} // Force brown logo when menu open
             />
           </Link>
@@ -266,7 +269,7 @@ const Header: React.FC = () => {
         {/* Mobile Menu Content - Using inset-y-0 and h-[100dvh] for full height on mobile */}
         <div className={`fixed inset-y-0 left-0 w-[90%] max-w-sm h-[100dvh] bg-nomad-paper z-[60] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="p-6 flex justify-between items-center border-b border-gray-200 bg-nomad-paper shrink-0">
-             <Logo className="h-10 w-auto" fill="#3B261B" />
+             <Logo className="h-12 w-auto" fill="#3B261B" />
              {/* Close button for menu */}
              <button onClick={() => setMobileMenuOpen(false)} className="text-nomad-black p-2">
                  <X size={24} />
