@@ -1,7 +1,9 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { BLOG_POSTS } from '../constants';
 import { ArrowLeft } from 'lucide-react';
+
+const { useParams, Link } = ReactRouterDOM;
 
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import CategoryCard from '../components/CategoryCard';
 import { useStore } from '../context/StoreContext';
 import { ArrowRight, Play, Search, Star, Quote } from 'lucide-react';
+
+const { Link, useNavigate } = ReactRouterDOM;
 
 const Home: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);

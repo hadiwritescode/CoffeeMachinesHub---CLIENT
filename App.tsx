@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { StoreProvider } from './context/StoreContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -25,6 +25,8 @@ import OrderManager from './pages/admin/OrderManager';
 import ContentManager from './pages/admin/ContentManager';
 import BlogManager from './pages/admin/BlogManager';
 import CategoryManager from './pages/admin/CategoryManager';
+
+const { BrowserRouter: Router, Routes, Route, useLocation } = ReactRouterDOM;
 
 // Wrapper component to handle ScrollToTop and Animations
 const PageWrapper = ({ children }: { children?: React.ReactNode }) => {

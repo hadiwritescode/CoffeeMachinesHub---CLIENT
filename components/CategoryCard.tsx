@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
+
+const { Link } = ReactRouterDOM;
 
 interface CategoryCardProps {
   title?: string;

@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { Phone, Search, User, ShoppingBag, Menu, X, ArrowRight, ChevronRight, ChevronDown } from 'lucide-react';
 import { NAVIGATION_LINKS } from '../constants';
 import Logo from './Logo';
+
+const { Link, useLocation, useNavigate } = ReactRouterDOM;
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);

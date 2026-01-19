@@ -1,6 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { BLOG_POSTS } from '../constants';
+
+const { Link } = ReactRouterDOM;
 
 const Blogs: React.FC = () => {
   return (

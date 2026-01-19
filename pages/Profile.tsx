@@ -1,7 +1,9 @@
 import React from 'react';
 import { useStore } from '../context/StoreContext';
-import { Navigate } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
+
+const { Navigate } = ReactRouterDOM;
 
 const Profile: React.FC = () => {
   const { currentUser, orders, products, logout } = useStore();

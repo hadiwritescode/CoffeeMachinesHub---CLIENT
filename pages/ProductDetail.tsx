@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ALL_PRODUCTS } from '../constants';
+import * as ReactRouterDOM from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { 
   Heart, ShieldCheck, Coffee, CheckCircle, Star, 
@@ -8,6 +7,8 @@ import {
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { Product, Feature } from '../types';
+
+const { useParams, Link } = ReactRouterDOM;
 
 // Icon mapping for features
 const IconMap = {
@@ -27,14 +28,14 @@ const IconMap = {
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { toggleWishlist, currentUser } = useStore();
-  const product = ALL_PRODUCTS.find(p => p.id === id);
+  const { toggleWishlist, currentUser, products } = useStore();
+  const product = products.find(p => p.id === id);
   const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(0);
   const [showToast, setShowToast] = useState(false);
-  const [activeImage, setActiveImage] = useState(product?.image || '');
+  const [activeImage, setActiveImage] = useState('');
 
   // Suggest similar products based on category
-  const relatedProducts = ALL_PRODUCTS
+  const relatedProducts = products
     .filter(p => p.id !== id && p.category === product?.category)
     .slice(0, 3);
 
@@ -48,6 +49,7 @@ const ProductDetail: React.FC = () => {
   }
 
   const images = product.images && product.images.length > 0 ? product.images : [product.image, product.hoverImage].filter(Boolean) as string[];
+  const currentImage = activeImage || images[0];
 
   const toggleFeature = (index: number) => {
     setOpenFeatureIndex(openFeatureIndex === index ? null : index);
@@ -62,6 +64,10 @@ const ProductDetail: React.FC = () => {
 
   const handleWishlistClick = () => {
       toggleWishlist(product.id);
+      if (!isInWishlist) {
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
+      }
   };
 
   const isInWishlist = currentUser?.wishlist.includes(product.id);
@@ -154,7 +160,7 @@ const ProductDetail: React.FC = () => {
           {/* Left Side: Image Gallery */}
           <div className="w-full lg:w-[55%] flex flex-col gap-6">
              <div className="bg-[#F9F9F9] rounded-[2rem] overflow-hidden w-full aspect-[4/5] relative group shadow-sm">
-                <img src={activeImage || product.image} alt={product.title} className="w-full h-full object-cover transition-transform duration-700" />
+                <img src={currentImage} alt={product.title} className="w-full h-full object-cover transition-transform duration-700" />
                 {product.soldOut && (
                   <div className="absolute top-6 left-6 bg-white/90 backdrop-blur px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-gray-100">
                     Sold Out
@@ -169,7 +175,7 @@ const ProductDetail: React.FC = () => {
                         <button 
                             key={idx} 
                             onClick={() => setActiveImage(img)}
-                            className={`bg-[#F9F9F9] rounded-xl overflow-hidden aspect-square cursor-pointer border-2 transition-all ${activeImage === img ? 'border-nomad-gold' : 'border-transparent hover:border-gray-200'}`}
+                            className={`bg-[#F9F9F9] rounded-xl overflow-hidden aspect-square cursor-pointer border-2 transition-all ${currentImage === img ? 'border-nomad-gold' : 'border-transparent hover:border-gray-200'}`}
                         >
                             <img src={img} alt={`Detail ${idx}`} className="w-full h-full object-cover" />
                         </button>

@@ -2,12 +2,13 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Function to check if user is admin
+    // Helper function to check if user is admin
     function isAdmin() {
-      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Public Collections (Read-only for public, Write for Admin)
+    // Public Read / Admin Write Collections
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -29,20 +30,23 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Orders (User can read own, Admin can read/write all)
+    // Orders
+    // Anyone can create (public checkout)
+    // Only owner (by email match) or Admin can read
     match /orders/{orderId} {
+      allow create: if true;
       allow read: if request.auth != null && (resource.data.email == request.auth.token.email || isAdmin());
-      allow create: if true; // Public can create orders (checkout)
       allow update, delete: if isAdmin();
     }
 
-    // Messages (Public create, Admin read)
+    // Messages (Contact Form)
     match /messages/{msgId} {
       allow create: if true;
       allow read, update, delete: if isAdmin();
     }
 
-    // Users (User can read/write own profile)
+    // Users
+    // Users can read/write their own data
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }

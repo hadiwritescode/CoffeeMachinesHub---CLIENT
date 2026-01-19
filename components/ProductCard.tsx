@@ -1,7 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { Product } from '../types';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
+
+const { Link } = ReactRouterDOM;
 
 interface ProductCardProps {
   product: Product;

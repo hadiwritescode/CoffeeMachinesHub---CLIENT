@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { BEST_COFFEES } from '../constants';
-import { ShoppingBag, ArrowRight, Trash, Plus, Minus, CheckCircle } from 'lucide-react';
+import { ShoppingBag, ArrowRight, Trash, Plus, Minus, CheckCircle, MessageCircle } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 
+const { Link } = ReactRouterDOM;
+
 const Cart: React.FC = () => {
-  const { cart, removeFromCart, updateCartQuantity, clearCart, createOrder, currentUser } = useStore();
+  const { cart, removeFromCart, updateCartQuantity, clearCart, createOrder, currentUser, products } = useStore();
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'details' | 'success'>('cart');
   const [formData, setFormData] = useState({
       name: currentUser?.name || '',
@@ -15,8 +16,7 @@ const Cart: React.FC = () => {
       address: ''
   });
 
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const recommendations = BEST_COFFEES.slice(0, 3);
+  const recommendations = products.filter(p => p.isFeatured).slice(0, 3);
 
   const handleCheckout = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -27,18 +27,18 @@ const Cart: React.FC = () => {
           email: formData.email,
           phone: formData.phone,
           address: formData.address,
-          total: total,
+          total: 0, // Prices negotiated
           items: cart.map(item => ({
               productId: item.id,
               productTitle: item.title,
               quantity: item.quantity,
-              price: item.price
+              price: 0
           }))
       });
 
       // Send WhatsApp
       const itemsList = cart.map(i => `${i.quantity}x ${i.title}`).join('%0A');
-      const waMsg = `New Order: ${orderId}%0A%0AItems:%0A${itemsList}%0A%0ATotal: Rs. ${total}%0A%0ACustomer: ${formData.name}%0AAddress: ${formData.address}`;
+      const waMsg = `Hi, I would like to inquire about an order:%0AOrder ID: ${orderId}%0A%0AItems:%0A${itemsList}%0A%0ACustomer: ${formData.name}%0AAddress: ${formData.address}`;
       window.open(`https://wa.me/923104811011?text=${waMsg}`, '_blank');
 
       clearCart();
@@ -49,9 +49,9 @@ const Cart: React.FC = () => {
       return (
           <div className="min-h-screen bg-nomad-paper pt-40 pb-20 flex flex-col items-center justify-center text-center px-6">
               <CheckCircle size={64} className="text-green-600 mb-6" />
-              <h1 className="text-4xl font-serif font-bold mb-4">Order Placed Successfully!</h1>
-              <p className="text-gray-500 mb-8 max-w-md">Thank you for your order. We have received it and will contact you via WhatsApp shortly for confirmation.</p>
-              <Link to="/shop" className="bg-nomad-black text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest hover:bg-nomad-gold transition-colors">Continue Shopping</Link>
+              <h1 className="text-4xl font-serif font-bold mb-4">Inquiry Sent Successfully!</h1>
+              <p className="text-gray-500 mb-8 max-w-md">We have opened a WhatsApp chat with your order details. Our team will confirm prices and availability shortly.</p>
+              <Link to="/shop" className="bg-nomad-black text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest hover:bg-nomad-gold transition-colors">Continue Browsing</Link>
           </div>
       );
   }
@@ -68,7 +68,7 @@ const Cart: React.FC = () => {
                 </div>
                 <h1 className="text-4xl md:text-6xl font-serif font-medium mb-6 text-nomad-black">Your bag is empty</h1>
                 <p className="text-lg text-gray-500 mb-10 font-light max-w-md">
-                    Looks like you haven't added any beans or gear yet.
+                    Looks like you haven't added any items yet.
                 </p>
                 <Link to="/shop" className="inline-block bg-nomad-black text-white px-12 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
                     Start Shopping
@@ -78,7 +78,7 @@ const Cart: React.FC = () => {
             <div className="flex flex-col lg:flex-row gap-12">
                 {/* Cart Items */}
                 <div className="w-full lg:w-2/3">
-                    <h1 className="text-3xl font-serif font-bold mb-8">Shopping Bag ({cart.length})</h1>
+                    <h1 className="text-3xl font-serif font-bold mb-8">Quote Request ({cart.length})</h1>
                     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
                         {cart.map(item => (
                             <div key={item.id} className="flex gap-6 items-center border-b border-gray-100 pb-6 last:border-0 last:pb-0">
@@ -95,7 +95,7 @@ const Cart: React.FC = () => {
                                             <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
                                             <button onClick={() => updateCartQuantity(item.id, 1)} className="p-1 hover:text-nomad-gold"><Plus size={14} /></button>
                                         </div>
-                                        <span className="font-bold text-nomad-black">Rs. {(item.price * item.quantity).toLocaleString()}</span>
+                                        <span className="text-xs font-bold uppercase tracking-wider text-green-600">Price on Request</span>
                                     </div>
                                 </div>
                             </div>
@@ -106,20 +106,21 @@ const Cart: React.FC = () => {
                 {/* Checkout Sidebar */}
                 <div className="w-full lg:w-1/3">
                     <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 sticky top-32">
-                        <h3 className="font-bold text-xl mb-6 font-serif">Order Summary</h3>
+                        <h3 className="font-bold text-xl mb-6 font-serif">Inquiry Summary</h3>
                         <div className="space-y-4 mb-6 text-sm text-gray-600">
                             <div className="flex justify-between">
-                                <span>Subtotal</span>
-                                <span>Rs. {total.toLocaleString()}</span>
+                                <span>Items</span>
+                                <span>{cart.reduce((acc, i) => acc + i.quantity, 0)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Shipping</span>
-                                <span>Free</span>
+                                <span>TBD</span>
                             </div>
                             <div className="flex justify-between font-bold text-lg text-nomad-black border-t border-gray-100 pt-4">
                                 <span>Total</span>
-                                <span>Rs. {total.toLocaleString()}</span>
+                                <span>--</span>
                             </div>
+                            <p className="text-xs text-gray-400 italic">Final pricing and shipping will be confirmed via WhatsApp.</p>
                         </div>
 
                         {checkoutStep === 'cart' ? (
@@ -127,11 +128,11 @@ const Cart: React.FC = () => {
                                 onClick={() => setCheckoutStep('details')}
                                 className="w-full bg-nomad-black text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-nomad-gold transition-colors"
                             >
-                                Checkout
+                                Proceed to Inquiry
                             </button>
                         ) : (
                             <form onSubmit={handleCheckout} className="space-y-4 animate-fade-in">
-                                <h4 className="font-bold text-sm uppercase text-gray-400 mb-2">Shipping Details</h4>
+                                <h4 className="font-bold text-sm uppercase text-gray-400 mb-2">Your Details</h4>
                                 <input 
                                     required 
                                     placeholder="Full Name" 
@@ -157,24 +158,25 @@ const Cart: React.FC = () => {
                                 />
                                 <textarea 
                                     required 
-                                    placeholder="Full Address" 
+                                    placeholder="Delivery Address / City" 
                                     className="w-full border p-3 rounded-xl text-sm"
-                                    rows={3}
+                                    rows={2}
                                     value={formData.address}
                                     onChange={e => setFormData({...formData, address: e.target.value})}
                                 />
                                 <button 
                                     type="submit"
-                                    className="w-full bg-green-600 text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-green-700 transition-colors shadow-lg"
+                                    className="w-full bg-green-600 text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-green-700 transition-colors shadow-lg flex items-center justify-center gap-2"
                                 >
-                                    Place Order
+                                    <MessageCircle size={18} />
+                                    Send via WhatsApp
                                 </button>
                                 <button 
                                     type="button"
                                     onClick={() => setCheckoutStep('cart')}
                                     className="w-full text-xs text-gray-500 hover:text-black underline"
                                 >
-                                    Back to Cart
+                                    Back to Items
                                 </button>
                             </form>
                         )}

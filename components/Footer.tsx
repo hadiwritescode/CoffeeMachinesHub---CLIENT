@@ -1,8 +1,10 @@
 import React from 'react';
 import Logo from './Logo';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { Instagram, Facebook, Youtube, AtSign } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+
+const { Link } = ReactRouterDOM;
 
 const Footer: React.FC = () => {
   const { siteContent } = useStore();

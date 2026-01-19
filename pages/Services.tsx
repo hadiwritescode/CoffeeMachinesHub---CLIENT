@@ -1,6 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+
+const { Link } = ReactRouterDOM;
 
 const Services: React.FC = () => {
   const { siteContent } = useStore();
