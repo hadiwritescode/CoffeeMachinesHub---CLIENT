@@ -6,7 +6,7 @@ import {
 } from 'firebase/firestore';
 import { 
   signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,
-  setPersistence, browserSessionPersistence, browserLocalPersistence
+  setPersistence, browserSessionPersistence
 } from 'firebase/auth';
 import { 
   ref, uploadBytes, getDownloadURL 
@@ -130,15 +130,36 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   });
 
   useEffect(() => {
-    // 1. Listen for Products
+    // 1. Listen for Products (Safe)
     const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
-      setProductsState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
+      setProductsState(snapshot.docs.map(doc => {
+          const d = doc.data();
+          return {
+              id: doc.id,
+              title: d.title || 'Untitled Product',
+              price: d.price || 0,
+              image: d.image || '',
+              images: d.images || [],
+              category: d.category || 'Uncategorized',
+              tags: d.tags || [],
+              description: d.description || '',
+              soldOut: !!d.soldOut,
+              isFeatured: !!d.isFeatured,
+              ...d
+          } as Product;
+      }));
     });
 
-    // 2. Listen for Categories
+    // 2. Listen for Categories (Safe)
     const unsubCats = onSnapshot(doc(db, 'content', 'navigation'), (docSnap) => {
       if (docSnap.exists()) {
-        setCategoriesState(docSnap.data().categories as NavCategory[]);
+        const rawCats = docSnap.data().categories || [];
+        // Ensure every category has an items array
+        const safeCats = rawCats.map((c: any) => ({
+            title: c.title || 'Untitled',
+            items: Array.isArray(c.items) ? c.items : []
+        }));
+        setCategoriesState(safeCats as NavCategory[]);
       } else {
          const initialCategories = NAVIGATION_LINKS.find(l => l.label === 'SHOP')?.subItems || [];
          setDoc(doc(db, 'content', 'navigation'), { categories: initialCategories }).catch(console.error);
@@ -171,15 +192,12 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
             const next = { ...prev };
             snapshot.docs.forEach(doc => {
                 if (doc.id !== 'navigation') { 
-                    // Safely merge with default structure to prevent missing keys
                     const sectionKey = doc.id as keyof SiteContent;
                     const defaultSection = defaultSiteContent[sectionKey];
                     
                     if (defaultSection && typeof defaultSection === 'object' && !Array.isArray(defaultSection)) {
-                        // Deep merge for objects
                         next[sectionKey] = { ...defaultSection, ...doc.data() };
                     } else {
-                        // Direct replace for arrays or others
                         next[sectionKey] = doc.data() as any;
                     }
                 }
@@ -188,7 +206,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
         });
     });
 
-    // 8. Auth Listener
+    // 8. Auth Listener (Critical Safe User Loading)
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -196,10 +214,25 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
             const snapshot = await getDoc(userDocRef);
             
             if (snapshot.exists()) {
-                const userData = snapshot.data() as User;
-                setCurrentUser(userData);
-                if (userData.cart) setCartState(userData.cart);
+                const userData = snapshot.data();
+                
+                // Sanitize User Data: Fill missing fields with defaults to prevent crashes
+                const safeUser: User = {
+                    id: user.uid,
+                    name: userData.name || user.displayName || 'Customer',
+                    email: userData.email || user.email || '',
+                    role: userData.role || 'customer',
+                    wishlist: Array.isArray(userData.wishlist) ? userData.wishlist : [], // Fix: Ensure array
+                    cart: Array.isArray(userData.cart) ? userData.cart : [], // Fix: Ensure array
+                    phone: userData.phone || '',
+                    address: userData.address || '',
+                    city: userData.city || ''
+                };
+
+                setCurrentUser(safeUser);
+                if (safeUser.cart.length > 0) setCartState(safeUser.cart);
             } else {
+                // Creates document if missing
                 const newUser: User = {
                     id: user.uid,
                     name: user.displayName || 'Customer',
@@ -252,8 +285,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      // Set persistence to session to ensure users are logged out when they close the tab
-      // This fulfills the "force logout on leave" requirement if they close browser.
       await setPersistence(auth, browserSessionPersistence);
       await signInWithEmailAndPassword(auth, email, password);
       showToast("Signed in successfully");
