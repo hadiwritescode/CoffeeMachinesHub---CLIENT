@@ -43,9 +43,18 @@ const Home: React.FC = () => {
   // Filter products for sections (Using strict categories)
   const machineProducts = products.filter(p => p.category === 'Machines' || p.tags?.includes('Machines')).slice(0, 6);
   
-  // "Curated Favorites" uses isFeatured flag, or falls back to 'Grinders' (since Coffee is legacy)
+  // "Curated Favorites" uses isFeatured flag, or falls back to 'Grinders'
   const featuredProducts = products.filter(p => p.isFeatured);
   const displayFavorites = featuredProducts.length > 0 ? featuredProducts : products.filter(p => p.category === 'Grinders').slice(0, 6);
+
+  // Safe accessors for content
+  const hero = siteContent?.hero || {
+    title: "Coffee Machines Hub",
+    subtitle: "",
+    videoUrl: "",
+    buttonText: "Shop Now"
+  };
+  const brands = siteContent?.home?.brands || [];
 
   return (
     <div className="bg-nomad-paper overflow-hidden">
@@ -71,7 +80,7 @@ const Home: React.FC = () => {
                     className="w-full h-full object-cover"
                     poster="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1600"
                 >
-                    <source src={siteContent.hero.videoUrl} type="video/mp4" />
+                    <source src={hero.videoUrl || ""} type="video/mp4" />
                 </video>
                 <div className="absolute inset-0 bg-nomad-black/40"></div>
             </div>
@@ -81,7 +90,7 @@ const Home: React.FC = () => {
                 <div className="w-full max-w-6xl mx-auto space-y-8 md:space-y-12">
                     {/* Dynamic Title */}
                     <h1 className="text-4xl md:text-6xl lg:text-8xl font-serif font-medium leading-tight md:leading-none tracking-tight animate-slide-right whitespace-normal md:whitespace-nowrap" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
-                        {siteContent.hero.title}
+                        {hero.title || "Coffee Machines Hub"}
                     </h1>
 
                     {/* Hero Search Bar */}
@@ -119,7 +128,7 @@ const Home: React.FC = () => {
                             to="/shop" 
                             className="bg-nomad-gold text-white px-8 py-3 md:px-10 md:py-4 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-nomad-black transition-all duration-300 w-full md:w-auto min-w-[200px]"
                         >
-                            {siteContent.hero.buttonText}
+                            {hero.buttonText || "Shop Now"}
                         </Link>
                         <Link 
                             to="/about" 
@@ -242,7 +251,7 @@ const Home: React.FC = () => {
         <div className="space-y-12">
             {/* Top Row - Moves Left */}
             <div className="flex animate-marquee whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700 [animation-duration:10s] md:[animation-duration:25s]">
-                {[...siteContent.home.brands, ...siteContent.home.brands].map((brand, idx) => (
+                {[...brands, ...brands].map((brand, idx) => (
                     <span key={`top-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-8 md:mx-16 hover:text-nomad-gold cursor-default transition-colors">
                         {brand}
                     </span>
@@ -251,7 +260,7 @@ const Home: React.FC = () => {
 
             {/* Bottom Row - Moves Right */}
             <div className="flex animate-marquee-reverse whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700 [animation-duration:10s] md:[animation-duration:25s]">
-                {[...siteContent.home.brands, ...siteContent.home.brands].map((brand, idx) => (
+                {[...brands, ...brands].map((brand, idx) => (
                     <span key={`bottom-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-8 md:mx-16 hover:text-nomad-gold cursor-default transition-colors">
                         {brand}
                     </span>

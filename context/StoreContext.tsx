@@ -5,7 +5,8 @@ import {
   collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc 
 } from 'firebase/firestore';
 import { 
-  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged 
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,
+  setPersistence, browserSessionPersistence, browserLocalPersistence
 } from 'firebase/auth';
 import { 
   ref, uploadBytes, getDownloadURL 
@@ -164,15 +165,27 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
         setTestimonialsState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial)));
     });
 
-    // 7. Listen for Site Content
+    // 7. Listen for Site Content (Safe Merging)
     const unsubContent = onSnapshot(collection(db, 'content'), (snapshot) => {
-        const contentData: any = { ...defaultSiteContent };
-        snapshot.docs.forEach(doc => {
-            if (doc.id !== 'navigation') { 
-                contentData[doc.id] = doc.data();
-            }
+        setSiteContentState(prev => {
+            const next = { ...prev };
+            snapshot.docs.forEach(doc => {
+                if (doc.id !== 'navigation') { 
+                    // Safely merge with default structure to prevent missing keys
+                    const sectionKey = doc.id as keyof SiteContent;
+                    const defaultSection = defaultSiteContent[sectionKey];
+                    
+                    if (defaultSection && typeof defaultSection === 'object' && !Array.isArray(defaultSection)) {
+                        // Deep merge for objects
+                        next[sectionKey] = { ...defaultSection, ...doc.data() };
+                    } else {
+                        // Direct replace for arrays or others
+                        next[sectionKey] = doc.data() as any;
+                    }
+                }
+            });
+            return next;
         });
-        setSiteContentState(prev => ({ ...prev, ...contentData }));
     });
 
     // 8. Auth Listener
@@ -187,7 +200,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                 setCurrentUser(userData);
                 if (userData.cart) setCartState(userData.cart);
             } else {
-                // If doc doesn't exist but auth exists (shouldn't happen often), create it
                 const newUser: User = {
                     id: user.uid,
                     name: user.displayName || 'Customer',
@@ -240,6 +252,9 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
+      // Set persistence to session to ensure users are logged out when they close the tab
+      // This fulfills the "force logout on leave" requirement if they close browser.
+      await setPersistence(auth, browserSessionPersistence);
       await signInWithEmailAndPassword(auth, email, password);
       showToast("Signed in successfully");
     } catch (error: any) {
@@ -250,6 +265,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   const register = async (email: string, password: string, name: string) => {
     try {
+      await setPersistence(auth, browserSessionPersistence);
       const result = await createUserWithEmailAndPassword(auth, email, password);
       const userDocRef = doc(db, 'users', result.user.uid);
       const userData: User = {
