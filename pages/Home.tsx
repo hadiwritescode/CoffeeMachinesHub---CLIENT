@@ -125,7 +125,7 @@ const Home: React.FC = () => {
                             <span className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center group-hover:border-nomad-gold transition-colors bg-white/5 backdrop-blur-sm">
                                 <Play size={12} fill="currentColor" className="ml-0.5" />
                             </span>
-                            Watch Story
+                            About Us
                         </Link>
                     </div>
                 </div>
@@ -135,7 +135,7 @@ const Home: React.FC = () => {
 
       {/* Marquee Banner */}
       <div className="relative z-10 bg-nomad-gold text-white py-4 overflow-hidden -mt-1 rounded-t-[2rem] animate-slide-up" style={{ animationDelay: '1.3s', opacity: 0, animationFillMode: 'forwards' }}>
-         <div className="flex animate-marquee whitespace-nowrap">
+         <div className="flex animate-marquee whitespace-nowrap [animation-duration:15s] md:[animation-duration:25s]">
             {[...Array(10)].map((_, i) => (
                 <div key={i} className="flex items-center mx-8">
                     <span className="text-xs font-bold uppercase tracking-[0.3em]">Free Shipping on Orders Over Rs. 5000</span>
@@ -227,7 +227,7 @@ const Home: React.FC = () => {
         
         <div className="space-y-12">
             {/* Top Row - Moves Left */}
-            <div className="flex animate-marquee whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+            <div className="flex animate-marquee whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700 [animation-duration:10s] md:[animation-duration:25s]">
                 {[...siteContent.home.brands, ...siteContent.home.brands].map((brand, idx) => (
                     <span key={`top-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-16 hover:text-nomad-gold cursor-default transition-colors">
                         {brand}
@@ -236,7 +236,7 @@ const Home: React.FC = () => {
             </div>
 
             {/* Bottom Row - Moves Right */}
-            <div className="flex animate-marquee-reverse whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+            <div className="flex animate-marquee-reverse whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700 [animation-duration:10s] md:[animation-duration:25s]">
                 {[...siteContent.home.brands, ...siteContent.home.brands].map((brand, idx) => (
                     <span key={`bottom-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-16 hover:text-nomad-gold cursor-default transition-colors">
                         {brand}

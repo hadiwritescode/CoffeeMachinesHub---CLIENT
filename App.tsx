@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import WhatsAppWidget from './components/WhatsAppWidget';
 import FeaturesBanner from './components/FeaturesBanner';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Shop from './pages/Shop';
@@ -60,7 +61,12 @@ const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
     };
   }, [pathname]);
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <ScrollToTop />
+    </>
+  );
 };
 
 const LayoutWithHeaderFooter = ({ children }: { children: React.ReactNode }) => (
