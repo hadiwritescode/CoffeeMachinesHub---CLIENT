@@ -51,7 +51,7 @@ const Login: React.FC = () => {
       <div className="w-full max-w-md px-8 relative z-10">
         <div className="text-center mb-12 fade-up">
             <span className="text-nomad-gold text-[10px] font-bold uppercase tracking-[0.3em] mb-4 block">
-              {isRegister ? 'Join the Studio' : 'Members Only'}
+              {isRegister ? 'Join the Hub' : 'Members Only'}
             </span>
             <h1 className="text-4xl md:text-5xl font-serif font-medium mb-3 text-nomad-black">
               {isRegister ? 'Create Account' : 'Welcome Back'}

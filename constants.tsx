@@ -64,7 +64,7 @@ const STOCK_VIDEOS = {
 export const BLENDS_PRODUCTS: Product[] = [
   {
     id: 'atlas',
-    title: 'Nomad Atlas',
+    title: 'Atlas',
     price: 2775,
     image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.beans,
@@ -75,7 +75,7 @@ export const BLENDS_PRODUCTS: Product[] = [
   },
   {
     id: 'wanderlust',
-    title: 'Nomad Wanderlust',
+    title: 'Wanderlust',
     price: 3600,
     image: 'https://images.unsplash.com/photo-1587049352851-8d4e89186eff?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.drip,
@@ -86,7 +86,7 @@ export const BLENDS_PRODUCTS: Product[] = [
   },
   {
     id: 'mocha-java',
-    title: 'Nomad Mocha Java',
+    title: 'Mocha Java',
     price: 3000,
     image: 'https://images.unsplash.com/photo-1610632380989-680fe40816c6?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.slow,
@@ -97,7 +97,7 @@ export const BLENDS_PRODUCTS: Product[] = [
   },
   {
     id: 'odyssey',
-    title: 'Nomad Odyssey',
+    title: 'Odyssey',
     price: 3350,
     image: 'https://images.unsplash.com/photo-1559525839-8f897d5a363a?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.beans,
@@ -108,7 +108,7 @@ export const BLENDS_PRODUCTS: Product[] = [
   },
   {
     id: 'zenith',
-    title: 'Nomad Zenith',
+    title: 'Zenith',
     price: 2950,
     image: 'https://images.unsplash.com/photo-1514066558159-fc8c737ef259?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.drip,
@@ -119,7 +119,7 @@ export const BLENDS_PRODUCTS: Product[] = [
   },
   {
     id: 'equinox',
-    title: 'Nomad Equinox',
+    title: 'Equinox',
     price: 3100,
     image: 'https://images.unsplash.com/photo-1621939514649-28b12e81d196?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.espresso,
@@ -130,7 +130,7 @@ export const BLENDS_PRODUCTS: Product[] = [
   },
   {
     id: 'meridian',
-    title: 'Nomad Meridian Espresso',
+    title: 'Meridian Espresso',
     price: 3400,
     image: 'https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&q=80&w=800',
     hoverVideo: STOCK_VIDEOS.espresso,
@@ -408,7 +408,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt: 'Exploring the wild forests of Ethiopia where Arabica coffee was first discovered.',
     date: 'October 12, 2025',
     image: 'https://images.unsplash.com/photo-1629897103330-8b02446f2549?auto=format&fit=crop&q=80&w=800',
-    author: 'Nomad Team',
+    author: 'Coffee Machines Hub',
     content: 'Ethiopia is widely considered the birthplace of coffee (Coffea arabica). The story goes that a goat herder named Kaldi noticed his goats dancing after eating red cherries from a shrub. He tried them himself and felt the same energy. Today, Ethiopia produces some of the most distinct coffees in the world, known for their floral, tea-like, and fruity characteristics.'
   },
   {

@@ -38,7 +38,7 @@ const WhatsAppWidget: React.FC = () => {
                  <Phone size={20} fill="white" />
              </div>
              <div>
-                 <h4 className="font-bold text-sm">Nomad Support</h4>
+                 <h4 className="font-bold text-sm">Coffee Machines Hub</h4>
                  <p className="text-[10px] text-gray-300 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
                     Replies instantly

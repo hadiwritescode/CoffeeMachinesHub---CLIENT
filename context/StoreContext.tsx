@@ -121,7 +121,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   
   const [cart, setCartState] = useState<CartItem[]>(() => {
     try {
-        const saved = localStorage.getItem('nomad_cart');
+        const saved = localStorage.getItem('cmh_cart');
         return saved ? JSON.parse(saved) : [];
     } catch {
         return [];
@@ -220,7 +220,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   // Sync Cart to LocalStorage for non-logged in users
   useEffect(() => {
     if (!currentUser) {
-      localStorage.setItem('nomad_cart', JSON.stringify(cart));
+      localStorage.setItem('cmh_cart', JSON.stringify(cart));
     } else {
       updateDoc(doc(db, 'users', currentUser.id), { cart }).catch(console.error);
     }

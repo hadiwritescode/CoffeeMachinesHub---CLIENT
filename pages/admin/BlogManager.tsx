@@ -17,7 +17,7 @@ const BlogManager: React.FC = () => {
     content: '',
     date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     image: '',
-    author: 'Nomad Team'
+    author: 'Coffee Machines Hub'
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
