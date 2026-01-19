@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ALL_PRODUCTS } from '../constants';
+import { useStore } from '../context/StoreContext';
 import { 
   Heart, ShieldCheck, Coffee, CheckCircle, Star, 
   Flame, MapPin, Droplet, Settings, Award, Cpu, Wifi, Layers, Thermometer, Box, ChevronDown, MessageCircle
@@ -26,6 +27,7 @@ const IconMap = {
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { toggleWishlist, currentUser } = useStore();
   const product = ALL_PRODUCTS.find(p => p.id === id);
   // Default to first feature open
   const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(0);
@@ -55,6 +57,12 @@ const ProductDetail: React.FC = () => {
     const message = `Hi, I'm interested in ordering ${product.title}. \n\nLink: ${productUrl}`;
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
+
+  const handleWishlistClick = () => {
+      toggleWishlist(product.id);
+  };
+
+  const isInWishlist = currentUser?.wishlist.includes(product.id);
 
   // Generate default features if none exist
   const getFeatures = (prod: Product): Feature[] => {
@@ -216,8 +224,15 @@ const ProductDetail: React.FC = () => {
                             <MessageCircle size={20} />
                             Order via WhatsApp
                         </button>
-                        <button className="w-full sm:w-14 h-14 flex items-center justify-center border border-gray-200 rounded-full hover:border-nomad-gold hover:text-nomad-gold transition-colors active:scale-95">
-                            <Heart size={20} />
+                        <button 
+                            onClick={handleWishlistClick}
+                            className={`w-full sm:w-14 h-14 flex items-center justify-center border rounded-full transition-colors active:scale-95 ${
+                                isInWishlist 
+                                ? 'border-red-500 text-red-500 bg-red-50' 
+                                : 'border-gray-200 hover:border-nomad-gold hover:text-nomad-gold'
+                            }`}
+                        >
+                            <Heart size={20} fill={isInWishlist ? "currentColor" : "none"} />
                         </button>
                     </div>
                   </>

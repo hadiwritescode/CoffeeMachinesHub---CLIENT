@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee, List, BookOpen } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee, List, BookOpen, Menu, X } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import Logo from '../components/Logo';
 
@@ -11,6 +11,7 @@ interface AdminLayoutProps {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const { logout } = useStore();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const links = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
@@ -21,16 +22,39 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { label: 'Content', path: '/admin/content', icon: FileText },
   ];
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans">
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-0 w-full bg-nomad-black text-white z-40 px-6 py-4 flex justify-between items-center shadow-md">
+        <Logo className="h-8 w-auto text-nomad-gold" />
+        <button onClick={toggleSidebar} className="text-white focus:outline-none">
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-nomad-black text-white flex flex-col fixed h-full z-20 overflow-y-auto">
-        <div className="p-8 flex flex-col items-center border-b border-gray-700">
+      <aside className={`w-64 bg-nomad-black text-white flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+        <div className="p-8 flex flex-col items-center border-b border-gray-700 hidden md:flex">
           <Logo className="h-12 w-auto text-nomad-gold mb-4" />
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Admin Panel</span>
         </div>
         
-        <nav className="flex-grow py-8 px-4 space-y-2">
+        {/* Mobile Sidebar Header (Visual Balance) */}
+        <div className="md:hidden p-6 border-b border-gray-700">
+           <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Navigation</span>
+        </div>
+        
+        <nav className="flex-grow py-4 px-4 space-y-2 overflow-y-auto">
           {links.map((link) => {
             const Icon = link.icon;
             const isActive = location.pathname === link.path;
@@ -38,6 +62,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <Link 
                 key={link.path} 
                 to={link.path}
+                onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center space-x-3 px-6 py-4 rounded-xl transition-all duration-200 ${isActive ? 'bg-nomad-gold text-white shadow-lg' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
               >
                 <Icon size={20} />
@@ -56,7 +81,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       </aside>
 
       {/* Main Content */}
-      <main className="ml-64 flex-grow p-10 overflow-y-auto">
+      <main className="flex-grow p-4 pt-20 md:p-10 md:pt-10 md:ml-64 transition-all duration-300 overflow-x-hidden">
         {children}
       </main>
     </div>
