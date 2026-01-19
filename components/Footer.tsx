@@ -8,6 +8,9 @@ const { Link } = ReactRouterDOM;
 
 const Footer: React.FC = () => {
   const { siteContent } = useStore();
+  
+  // Safe fallback
+  const description = siteContent.footer?.description || "Purveyors of the finest coffee gear and sustainably sourced beans.";
 
   return (
     <footer className="w-full bg-nomad-black text-nomad-paper pt-16 md:pt-20 pb-10">
@@ -24,7 +27,7 @@ const Footer: React.FC = () => {
                   Coffee Machines Hub
                 </h2>
                 <p className="text-nomad-paper/80 text-sm leading-relaxed max-w-xs">
-                   Purveyors of the finest coffee gear and sustainably sourced beans. Crafting excellence, one cup at a time.
+                   {description}
                 </p>
             </div>
 

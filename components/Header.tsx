@@ -3,10 +3,12 @@ import * as ReactRouterDOM from 'react-router-dom';
 import { Phone, Search, User, ShoppingBag, Menu, X, ArrowRight, ChevronRight, ChevronDown } from 'lucide-react';
 import { NAVIGATION_LINKS } from '../constants';
 import Logo from './Logo';
+import { useStore } from '../context/StoreContext';
 
 const { Link, useLocation, useNavigate } = ReactRouterDOM;
 
 const Header: React.FC = () => {
+  const { cart } = useStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -25,6 +27,8 @@ const Header: React.FC = () => {
                              (location.pathname.startsWith('/blogs/') && location.pathname !== '/blogs');
   
   const isHomePage = location.pathname === '/';
+
+  const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -209,7 +213,7 @@ const Header: React.FC = () => {
             </Link>
             <Link to="/cart" className="hover:text-nomad-gold transition-colors p-1 relative group" aria-label="Cart">
               <ShoppingBag strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-nomad-gold rounded-full flex items-center justify-center text-[8px] font-bold text-white transition-transform group-hover:scale-110">0</span>
+              <span className={`absolute -top-1 -right-1 w-3 h-3 bg-nomad-gold rounded-full flex items-center justify-center text-[8px] font-bold text-white transition-transform ${cartCount > 0 ? 'scale-100' : 'scale-0'}`}>{cartCount}</span>
             </Link>
           </div>
         </div>
@@ -321,6 +325,9 @@ const Header: React.FC = () => {
              ))}
           </div>
           <div className="p-6 bg-nomad-gray border-t border-gray-200 shrink-0 mb-safe">
+             <Link to="/cart" className="flex items-center space-x-3 text-sm font-bold uppercase tracking-wider text-gray-600 mb-4 hover:text-nomad-black" onClick={() => setMobileMenuOpen(false)}>
+               <ShoppingBag size={18} /> <span>Cart ({cartCount})</span>
+             </Link>
              <Link to="/login" className="flex items-center space-x-3 text-sm font-bold uppercase tracking-wider text-gray-600 mb-4 hover:text-nomad-black" onClick={() => setMobileMenuOpen(false)}>
                <User size={18} /> <span>Sign In / Register</span>
              </Link>

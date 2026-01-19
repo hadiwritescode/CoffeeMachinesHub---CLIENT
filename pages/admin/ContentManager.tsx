@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Plus, Trash, User, Upload, Loader2 } from 'lucide-react';
-import { TeamMember, Testimonial } from '../../types';
+import { Plus, Trash, User, Upload, Loader2, Minus } from 'lucide-react';
+import { TeamMember, Testimonial, FAQItem } from '../../types';
 
 const ContentManager: React.FC = () => {
   const { 
@@ -11,26 +11,31 @@ const ContentManager: React.FC = () => {
       uploadFile 
   } = useStore();
   
-  const [activeTab, setActiveTab] = useState<'home' | 'services' | 'about' | 'contact' | 'socials'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'shop' | 'services' | 'about' | 'contact' | 'global'>('home');
   const [subTab, setSubTab] = useState<string>('hero');
   const [uploadingField, setUploadingField] = useState<string | null>(null);
 
-  // Form States
+  // Form States (Initialized with current content)
   const [heroForm, setHeroForm] = useState(siteContent.hero);
-  const [brands, setBrands] = useState(siteContent.home.brands);
+  const [homeTextForm, setHomeTextForm] = useState(siteContent.home);
+  const [brands, setBrands] = useState(siteContent.home?.brands || []);
+  const [shopForm, setShopForm] = useState(siteContent.shop || { heroTitle: '', heroSubtitle: '' });
   const [serviceForm, setServiceForm] = useState(siteContent.services);
   const [aboutForm, setAboutForm] = useState(siteContent.about);
   const [contactForm, setContactForm] = useState(siteContent.contact);
   const [socialsForm, setSocialsForm] = useState(siteContent.socials);
   const [teamList, setTeamList] = useState<TeamMember[]>(siteContent.team);
+  const [footerForm, setFooterForm] = useState(siteContent.footer || { description: '' });
 
+  // Save Handlers
   const saveHomeHero = async () => { await updateSiteContent('hero', heroForm); alert('Saved!'); };
-  const saveBrands = async () => { await updateSiteContent('home', { ...siteContent.home, brands }); alert('Saved!'); };
+  const saveHomeText = async () => { await updateSiteContent('home', { ...homeTextForm, brands }); alert('Saved!'); };
+  const saveShop = async () => { await updateSiteContent('shop', shopForm); alert('Saved!'); };
   const saveServices = async () => { await updateSiteContent('services', serviceForm); alert('Saved!'); };
   const saveAbout = async () => { await updateSiteContent('about', aboutForm); alert('Saved!'); };
   const saveTeam = async () => { await updateSiteContent('team', teamList); alert('Saved!'); };
   const saveContact = async () => { await updateSiteContent('contact', contactForm); alert('Saved!'); };
-  const saveSocials = async () => { await updateSiteContent('socials', socialsForm); alert('Saved!'); };
+  const saveFooter = async () => { await updateSiteContent('footer', footerForm); await updateSiteContent('socials', socialsForm); alert('Saved!'); };
 
   const handleFileUpload = async (
       e: React.ChangeEvent<HTMLInputElement>, 
@@ -69,6 +74,23 @@ const ContentManager: React.FC = () => {
       }
   };
 
+  // FAQ Helpers
+  const addFaq = () => {
+     setContactForm({ 
+         ...contactForm, 
+         faqs: [...(contactForm.faqs || []), { question: 'New Question', answer: 'New Answer' }] 
+     });
+  };
+  const updateFaq = (idx: number, field: keyof FAQItem, val: string) => {
+      const newFaqs = [...(contactForm.faqs || [])];
+      newFaqs[idx] = { ...newFaqs[idx], [field]: val };
+      setContactForm({ ...contactForm, faqs: newFaqs });
+  };
+  const removeFaq = (idx: number) => {
+      const newFaqs = contactForm.faqs.filter((_, i) => i !== idx);
+      setContactForm({ ...contactForm, faqs: newFaqs });
+  };
+
   // Testimonial Helpers
   const handleAddTestimonial = async () => {
     await addTestimonial({ id: `new-${Date.now()}`, name: 'New User', role: 'Customer', text: 'Review...', rating: 5 });
@@ -92,7 +114,7 @@ const ContentManager: React.FC = () => {
       
       {/* Top Tabs */}
       <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-200">
-         {['home', 'services', 'about', 'contact', 'socials'].map((tab) => (
+         {['global', 'home', 'shop', 'services', 'about', 'contact'].map((tab) => (
              <button 
                 key={tab}
                 onClick={() => { setActiveTab(tab as any); setSubTab('hero'); }} // Reset subtab
@@ -105,11 +127,37 @@ const ContentManager: React.FC = () => {
 
       <div className="bg-white p-8 rounded-3xl shadow-sm max-w-5xl">
          
+         {/* GLOBAL / FOOTER TAB */}
+         {activeTab === 'global' && (
+             <div className="space-y-8 animate-fade-in">
+                 <div>
+                    <h3 className="font-bold text-lg mb-4">Footer Settings</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Footer Description (Under Logo)</label>
+                            <textarea className="w-full border p-3 rounded-xl" rows={3} value={footerForm.description} onChange={e => setFooterForm({...footerForm, description: e.target.value})} />
+                        </div>
+                    </div>
+                 </div>
+
+                 <div>
+                    <h3 className="font-bold text-lg mb-4">Social Media Links</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <InputGroup label="Instagram" value={socialsForm.instagram} onChange={v => setSocialsForm({...socialsForm, instagram: v})} />
+                        <InputGroup label="Facebook" value={socialsForm.facebook} onChange={v => setSocialsForm({...socialsForm, facebook: v})} />
+                        <InputGroup label="YouTube" value={socialsForm.youtube} onChange={v => setSocialsForm({...socialsForm, youtube: v})} />
+                        <InputGroup label="Twitter" value={socialsForm.twitter} onChange={v => setSocialsForm({...socialsForm, twitter: v})} />
+                    </div>
+                 </div>
+                 <SaveButton onClick={saveFooter} />
+             </div>
+         )}
+
          {/* HOME TAB */}
          {activeTab === 'home' && (
              <div>
                 <div className="flex gap-4 mb-6">
-                    {['hero', 'brands', 'testimonials'].map(st => (
+                    {['hero', 'sections', 'brands', 'testimonials'].map(st => (
                         <button key={st} onClick={() => setSubTab(st)} className={`px-4 py-2 rounded-lg text-xs font-bold uppercase ${subTab === st ? 'bg-nomad-black text-white' : 'bg-gray-100 text-gray-500'}`}>{st}</button>
                     ))}
                 </div>
@@ -124,11 +172,31 @@ const ContentManager: React.FC = () => {
                     </div>
                 )}
 
+                {subTab === 'sections' && (
+                    <div className="space-y-6 animate-fade-in">
+                        <h3 className="font-bold text-lg border-b pb-2">Collection Section</h3>
+                        <InputGroup label="Title (Small)" value={homeTextForm.collectionTitle} onChange={v => setHomeTextForm({...homeTextForm, collectionTitle: v})} />
+                        <InputGroup label="Heading" value={homeTextForm.collectionSubtitle} onChange={v => setHomeTextForm({...homeTextForm, collectionSubtitle: v})} />
+                        
+                        <h3 className="font-bold text-lg border-b pb-2 pt-4">Featured Machines Section</h3>
+                        <InputGroup label="Heading" value={homeTextForm.featuredTitle} onChange={v => setHomeTextForm({...homeTextForm, featuredTitle: v})} />
+                        
+                        <h3 className="font-bold text-lg border-b pb-2 pt-4">Favorites Section</h3>
+                        <InputGroup label="Title (Small)" value={homeTextForm.favoritesTitle} onChange={v => setHomeTextForm({...homeTextForm, favoritesTitle: v})} />
+                        <InputGroup label="Heading" value={homeTextForm.favoritesSubtitle} onChange={v => setHomeTextForm({...homeTextForm, favoritesSubtitle: v})} />
+
+                        <h3 className="font-bold text-lg border-b pb-2 pt-4">Partners Section</h3>
+                        <InputGroup label="Text" value={homeTextForm.partnersText} onChange={v => setHomeTextForm({...homeTextForm, partnersText: v})} />
+                        
+                        <SaveButton onClick={saveHomeText} />
+                    </div>
+                )}
+
                 {subTab === 'brands' && (
                     <div className="space-y-4 animate-fade-in">
-                        <p className="text-gray-500 text-sm">Enter brand names (text only for this demo).</p>
+                        <p className="text-gray-500 text-sm">Enter brand names separated by comma.</p>
                         <textarea className="w-full border p-4 rounded-xl" rows={5} value={brands.join(', ')} onChange={e => setBrands(e.target.value.split(',').map(s => s.trim()))} />
-                        <SaveButton onClick={saveBrands} />
+                        <SaveButton onClick={saveHomeText} />
                     </div>
                 )}
 
@@ -152,6 +220,15 @@ const ContentManager: React.FC = () => {
                     </div>
                 )}
              </div>
+         )}
+
+         {/* SHOP TAB */}
+         {activeTab === 'shop' && (
+            <div className="space-y-6 animate-fade-in">
+                <InputGroup label="Hero Title" value={shopForm.heroTitle} onChange={v => setShopForm({...shopForm, heroTitle: v})} />
+                <InputGroup label="Hero Subtitle" value={shopForm.heroSubtitle} onChange={v => setShopForm({...shopForm, heroSubtitle: v})} />
+                <SaveButton onClick={saveShop} />
+            </div>
          )}
 
          {/* SERVICES TAB */}
@@ -249,21 +326,27 @@ const ContentManager: React.FC = () => {
          {/* CONTACT TAB */}
          {activeTab === 'contact' && (
              <div className="space-y-6 animate-fade-in">
+                 <h3 className="font-bold text-lg border-b pb-2">Contact Details</h3>
                  <InputGroup label="Address" value={contactForm.address} onChange={v => setContactForm({...contactForm, address: v})} />
                  <InputGroup label="Email" value={contactForm.email} onChange={v => setContactForm({...contactForm, email: v})} />
                  <InputGroup label="Phone" value={contactForm.phone} onChange={v => setContactForm({...contactForm, phone: v})} />
-                 <SaveButton onClick={saveContact} />
-             </div>
-         )}
+                 
+                 <h3 className="font-bold text-lg border-b pb-2 pt-6">FAQs</h3>
+                 <div className="space-y-4">
+                     {(contactForm.faqs || []).map((faq, idx) => (
+                         <div key={idx} className="border p-4 rounded-xl space-y-3 bg-gray-50">
+                             <div className="flex justify-between items-center">
+                                 <span className="text-xs font-bold uppercase text-gray-400">Question {idx + 1}</span>
+                                 <button onClick={() => removeFaq(idx)} className="text-red-400 hover:text-red-600"><Trash size={16} /></button>
+                             </div>
+                             <input className="w-full border p-2 rounded-lg" placeholder="Question" value={faq.question} onChange={e => updateFaq(idx, 'question', e.target.value)} />
+                             <textarea className="w-full border p-2 rounded-lg" placeholder="Answer" rows={2} value={faq.answer} onChange={e => updateFaq(idx, 'answer', e.target.value)} />
+                         </div>
+                     ))}
+                     <button onClick={addFaq} className="flex items-center gap-2 text-nomad-gold font-bold uppercase text-xs"><Plus size={16} /> Add FAQ</button>
+                 </div>
 
-         {/* SOCIALS TAB */}
-         {activeTab === 'socials' && (
-             <div className="space-y-6 animate-fade-in">
-                 <InputGroup label="Instagram" value={socialsForm.instagram} onChange={v => setSocialsForm({...socialsForm, instagram: v})} />
-                 <InputGroup label="Facebook" value={socialsForm.facebook} onChange={v => setSocialsForm({...socialsForm, facebook: v})} />
-                 <InputGroup label="YouTube" value={socialsForm.youtube} onChange={v => setSocialsForm({...socialsForm, youtube: v})} />
-                 <InputGroup label="Twitter" value={socialsForm.twitter} onChange={v => setSocialsForm({...socialsForm, twitter: v})} />
-                 <SaveButton onClick={saveSocials} />
+                 <SaveButton onClick={saveContact} />
              </div>
          )}
       </div>

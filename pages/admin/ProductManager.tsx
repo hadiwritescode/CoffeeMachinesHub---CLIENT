@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Edit, Trash, Plus, Search, Star, X, Upload, Loader2 } from 'lucide-react';
-import { Product } from '../../types';
+import { Edit, Trash, Plus, Search, Star, X, Upload, Loader2, Minus } from 'lucide-react';
+import { Product, Feature } from '../../types';
 
 const ProductManager: React.FC = () => {
   const { products, addProduct, updateProduct, removeProduct, categories, uploadFile } = useStore();
@@ -17,6 +17,7 @@ const ProductManager: React.FC = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState(''); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'info' | 'features'>('info');
 
   // STRICT CATEGORY ENFORCEMENT
   const allCategories = categories; 
@@ -39,12 +40,37 @@ const ProductManager: React.FC = () => {
     tags: [],
     description: '',
     soldOut: false,
-    isFeatured: false
+    isFeatured: false,
+    features: []
+  };
+
+  const getDefaultFeatures = (category: string, prod: Product): Feature[] => {
+      if (category === 'Coffee') {
+          return [
+            { title: 'Roast Profile', icon: 'flame', content: prod.roastLevel ? `${prod.roastLevel} roast.` : 'Expertly roasted.' },
+            { title: 'Origin & Sourcing', icon: 'map', content: prod.origin || 'Sustainably sourced.' },
+            { title: 'Tasting Notes', icon: 'droplet', content: prod.subtitle || 'Rich and complex.' },
+            { title: 'Brewing Recommendations', icon: 'coffee', content: '1:16 ratio recommended.' }
+          ];
+      }
+      return [
+        { title: 'Premium Build Quality', icon: 'shield', content: 'Constructed with high-grade materials.' },
+        { title: 'Precision Performance', icon: 'settings', content: 'Engineered for consistency.' },
+        { title: 'Design & Aesthetics', icon: 'award', content: 'Thoughtful design.' },
+        { title: 'Warranty & Support', icon: 'box', content: 'Manufacturer warranty included.' }
+      ];
   };
 
   const handleOpenModal = (product: Product | null) => {
+    setActiveTab('info');
     if (product) {
-      setEditingProduct({ ...product, images: product.images || [] });
+      // Logic to pre-fill features if they are empty, so admin can edit the defaults
+      const features = (product.features && product.features.length > 0) 
+        ? product.features 
+        : getDefaultFeatures(product.category || 'Machines', product);
+
+      setEditingProduct({ ...product, images: product.images || [], features });
+      
       const matchedSub = product.tags?.find(t => 
         allCategories.some(c => c.items.includes(t))
       ) || '';
@@ -57,7 +83,10 @@ const ProductManager: React.FC = () => {
          setSelectedSubcategory('');
       }
     } else {
-      setEditingProduct(newProduct);
+      setEditingProduct({
+          ...newProduct,
+          features: getDefaultFeatures('Machines', newProduct)
+      });
       setSelectedSubcategory('');
     }
     setIsModalOpen(true);
@@ -65,7 +94,7 @@ const ProductManager: React.FC = () => {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isMultiple: boolean = false) => {
     const files = e.target.files;
-    if (!files || !editingProduct) return;
+    if (!files || files.length === 0 || !editingProduct) return;
 
     setIsUploading(true);
     try {
@@ -77,11 +106,12 @@ const ProductManager: React.FC = () => {
             const url = await uploadFile(files[0], 'products');
             setEditingProduct(prev => prev ? { ...prev, image: url } : null);
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Upload failed", error);
-        alert("Image upload failed. Please try again.");
+        alert(`Image upload failed: ${error.message || "Unknown error"}. Check if Storage is enabled in Firebase Console.`);
     } finally {
         setIsUploading(false);
+        e.target.value = '';
     }
   };
 
@@ -91,6 +121,29 @@ const ProductManager: React.FC = () => {
       newImages.splice(index, 1);
       setEditingProduct({ ...editingProduct, images: newImages });
   };
+
+  // Feature Management
+  const addFeature = () => {
+    if (!editingProduct) return;
+    setEditingProduct({
+        ...editingProduct,
+        features: [...(editingProduct.features || []), { title: '', content: '', icon: 'settings' }]
+    });
+  };
+  const updateFeature = (idx: number, field: keyof Feature, val: string) => {
+    if (!editingProduct) return;
+    const newFeatures = [...(editingProduct.features || [])];
+    newFeatures[idx] = { ...newFeatures[idx], [field]: val };
+    setEditingProduct({ ...editingProduct, features: newFeatures });
+  };
+  const removeFeature = (idx: number) => {
+    if (!editingProduct) return;
+    setEditingProduct({
+        ...editingProduct,
+        features: (editingProduct.features || []).filter((_, i) => i !== idx)
+    });
+  };
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,144 +333,201 @@ const ProductManager: React.FC = () => {
                    <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24}/></button>
                </div>
                
+               <div className="flex gap-4 mb-6 border-b border-gray-200">
+                   <button 
+                     onClick={() => setActiveTab('info')} 
+                     className={`pb-2 px-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'info' ? 'border-nomad-gold text-nomad-black' : 'border-transparent text-gray-400'}`}
+                   >
+                       Basic Info
+                   </button>
+                   <button 
+                     onClick={() => setActiveTab('features')} 
+                     className={`pb-2 px-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'features' ? 'border-nomad-gold text-nomad-black' : 'border-transparent text-gray-400'}`}
+                   >
+                       Features / Specs
+                   </button>
+               </div>
+
                <form onSubmit={handleSave} className="space-y-6">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Title</label>
-                    <input 
-                        className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 focus:border-nomad-gold outline-none transition-all" 
-                        value={editingProduct.title} 
-                        onChange={e => setEditingProduct({...editingProduct, title: e.target.value})} 
-                        required 
-                        placeholder="e.g. La Marzocco Linea Mini"
-                    />
-                  </div>
-                  
-                  <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-4">Categorization</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {activeTab === 'info' && (
+                      <>
                         <div>
-                            <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Major Category</label>
-                            <div className="relative">
-                                <select 
-                                    className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none bg-white appearance-none" 
-                                    value={editingProduct.category} 
-                                    onChange={e => {
-                                        setEditingProduct({...editingProduct, category: e.target.value});
-                                        setSelectedSubcategory(''); 
-                                    }}
-                                >
-                                    {allCategories.map(c => (
-                                        <option key={c.title} value={c.title}>{c.title}</option>
-                                    ))}
-                                </select>
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                    <ChevronIcon />
+                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Title</label>
+                            <input 
+                                className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 focus:border-nomad-gold outline-none transition-all" 
+                                value={editingProduct.title} 
+                                onChange={e => setEditingProduct({...editingProduct, title: e.target.value})} 
+                                required 
+                                placeholder="e.g. La Marzocco Linea Mini"
+                            />
+                        </div>
+                        
+                        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-4">Categorization</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Major Category</label>
+                                    <div className="relative">
+                                        <select 
+                                            className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none bg-white appearance-none" 
+                                            value={editingProduct.category} 
+                                            onChange={e => {
+                                                setEditingProduct({...editingProduct, category: e.target.value});
+                                                setSelectedSubcategory(''); 
+                                            }}
+                                        >
+                                            {allCategories.map(c => (
+                                                <option key={c.title} value={c.title}>{c.title}</option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                            <ChevronIcon />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Sub-Category</label>
+                                    <div className="relative">
+                                        <select 
+                                            className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none bg-white appearance-none" 
+                                            value={selectedSubcategory} 
+                                            onChange={e => setSelectedSubcategory(e.target.value)}
+                                        >
+                                            <option value="">-- Select Type --</option>
+                                            {formSubOptions.map(item => (
+                                                <option key={item} value={item}>{item}</option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                            <ChevronIcon />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Sub-Category</label>
-                             <div className="relative">
-                                <select 
-                                    className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none bg-white appearance-none" 
-                                    value={selectedSubcategory} 
-                                    onChange={e => setSelectedSubcategory(e.target.value)}
-                                >
-                                    <option value="">-- Select Type --</option>
-                                    {formSubOptions.map(item => (
-                                        <option key={item} value={item}>{item}</option>
-                                    ))}
-                                </select>
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                    <ChevronIcon />
-                                </div>
-                            </div>
-                        </div>
-                      </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Internal Ref. Price</label>
-                        <input 
-                            type="number" 
-                            className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none" 
-                            value={editingProduct.price} 
-                            onChange={e => setEditingProduct({...editingProduct, price: parseInt(e.target.value) || 0})} 
-                            placeholder="Not shown on site"
-                        />
-                        <span className="text-[10px] text-gray-400 mt-1 block">Prices are discussed via WhatsApp. This is for your records.</span>
-                    </div>
-                    <div>
-                         <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Status</label>
-                         <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-xl bg-white">
-                             <input 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Internal Ref. Price</label>
+                                <input 
+                                    type="number" 
+                                    className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none" 
+                                    value={editingProduct.price} 
+                                    onChange={e => setEditingProduct({...editingProduct, price: parseInt(e.target.value) || 0})} 
+                                    placeholder="Not shown on site"
+                                />
+                                <span className="text-[10px] text-gray-400 mt-1 block">Prices are discussed via WhatsApp. This is for your records.</span>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Status</label>
+                                <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-xl bg-white">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={editingProduct.soldOut} 
+                                        onChange={e => setEditingProduct({...editingProduct, soldOut: e.target.checked})} 
+                                        className="w-5 h-5 text-nomad-gold focus:ring-nomad-gold border-gray-300 rounded"
+                                    />
+                                    <span className="text-sm font-medium">Mark as Sold Out</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Main Image</label>
+                            <div className="flex items-center gap-4">
+                                {editingProduct.image && (
+                                    <img src={editingProduct.image} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-gray-200" />
+                                )}
+                                <label className={`cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-2 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                    {isUploading ? <Loader2 size={16} className="animate-spin text-nomad-gold" /> : <Upload size={16} className="text-gray-500" />}
+                                    <span className="text-sm font-medium text-gray-600">Upload Image</span>
+                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, false)} />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Gallery Images</label>
+                            <div className="flex flex-wrap gap-4 mb-3">
+                                {editingProduct.images?.map((img, idx) => (
+                                    <div key={idx} className="relative group w-20 h-20">
+                                        <img src={img} alt={`Gallery ${idx}`} className="w-full h-full rounded-xl object-cover border border-gray-200" />
+                                        <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                                <label className={`cursor-pointer w-20 h-20 bg-gray-50 border border-dashed border-gray-300 rounded-xl hover:bg-gray-100 transition-colors flex flex-col items-center justify-center gap-1 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                    {isUploading ? <Loader2 size={20} className="animate-spin text-nomad-gold" /> : <Plus size={20} className="text-gray-400" />}
+                                    <span className="text-[10px] font-bold uppercase text-gray-400">Add</span>
+                                    <input type="file" className="hidden" accept="image/*" multiple onChange={(e) => handleImageUpload(e, true)} />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Description</label>
+                            <textarea 
+                                className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none" 
+                                rows={4} 
+                                value={editingProduct.description} 
+                                onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} 
+                            />
+                        </div>
+                        
+                        <div className="flex items-center gap-3 bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                            <input 
                                 type="checkbox" 
-                                checked={editingProduct.soldOut} 
-                                onChange={e => setEditingProduct({...editingProduct, soldOut: e.target.checked})} 
+                                checked={editingProduct.isFeatured} 
+                                onChange={e => setEditingProduct({...editingProduct, isFeatured: e.target.checked})} 
                                 className="w-5 h-5 text-nomad-gold focus:ring-nomad-gold border-gray-300 rounded"
-                             />
-                             <span className="text-sm font-medium">Mark as Sold Out</span>
-                         </label>
-                    </div>
-                  </div>
-
-                  {/* Image Upload Section */}
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Main Image</label>
-                    <div className="flex items-center gap-4">
-                        {editingProduct.image && (
-                            <img src={editingProduct.image} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-gray-200" />
-                        )}
-                        <label className={`cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-2 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                            {isUploading ? <Loader2 size={16} className="animate-spin text-nomad-gold" /> : <Upload size={16} className="text-gray-500" />}
-                            <span className="text-sm font-medium text-gray-600">Upload Image</span>
-                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, false)} />
-                        </label>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Gallery Images</label>
-                    <div className="flex flex-wrap gap-4 mb-3">
-                        {editingProduct.images?.map((img, idx) => (
-                            <div key={idx} className="relative group w-20 h-20">
-                                <img src={img} alt={`Gallery ${idx}`} className="w-full h-full rounded-xl object-cover border border-gray-200" />
-                                <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
-                                    <X size={12} />
-                                </button>
+                            />
+                            <div>
+                                <label className="text-sm font-bold text-nomad-black block">Feature on Home Page</label>
+                                <span className="text-xs text-yellow-700">This item will appear in the "Curated Favorites" section.</span>
                             </div>
-                        ))}
-                        <label className={`cursor-pointer w-20 h-20 bg-gray-50 border border-dashed border-gray-300 rounded-xl hover:bg-gray-100 transition-colors flex flex-col items-center justify-center gap-1 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                            {isUploading ? <Loader2 size={20} className="animate-spin text-nomad-gold" /> : <Plus size={20} className="text-gray-400" />}
-                            <span className="text-[10px] font-bold uppercase text-gray-400">Add</span>
-                            <input type="file" className="hidden" accept="image/*" multiple onChange={(e) => handleImageUpload(e, true)} />
-                        </label>
-                    </div>
-                  </div>
+                        </div>
+                      </>
+                  )}
 
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Description</label>
-                    <textarea 
-                        className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none" 
-                        rows={4} 
-                        value={editingProduct.description} 
-                        onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} 
-                    />
-                  </div>
-                  
-                  <div className="flex items-center gap-3 bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                     <input 
-                        type="checkbox" 
-                        checked={editingProduct.isFeatured} 
-                        onChange={e => setEditingProduct({...editingProduct, isFeatured: e.target.checked})} 
-                        className="w-5 h-5 text-nomad-gold focus:ring-nomad-gold border-gray-300 rounded"
-                     />
-                     <div>
-                        <label className="text-sm font-bold text-nomad-black block">Feature on Home Page</label>
-                        <span className="text-xs text-yellow-700">This item will appear in the "Curated Favorites" section.</span>
-                     </div>
-                  </div>
+                  {activeTab === 'features' && (
+                      <div className="space-y-4">
+                          <p className="text-sm text-gray-500 mb-4">Add detailed features/specs that appear in the dropdowns on the product page.</p>
+                          {(editingProduct.features || []).map((feature, idx) => (
+                              <div key={idx} className="border p-4 rounded-xl bg-gray-50 space-y-3 relative group">
+                                  <div className="flex gap-3">
+                                      <div className="w-1/3">
+                                          <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Title</label>
+                                          <input className="w-full border p-2 rounded-lg" value={feature.title} onChange={e => updateFeature(idx, 'title', e.target.value)} placeholder="e.g. Dimensions" />
+                                      </div>
+                                      <div className="w-1/3">
+                                         <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Icon</label>
+                                         <select className="w-full border p-2 rounded-lg" value={feature.icon} onChange={e => updateFeature(idx, 'icon', e.target.value as any)}>
+                                             <option value="settings">Settings (Default)</option>
+                                             <option value="flame">Flame</option>
+                                             <option value="map">Map</option>
+                                             <option value="droplet">Droplet</option>
+                                             <option value="coffee">Coffee</option>
+                                             <option value="shield">Shield</option>
+                                             <option value="award">Award</option>
+                                             <option value="cpu">Chip/CPU</option>
+                                             <option value="wifi">Wifi</option>
+                                             <option value="layers">Layers</option>
+                                             <option value="thermometer">Thermometer</option>
+                                             <option value="box">Box</option>
+                                         </select>
+                                      </div>
+                                  </div>
+                                  <div>
+                                      <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Content</label>
+                                      <textarea className="w-full border p-2 rounded-lg" rows={2} value={feature.content} onChange={e => updateFeature(idx, 'content', e.target.value)} placeholder="Details..." />
+                                  </div>
+                                  <button type="button" onClick={() => removeFeature(idx)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1"><X size={16} /></button>
+                              </div>
+                          ))}
+                          <button type="button" onClick={addFeature} className="flex items-center gap-2 text-nomad-gold font-bold uppercase text-xs hover:bg-nomad-gold/10 p-2 rounded-lg transition-colors"><Plus size={16} /> Add Feature Block</button>
+                      </div>
+                  )}
 
                   <div className="flex gap-4 pt-4 border-t border-gray-100">
                      <button type="submit" disabled={isUploading} className="flex-1 bg-nomad-black text-white py-4 rounded-xl font-bold uppercase tracking-wider hover:bg-nomad-gold transition-colors shadow-lg disabled:opacity-70">

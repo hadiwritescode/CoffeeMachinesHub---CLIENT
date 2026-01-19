@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, BlogPost, Order, User, SiteContent, NavCategory, Testimonial, Message, CartItem } from '../types';
-import { BRAND_LOGOS, NAVIGATION_LINKS } from '../constants';
+import { BRAND_LOGOS, NAVIGATION_LINKS, FAQS } from '../constants';
 import { 
   collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc 
 } from 'firebase/firestore';
@@ -69,7 +69,19 @@ const defaultSiteContent: SiteContent = {
     videoUrl: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4",
     buttonText: "Shop Now"
   },
-  home: { brands: BRAND_LOGOS },
+  home: { 
+    brands: BRAND_LOGOS,
+    collectionTitle: "Collections",
+    collectionSubtitle: "Curated Excellence",
+    featuredTitle: "Top Rated Machines",
+    favoritesTitle: "Essentials",
+    favoritesSubtitle: "Curated Favorites",
+    partnersText: "Trusted Partners & Global Brands"
+  },
+  shop: {
+    heroTitle: "All Products",
+    heroSubtitle: "Explore our complete collection of premium coffee and gear."
+  },
   services: {
     heroTitle: "Elevate Your \n Coffee Business",
     heroSubtitle: "Comprehensive consulting...",
@@ -91,7 +103,11 @@ const defaultSiteContent: SiteContent = {
   contact: {
     address: "G-22, City Star Mall, Model Town Link Road, Lahore, Pakistan",
     email: "Coffeemachineshub@gmail.com",
-    phone: "+92 310 481 1011"
+    phone: "+92 310 481 1011",
+    faqs: FAQS
+  },
+  footer: {
+    description: "Purveyors of the finest coffee gear and sustainably sourced beans. Crafting excellence, one cup at a time."
   },
   socials: {
     instagram: "https://instagram.com",
@@ -145,6 +161,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
               description: d.description || '',
               soldOut: !!d.soldOut,
               isFeatured: !!d.isFeatured,
+              features: d.features || [],
               ...d
           } as Product;
       }));
@@ -154,7 +171,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     const unsubCats = onSnapshot(doc(db, 'content', 'navigation'), (docSnap) => {
       if (docSnap.exists()) {
         const rawCats = docSnap.data().categories || [];
-        // Ensure every category has an items array
         const safeCats = rawCats.map((c: any) => ({
             title: c.title || 'Untitled',
             items: Array.isArray(c.items) ? c.items : []
@@ -216,14 +232,13 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
             if (snapshot.exists()) {
                 const userData = snapshot.data();
                 
-                // Sanitize User Data: Fill missing fields with defaults to prevent crashes
                 const safeUser: User = {
                     id: user.uid,
                     name: userData.name || user.displayName || 'Customer',
                     email: userData.email || user.email || '',
                     role: userData.role || 'customer',
-                    wishlist: Array.isArray(userData.wishlist) ? userData.wishlist : [], // Fix: Ensure array
-                    cart: Array.isArray(userData.cart) ? userData.cart : [], // Fix: Ensure array
+                    wishlist: Array.isArray(userData.wishlist) ? userData.wishlist : [],
+                    cart: Array.isArray(userData.cart) ? userData.cart : [],
                     phone: userData.phone || '',
                     address: userData.address || '',
                     city: userData.city || ''
@@ -232,7 +247,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                 setCurrentUser(safeUser);
                 if (safeUser.cart.length > 0) setCartState(safeUser.cart);
             } else {
-                // Creates document if missing
                 const newUser: User = {
                     id: user.uid,
                     name: user.displayName || 'Customer',
@@ -274,10 +288,20 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const uploadFile = async (file: File, path: string): Promise<string> => {
     try {
       const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
-      const snapshot = await uploadBytes(storageRef, file);
+      
+      // 30s Timeout to prevent infinite loading if config is wrong or network is dead
+      const timeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Upload timed out. Check network or storage rules.")), 30000)
+      );
+
+      const snapshot = await Promise.race([
+        uploadBytes(storageRef, file),
+        timeout
+      ]) as any;
+
       const url = await getDownloadURL(snapshot.ref);
       return url;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Storage upload error:", error);
       throw error;
     }

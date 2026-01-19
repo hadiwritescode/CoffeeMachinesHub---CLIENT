@@ -3,7 +3,7 @@ import * as ReactRouterDOM from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { 
   Heart, ShieldCheck, Coffee, CheckCircle, Star, 
-  Flame, MapPin, Droplet, Settings, Award, Cpu, Wifi, Layers, Thermometer, Box, ChevronDown, MessageCircle
+  Flame, MapPin, Droplet, Settings, Award, Cpu, Wifi, Layers, Thermometer, Box, ChevronDown, MessageCircle, ShoppingBag
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { Product, Feature } from '../types';
@@ -28,10 +28,11 @@ const IconMap = {
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { toggleWishlist, currentUser, products } = useStore();
+  const { toggleWishlist, addToCart, currentUser, products } = useStore();
   const product = products.find(p => p.id === id);
   const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(0);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const [activeImage, setActiveImage] = useState('');
 
   // Suggest similar products based on category
@@ -55,27 +56,30 @@ const ProductDetail = () => {
     setOpenFeatureIndex(openFeatureIndex === index ? null : index);
   };
 
-  const handleWhatsAppClick = () => {
-    const phoneNumber = '923104811011';
-    const productUrl = window.location.href;
-    const message = `Hi, I'm interested in ordering ${product.title}. Can you please tell me the price? \n\nLink: ${productUrl}`;
-    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
-  };
+  const isInWishlist = currentUser?.wishlist.includes(product.id);
 
   const handleWishlistClick = () => {
       toggleWishlist(product.id);
       if (!isInWishlist) {
+          setToastMessage('Saved to Wishlist');
           setShowToast(true);
           setTimeout(() => setShowToast(false), 3000);
       }
   };
 
-  const isInWishlist = currentUser?.wishlist.includes(product.id);
+  const handleAddToCart = () => {
+      addToCart(product);
+      setToastMessage('Added to Inquiry Bag');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+  }
 
   // Generate default features if none exist
   const getFeatures = (prod: Product): Feature[] => {
+    // If specific features exist (from Admin), use them
     if (prod.features && prod.features.length > 0) return prod.features;
 
+    // Fallbacks based on category
     if (prod.category === 'Coffee') {
        return [
          { 
@@ -137,7 +141,7 @@ const ProductDetail = () => {
            <div className="bg-nomad-black text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-4">
               <CheckCircle size={20} className="text-nomad-gold shrink-0" />
               <div className="flex flex-col">
-                  <span className="text-sm font-bold tracking-wide">Saved to Wishlist</span>
+                  <span className="text-sm font-bold tracking-wide">{toastMessage}</span>
                   <span className="text-xs text-gray-400 line-clamp-1">{product.title}</span>
               </div>
            </div>
@@ -226,11 +230,11 @@ const ProductDetail = () => {
                   <>
                     <div className="flex flex-col sm:flex-row gap-4 mb-8 md:mb-12">
                         <button 
-                            onClick={handleWhatsAppClick}
-                            className="flex-grow bg-green-600 text-white py-4 md:py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-green-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200 flex items-center justify-center gap-3"
+                            onClick={handleAddToCart}
+                            className="flex-grow bg-nomad-black text-white py-4 md:py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-gold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200 flex items-center justify-center gap-3"
                         >
-                            <MessageCircle size={20} />
-                            Order via WhatsApp
+                            <ShoppingBag size={20} />
+                            Add to Inquiry
                         </button>
                         <button 
                             onClick={handleWishlistClick}

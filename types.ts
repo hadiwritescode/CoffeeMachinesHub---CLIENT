@@ -1,3 +1,4 @@
+
 export interface Feature {
   title: string;
   content: string;
@@ -46,6 +47,7 @@ export interface BlogPost {
   date: string;
   image: string;
   author: string;
+  sourceLink?: string;
 }
 
 export interface FAQItem {
@@ -114,6 +116,16 @@ export interface SiteContent {
   };
   home: {
     brands: string[];
+    collectionTitle: string;
+    collectionSubtitle: string;
+    featuredTitle: string;
+    favoritesTitle: string;
+    favoritesSubtitle: string;
+    partnersText: string;
+  };
+  shop: {
+    heroTitle: string;
+    heroSubtitle: string;
   };
   services: {
     heroTitle: string;
@@ -137,6 +149,10 @@ export interface SiteContent {
     address: string;
     email: string;
     phone: string;
+    faqs: FAQItem[];
+  };
+  footer: {
+    description: string;
   };
   socials: {
     instagram: string;

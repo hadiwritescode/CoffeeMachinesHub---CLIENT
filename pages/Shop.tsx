@@ -14,7 +14,7 @@ const Shop: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('featured');
-  const { products, categories } = useStore();
+  const { products, categories, siteContent } = useStore();
 
   // Derived state from URL
   const categoryParam = searchParams.get('category');
@@ -116,7 +116,12 @@ const Shop: React.FC = () => {
     if (searchParam) return `Search: "${searchParam}"`;
     if (collectionId) return collectionId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     if (categoryParam) return categoryParam;
-    return 'All Products';
+    return siteContent.shop?.heroTitle || 'All Products';
+  };
+
+  const getPageSubtitle = () => {
+      if (searchParam || categoryParam || collectionId) return `Explore our collection of ${filteredProducts.length} items.`;
+      return siteContent.shop?.heroSubtitle || "Explore our complete collection of premium coffee and gear.";
   };
 
   const clearFilters = () => {
@@ -137,7 +142,7 @@ const Shop: React.FC = () => {
              {getPageTitle()}
            </h1>
            <p className="text-gray-400 text-sm md:text-lg max-w-xl animate-slide-up font-light mx-auto md:mx-0" style={{ animationDelay: '0.2s' }}>
-             Explore our complete collection of premium coffee and gear.
+             {getPageSubtitle()}
            </p>
         </div>
       </div>

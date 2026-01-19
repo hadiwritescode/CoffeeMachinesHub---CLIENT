@@ -54,7 +54,16 @@ const Home: React.FC = () => {
     videoUrl: "",
     buttonText: "Shop Now"
   };
-  const brands = siteContent?.home?.brands || [];
+  const homeText = siteContent?.home || {
+    collectionTitle: "Collections",
+    collectionSubtitle: "Curated Excellence",
+    featuredTitle: "Top Rated Machines",
+    favoritesTitle: "Essentials",
+    favoritesSubtitle: "Curated Favorites",
+    partnersText: "Trusted Partners & Global Brands",
+    brands: []
+  };
+  const brands = homeText.brands || [];
 
   return (
     <div className="bg-nomad-paper overflow-hidden">
@@ -164,8 +173,12 @@ const Home: React.FC = () => {
         <div className="container mx-auto px-6 md:px-12">
           <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-12 gap-6">
             <div className="max-w-xl text-center md:text-left mx-auto md:mx-0">
-                <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block fade-right">Collections</span>
-                <h2 className="text-4xl md:text-5xl font-serif font-bold text-nomad-black fade-right leading-tight">Curated Excellence</h2>
+                <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block fade-right">
+                    {homeText.collectionTitle}
+                </span>
+                <h2 className="text-4xl md:text-5xl font-serif font-bold text-nomad-black fade-right leading-tight">
+                    {homeText.collectionSubtitle}
+                </h2>
             </div>
             <Link to="/shop" className="hidden md:flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors pb-2 border-b border-transparent hover:border-nomad-gold fade-right whitespace-nowrap">
                 View All Categories <ArrowRight size={16} className="ml-2" />
@@ -200,7 +213,9 @@ const Home: React.FC = () => {
       <section className="relative z-10 py-16 md:py-24 bg-white rounded-t-[3rem] -mt-12 shadow-2xl overflow-hidden">
         <div className="container mx-auto px-0 md:px-12">
            <div className="flex flex-col md:flex-row items-center justify-between mb-8 md:mb-12 gap-6 px-6 md:px-0">
-             <h2 className="text-3xl md:text-5xl font-serif font-medium text-nomad-black fade-right text-center md:text-left">Top Rated Machines</h2>
+             <h2 className="text-3xl md:text-5xl font-serif font-medium text-nomad-black fade-right text-center md:text-left">
+                {homeText.featuredTitle}
+             </h2>
              <Link to="/shop?category=Machines" className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors fade-right whitespace-nowrap hidden md:inline-block">
                 View Catalog
              </Link>
@@ -227,8 +242,12 @@ const Home: React.FC = () => {
       <section className="relative z-10 py-16 md:py-24 bg-white border-t border-gray-100">
         <div className="container mx-auto px-0 md:px-12">
            <div className="text-center max-w-2xl mx-auto mb-12 px-6">
-               <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block">Essentials</span>
-               <h2 className="text-3xl md:text-5xl font-serif font-medium mb-4 text-nomad-black">Curated Favorites</h2>
+               <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block">
+                   {homeText.favoritesTitle}
+               </span>
+               <h2 className="text-3xl md:text-5xl font-serif font-medium mb-4 text-nomad-black">
+                   {homeText.favoritesSubtitle}
+               </h2>
                <p className="text-gray-500 text-lg font-light">Hand-picked selections that our community loves the most.</p>
            </div>
            
@@ -245,7 +264,9 @@ const Home: React.FC = () => {
       {/* Opposite Rotating Brand Logos */}
       <section className="relative z-10 py-16 md:py-24 bg-nomad-paper border-t border-gray-100 overflow-hidden">
         <div className="container mx-auto px-6 md:px-12 mb-12">
-           <p className="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase text-center fade-right">Trusted Partners & Global Brands</p>
+           <p className="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase text-center fade-right">
+              {homeText.partnersText}
+           </p>
         </div>
         
         <div className="space-y-12">

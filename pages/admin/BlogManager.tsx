@@ -17,7 +17,8 @@ const BlogManager: React.FC = () => {
     content: '',
     date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     image: '',
-    author: 'Coffee Machines Hub'
+    author: 'Coffee Machines Hub',
+    sourceLink: ''
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,6 +99,10 @@ const BlogManager: React.FC = () => {
                         <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Author</label>
                         <input className="w-full border p-2 rounded-lg" value={editingPost.author} onChange={e => setEditingPost({...editingPost, author: e.target.value})} />
                       </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Source Link (Optional)</label>
+                    <input className="w-full border p-2 rounded-lg" value={editingPost.sourceLink || ''} onChange={e => setEditingPost({...editingPost, sourceLink: e.target.value})} placeholder="https://..." />
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Cover Image</label>

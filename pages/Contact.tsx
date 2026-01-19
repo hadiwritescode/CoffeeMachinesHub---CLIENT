@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { MapPin, Mail, Phone, Clock, Send, Map, Plus, Minus } from 'lucide-react';
-import { FAQS } from '../constants';
 import { useStore } from '../context/StoreContext';
 
 const Contact: React.FC = () => {
@@ -11,6 +10,9 @@ const Contact: React.FC = () => {
     message: ''
   });
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
+  // Fallback if FAQs haven't been saved to DB yet
+  const faqs = siteContent.contact.faqs || [];
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
@@ -157,35 +159,37 @@ const Contact: React.FC = () => {
         </div>
 
         {/* FAQ Section */}
-        <div className="pt-12 border-t border-gray-200 fade-up">
-           <div className="text-center mb-16">
-                <span className="text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-4 block">Help Center</span>
-                <h2 className="text-3xl md:text-5xl font-serif font-bold text-nomad-black">Frequently Asked Questions</h2>
-           </div>
-           
-           <div className="max-w-4xl mx-auto space-y-4">
-             {FAQS.map((faq, index) => (
-               <div key={index} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-300 transition-colors shadow-sm">
-                 <button 
-                   onClick={() => toggleFaq(index)}
-                   className="w-full flex justify-between items-center p-6 text-left"
-                 >
-                   <span className="font-bold text-lg font-serif text-nomad-black pr-4">{faq.question}</span>
-                   <span className={`transition-transform duration-300 flex-shrink-0 text-nomad-gold ${openFaqIndex === index ? 'rotate-180' : ''}`}>
-                        {openFaqIndex === index ? <Minus size={20} /> : <Plus size={20} />}
-                   </span>
-                 </button>
-                 <div 
-                   className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${openFaqIndex === index ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}
-                 >
-                   <p className="text-gray-600 leading-relaxed">
-                     {faq.answer}
-                   </p>
-                 </div>
-               </div>
-             ))}
-           </div>
-        </div>
+        {faqs.length > 0 && (
+            <div className="pt-12 border-t border-gray-200 fade-up">
+            <div className="text-center mb-16">
+                    <span className="text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-4 block">Help Center</span>
+                    <h2 className="text-3xl md:text-5xl font-serif font-bold text-nomad-black">Frequently Asked Questions</h2>
+            </div>
+            
+            <div className="max-w-4xl mx-auto space-y-4">
+                {faqs.map((faq, index) => (
+                <div key={index} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-300 transition-colors shadow-sm">
+                    <button 
+                    onClick={() => toggleFaq(index)}
+                    className="w-full flex justify-between items-center p-6 text-left"
+                    >
+                    <span className="font-bold text-lg font-serif text-nomad-black pr-4">{faq.question}</span>
+                    <span className={`transition-transform duration-300 flex-shrink-0 text-nomad-gold ${openFaqIndex === index ? 'rotate-180' : ''}`}>
+                            {openFaqIndex === index ? <Minus size={20} /> : <Plus size={20} />}
+                    </span>
+                    </button>
+                    <div 
+                    className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${openFaqIndex === index ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}
+                    >
+                    <p className="text-gray-600 leading-relaxed">
+                        {faq.answer}
+                    </p>
+                    </div>
+                </div>
+                ))}
+            </div>
+            </div>
+        )}
 
       </div>
     </div>

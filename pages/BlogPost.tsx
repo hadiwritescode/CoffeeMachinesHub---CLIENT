@@ -1,7 +1,7 @@
 import React from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Link as LinkIcon } from 'lucide-react';
 
 const { useParams, Link } = ReactRouterDOM;
 
@@ -77,6 +77,15 @@ const BlogPost: React.FC = () => {
               <p key={idx} className="mb-6 whitespace-pre-wrap">{paragraph}</p>
             ))}
           </div>
+
+          {post.sourceLink && (
+             <div className="mt-8 border-t border-gray-100 pt-6">
+                <p className="text-xs font-bold uppercase text-gray-400 mb-2">Reference / Source</p>
+                <a href={post.sourceLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-nomad-gold hover:underline">
+                   <LinkIcon size={14} /> {post.sourceLink}
+                </a>
+             </div>
+          )}
           
           <div className="mt-16 pt-10 border-t border-gray-100 flex justify-between items-center">
              <div className="text-sm font-bold text-gray-500">Share this article</div>
