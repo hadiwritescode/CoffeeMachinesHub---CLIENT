@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ALL_PRODUCTS, BLENDS_PRODUCTS } from '../constants';
-import { Plus, Minus, Heart, Truck, ShieldCheck, Coffee, CheckCircle, Star } from 'lucide-react';
+import { 
+  Plus, Minus, Heart, Truck, ShieldCheck, Coffee, CheckCircle, Star, 
+  Flame, MapPin, Droplet, Settings, Award, Cpu, Wifi, Layers, Thermometer, Box, ChevronDown, ChevronUp, MessageCircle
+} from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import { Product, Feature } from '../types';
 
 const GRIND_OPTIONS = [
   'Whole Bean', 'Espresso', 'Pour Over', 'French Press', 'Aeropress', 'Cold Brew'
@@ -10,10 +14,27 @@ const GRIND_OPTIONS = [
 
 const WEIGHT_OPTIONS = ['250g', '500g', '1kg'];
 
+// Icon mapping for features
+const IconMap = {
+  flame: Flame,
+  map: MapPin,
+  droplet: Droplet,
+  coffee: Coffee,
+  shield: ShieldCheck,
+  settings: Settings,
+  award: Award,
+  cpu: Cpu,
+  wifi: Wifi,
+  layers: Layers,
+  thermometer: Thermometer,
+  box: Box
+};
+
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const product = ALL_PRODUCTS.find(p => p.id === id);
-  const [openAccordion, setOpenAccordion] = useState<string | null>('description');
+  // Default to first feature open
+  const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(0);
   const [selectedGrind, setSelectedGrind] = useState('Whole Bean');
   const [selectedWeight, setSelectedWeight] = useState('250g');
   const [showToast, setShowToast] = useState(false);
@@ -32,22 +53,72 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-PK', {
-      style: 'currency',
-      currency: 'PKR',
-      minimumFractionDigits: 0
-    }).format(price).replace('PKR', 'Rs.');
+  const toggleFeature = (index: number) => {
+    setOpenFeatureIndex(openFeatureIndex === index ? null : index);
   };
 
-  const toggleAccordion = (section: string) => {
-    setOpenAccordion(openAccordion === section ? null : section);
+  const handleWhatsAppInquiry = () => {
+    const phoneNumber = '923001234567';
+    const productUrl = `${window.location.origin}/product/${product.id}`;
+    const message = `Hi, I'm interested in ${product.title}. What is the price? ${productUrl}`;
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  const handleAddToCart = () => {
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+  // Generate default features if none exist
+  const getFeatures = (prod: Product): Feature[] => {
+    if (prod.features && prod.features.length > 0) return prod.features;
+
+    if (prod.category === 'Coffee') {
+       return [
+         { 
+           title: 'Roast Profile', 
+           icon: 'flame', 
+           content: prod.roastLevel ? `${prod.roastLevel} roast. Carefully developed to highlight the bean's natural characteristics while ensuring body and sweetness.` : 'Expertly roasted for a balanced cup.' 
+         },
+         { 
+           title: 'Origin & Sourcing', 
+           icon: 'map', 
+           content: prod.origin ? `Sourced from ${prod.origin}. We work directly with farmers to ensure fair wages and sustainable practices.` : 'Sustainably sourced from top growing regions.' 
+         },
+         { 
+           title: 'Tasting Notes', 
+           icon: 'droplet', 
+           content: prod.subtitle ? `Expect distinct notes of ${prod.subtitle}. A complex flavor profile perfect for black coffee or with milk.` : 'Rich and complex flavor profile.' 
+         },
+         { 
+           title: 'Brewing Recommendations', 
+           icon: 'coffee', 
+           content: 'We recommend a 1:16 ratio (60g coffee per 1L water). Ideal for Pour Over, French Press, or Espresso. Water temperature should be around 93°C.' 
+         }
+       ];
+    }
+
+    // Default for Gear
+    return [
+       { 
+         title: 'Premium Build Quality', 
+         icon: 'shield', 
+         content: 'Constructed with high-grade, durable materials designed to withstand daily use in a busy kitchen or cafe environment.' 
+       },
+       { 
+         title: 'Precision Performance', 
+         icon: 'settings', 
+         content: 'Engineered for consistency and control, allowing you to replicate your perfect recipe every single morning.' 
+       },
+       { 
+         title: 'Design & Aesthetics', 
+         icon: 'award', 
+         content: 'A thoughtful design that looks as good as it performs. Minimalist aesthetics that complement any modern brew bar.' 
+       },
+       { 
+         title: 'Warranty & Support', 
+         icon: 'box', 
+         content: 'Includes a 1-year manufacturer warranty against defects. Our team of experts is also available for lifetime technical support.' 
+       }
+    ];
   };
+
+  const features = getFeatures(product);
 
   return (
     <div className="pt-32 pb-20 animate-fade-in bg-nomad-paper min-h-screen">
@@ -119,7 +190,7 @@ const ProductDetail: React.FC = () => {
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium mb-6 text-nomad-black leading-none">{product.title}</h1>
                 
                 <div className="flex items-center gap-6 mb-8 border-b border-gray-100 pb-8">
-                  <span className="text-2xl font-sans font-medium text-gray-900">{formatPrice(product.price)}</span>
+                  {/* Price Removed */}
                   {product.soldOut ? (
                        <span className="text-red-500 text-xs font-bold uppercase tracking-widest px-3 py-1 bg-red-50 rounded-full">Out of Stock</span>
                   ) : (
@@ -128,9 +199,15 @@ const ProductDetail: React.FC = () => {
                 </div>
 
                 {product.subtitle && (
-                  <div className="text-gray-600 mb-10 font-medium leading-relaxed text-lg">
+                  <div className="text-gray-600 mb-8 font-medium leading-relaxed text-lg">
                     {product.subtitle}
                   </div>
+                )}
+                
+                {product.description && (
+                  <p className="text-gray-500 mb-10 leading-relaxed font-light">
+                    {product.description}
+                  </p>
                 )}
 
                 {/* Selectors */}
@@ -177,12 +254,13 @@ const ProductDetail: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                    <div className="flex flex-col sm:flex-row gap-4 mb-12">
                         <button 
-                            onClick={handleAddToCart}
-                            className="flex-grow bg-nomad-gold text-white py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-nomad-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200"
+                            onClick={handleWhatsAppInquiry}
+                            className="flex-grow bg-[#25D366] text-white py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#128C7E] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 duration-200 flex items-center justify-center gap-3"
                         >
-                            Add to Cart — {formatPrice(product.price)}
+                            <MessageCircle size={20} />
+                            WhatsApp for Price
                         </button>
                         <button className="w-full sm:w-14 h-14 flex items-center justify-center border border-gray-200 rounded-full hover:border-nomad-gold hover:text-nomad-gold transition-colors">
                             <Heart size={20} />
@@ -191,62 +269,44 @@ const ProductDetail: React.FC = () => {
                   </>
                 )}
 
-                {/* Features List */}
-                <div className="grid grid-cols-3 gap-3 md:gap-4 mb-10 text-center">
-                    <div className="flex flex-col items-center p-3 md:p-4 bg-white rounded-2xl shadow-sm border border-gray-50/50">
-                        <Truck size={20} className="mb-3 text-gray-400" strokeWidth={1.5} />
-                        <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-widest text-gray-500">Fast Ship</span>
-                    </div>
-                    <div className="flex flex-col items-center p-3 md:p-4 bg-white rounded-2xl shadow-sm border border-gray-50/50">
-                        <ShieldCheck size={20} className="mb-3 text-gray-400" strokeWidth={1.5} />
-                        <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-widest text-gray-500">Secure</span>
-                    </div>
-                    <div className="flex flex-col items-center p-3 md:p-4 bg-white rounded-2xl shadow-sm border border-gray-50/50">
-                        <Coffee size={20} className="mb-3 text-gray-400" strokeWidth={1.5} />
-                        <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-widest text-gray-500">Fresh</span>
-                    </div>
-                </div>
-
-                {/* Accordions */}
-                <div className="border-t border-gray-200">
-                    <div className="border-b border-gray-200">
-                      <button 
-                        onClick={() => toggleAccordion('description')}
-                        className="w-full py-6 flex justify-between items-center text-left hover:text-nomad-gold transition-colors group"
-                      >
-                        <span className="text-sm font-bold uppercase tracking-widest text-nomad-black group-hover:text-nomad-gold">Description</span>
-                        {openAccordion === 'description' ? <Minus size={16} /> : <Plus size={16} />}
-                      </button>
-                      <div className={`overflow-hidden transition-all duration-500 ease-in-out ${openAccordion === 'description' ? 'max-h-96 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
-                        <div className="text-base text-gray-600 leading-loose font-light">
-                          <p className="mb-4">{product.description || "Crafted with passion and precision. This product represents the pinnacle of our collection."}</p>
-                          <ul className="space-y-2 text-sm mt-4">
-                             {product.origin && <li className="flex"><strong className="w-24 shrink-0 uppercase tracking-wider text-xs">Region:</strong> {product.origin}</li>}
-                             {product.roastLevel && <li className="flex"><strong className="w-24 shrink-0 uppercase tracking-wider text-xs">Roast:</strong> {product.roastLevel}</li>}
-                             {product.tags && <li className="flex"><strong className="w-24 shrink-0 uppercase tracking-wider text-xs">Notes:</strong> {product.tags.join(', ')}</li>}
-                          </ul>
+                {/* Enhanced Feature List (Accordion) */}
+                <div className="border border-gray-200 rounded-3xl overflow-hidden bg-white shadow-sm">
+                  {features.map((feature, index) => {
+                    const Icon = IconMap[feature.icon as keyof typeof IconMap] || Settings;
+                    const isOpen = openFeatureIndex === index;
+                    
+                    return (
+                      <div key={index} className="border-b border-gray-100 last:border-0">
+                        <button 
+                          onClick={() => toggleFeature(index)}
+                          className={`w-full py-5 px-6 flex items-center justify-between text-left transition-colors ${isOpen ? 'bg-nomad-paper/30' : 'hover:bg-gray-50'}`}
+                        >
+                          <div className="flex items-center gap-4">
+                             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isOpen ? 'bg-nomad-gold text-white' : 'bg-nomad-gold/10 text-nomad-gold'}`}>
+                                <Icon size={20} strokeWidth={1.5} />
+                             </div>
+                             <span className={`font-serif font-bold text-base ${isOpen ? 'text-nomad-black' : 'text-gray-700'}`}>
+                                {feature.title}
+                             </span>
+                          </div>
+                          <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180 text-nomad-black' : 'text-gray-400'}`}>
+                              <ChevronDown size={18} />
+                          </div>
+                        </button>
+                        <div 
+                          className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}
+                        >
+                           <div className="px-6 pb-6 pt-0 pl-[4.5rem]">
+                              <p className="text-sm text-gray-500 leading-relaxed font-light">
+                                {feature.content}
+                              </p>
+                           </div>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="border-b border-gray-200">
-                      <button 
-                        onClick={() => toggleAccordion('details')}
-                        className="w-full py-6 flex justify-between items-center text-left hover:text-nomad-gold transition-colors group"
-                      >
-                        <span className="text-sm font-bold uppercase tracking-widest text-nomad-black group-hover:text-nomad-gold">Brew Guide</span>
-                        {openAccordion === 'details' ? <Minus size={16} /> : <Plus size={16} />}
-                      </button>
-                      <div className={`overflow-hidden transition-all duration-500 ease-in-out ${openAccordion === 'details' ? 'max-h-96 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
-                        <div className="text-base text-gray-600 leading-loose font-light">
-                          <p>Recommended Ratio: 1:16 (Coffee to Water)</p>
-                          <p>Water Temp: 93°C - 96°C</p>
-                          <p>Bloom: 30-45 seconds</p>
-                          <p className="mt-4 italic text-gray-400">Adjust grind size based on taste. If sour, grind finer. If bitter, grind coarser.</p>
-                        </div>
-                      </div>
-                    </div>
+                    );
+                  })}
                 </div>
+
              </div>
           </div>
         </div>

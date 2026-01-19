@@ -4,7 +4,7 @@ import { ALL_PRODUCTS } from '../constants';
 import { useSearchParams, Link, useParams } from 'react-router-dom';
 import { ChevronDown, SlidersHorizontal, X, Filter, Search, Check } from 'lucide-react';
 
-type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'newest';
+type SortOption = 'featured' | 'newest';
 
 const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -75,8 +75,6 @@ const Shop: React.FC = () => {
   // Sorting Logic
   filteredProducts = [...filteredProducts].sort((a, b) => {
       switch (sortBy) {
-          case 'price-asc': return a.price - b.price;
-          case 'price-desc': return b.price - a.price;
           case 'newest': return 0; // Assuming API order is newest or random. Real app would have date.
           default: return 0; // Featured
       }
@@ -149,7 +147,7 @@ const Shop: React.FC = () => {
                     onClick={() => setIsSortOpen(!isSortOpen)}
                     className="flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors group"
                   >
-                        Sort by <span className="hidden md:inline ml-1 text-gray-400 font-normal capitalize">({sortBy.replace('-', ' ')})</span>
+                        Sort by <span className="hidden md:inline ml-1 text-gray-400 font-normal capitalize">({sortBy})</span>
                         <ChevronDown size={14} className={`ml-1 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
@@ -158,8 +156,6 @@ const Shop: React.FC = () => {
                     <div className="absolute right-0 top-full mt-4 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-40 animate-in fade-in slide-in-from-top-2">
                         {[
                           { label: 'Featured', value: 'featured' },
-                          { label: 'Price: Low to High', value: 'price-asc' },
-                          { label: 'Price: High to Low', value: 'price-desc' },
                           { label: 'Newest', value: 'newest' }
                         ].map((option) => (
                           <button
@@ -214,15 +210,6 @@ const Shop: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Price Range (Mock) */}
-                <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Price Range</h3>
-                    <div className="flex gap-4">
-                        <input type="number" placeholder="Min" className="w-1/2 bg-nomad-gray border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-nomad-black" />
-                        <input type="number" placeholder="Max" className="w-1/2 bg-nomad-gray border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-nomad-black" />
-                    </div>
-                </div>
-                
                 {/* Roast Level (Mock - only shows if Coffee) */}
                 {(!categoryParam || categoryParam === 'Coffee') && (
                     <div>

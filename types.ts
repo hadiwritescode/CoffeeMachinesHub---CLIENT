@@ -1,3 +1,9 @@
+export interface Feature {
+  title: string;
+  content: string;
+  icon: 'flame' | 'map' | 'droplet' | 'coffee' | 'shield' | 'settings' | 'award' | 'cpu' | 'wifi' | 'layers' | 'thermometer' | 'box';
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -12,6 +18,7 @@ export interface Product {
   roastLevel?: string;
   origin?: string;
   description?: string;
+  features?: Feature[];
 }
 
 export interface NavLink {

@@ -204,14 +204,18 @@ const Home: React.FC = () => {
       </section>
 
       {/* Brand Logos */}
-      <section className="relative z-10 py-20 bg-white border-t border-gray-100">
-        <div className="container mx-auto px-6 md:px-12 text-center">
-           <p className="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase mb-12 fade-right">Trusted Partners & Brands</p>
+      <section className="relative z-10 py-20 bg-white border-t border-gray-100 overflow-hidden">
+        <div className="container mx-auto px-6 md:px-12">
+           <p className="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase mb-12 text-center fade-right">Trusted Partners & Brands</p>
            
-           <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-10 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
-             {BRAND_LOGOS.slice(0, 12).map((brand, idx) => (
-               <span key={idx} className="text-lg md:text-2xl font-serif font-bold text-gray-500 hover:text-nomad-black cursor-default transition-colors fade-right" style={{ transitionDelay: `${idx * 50}ms` }}>{brand}</span>
-             ))}
+           <div className="overflow-x-auto pb-4 no-scrollbar fade-right" style={{ transitionDelay: '200ms' }}>
+             <div className="grid grid-rows-2 grid-flow-col gap-x-16 gap-y-12 min-w-max px-4 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+               {BRAND_LOGOS.map((brand, idx) => (
+                 <span key={idx} className="text-xl md:text-3xl font-serif font-bold text-gray-400 hover:text-nomad-black cursor-default transition-colors flex items-center whitespace-nowrap">
+                    {brand}
+                 </span>
+               ))}
+             </div>
            </div>
         </div>
       </section>

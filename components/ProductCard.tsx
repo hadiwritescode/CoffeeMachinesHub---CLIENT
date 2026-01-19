@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Product } from '../types';
 import { Link } from 'react-router-dom';
+import { MessageCircle } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -10,14 +11,6 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-PK', {
-      style: 'currency',
-      currency: 'PKR',
-      minimumFractionDigits: 0
-    }).format(price).replace('PKR', 'Rs.');
-  };
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -32,6 +25,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
+  };
+
+  const handleWhatsAppClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const phoneNumber = '923001234567';
+    const productUrl = `${window.location.origin}/product/${product.id}`;
+    const message = `Hi, I'm interested in ${product.title}. What is the price? ${productUrl}`;
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   return (
@@ -91,9 +93,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }
           <p className="text-xs text-gray-500 font-medium tracking-wide">{product.subtitle}</p>
         )}
         
-        <div className="text-sm font-medium text-gray-800 pt-1">
-          {formatPrice(product.price)}
-        </div>
+        <button 
+          onClick={handleWhatsAppClick}
+          className="flex items-center gap-2 text-xs font-bold text-green-600 pt-2 hover:text-green-700 transition-colors uppercase tracking-wider"
+        >
+          <MessageCircle size={16} />
+          WhatsApp for Price
+        </button>
       </div>
     </div>
   );

@@ -404,23 +404,47 @@ export const BLOG_POSTS: BlogPost[] = [
 
 export const FAQS: FAQItem[] = [
   {
-    question: 'How long does shipping take?',
-    answer: 'We ship nationwide via TCS/Leopards. Orders placed before 2 PM usually ship the same day. Delivery typically takes 2-4 business days depending on your city.'
+    question: 'Which coffee machine is best for my café?',
+    answer: 'At Coffee Machines Hub, we begin with a free consultation where our experts understand your café’s menu, customer traffic, cup volume, and budget. Based on this information, we will recommend you the perfect Italian Commercial Coffee Machine, whether you need (1-group, 2-group, or 3-group) that suits your café’s needs and growth plans.'
   },
   {
-    question: 'Do you grind coffee for customers?',
-    answer: 'Yes! Just leave a note at checkout specifying your brew method (e.g., French Press, Espresso, Pour Over), and we will grind it fresh before shipping.'
+    question: 'Are your machines new or used?',
+    answer: 'All machines offered by Coffee Machines Hub are slightly used but in excellent 9/10 condition, imported directly from Italy and never used in Pakistan. Each unit goes through a strict inspection, deep cleaning, and performance testing process to ensure it operates like new. This allows café owners to enjoy premium quality at the best value.'
   },
   {
-    question: 'What is your return policy?',
-    answer: 'We accept returns on gear and merchandise within 14 days if unused and in original packaging. Coffee beans cannot be returned due to their perishable nature, but if there is an issue with quality, please contact us.'
+    question: 'Do the machines come with a warranty?',
+    answer: 'Yes. Every machine purchased from Coffee Machines Hub includes a 3-month backup warranty that covers performance issues. In addition, we offer lifetime paid maintenance support, giving you long-term peace of mind and reliable access to expert technicians whenever needed. You just need to pay travelling expenses of technician.'
   },
   {
-    question: 'Do you offer wholesale pricing?',
-    answer: 'Yes, we partner with cafes, offices, and restaurants. Please visit our Services page to get in touch with our wholesale team.'
+    question: 'Do you install the machine at our café?',
+    answer: 'Yes, installation is a core part of our service. Coffee Machines Hub provides professional on-site installation, ensuring your machine is properly connected to water lines, calibrated correctly with your recipes, tested, and ready for your daily use. Our team makes sure your café setup is smooth, hassle-free and to ensure consistent extraction.'
   },
   {
-    question: 'Are your bags recyclable?',
-    answer: 'Our current bags are lined to ensure freshness, making them difficult to recycle in standard streams. However, we are actively transitioning to a fully compostable solution by 2026.'
+    question: 'Do you provide training?',
+    answer: 'Yes. We offer on-site staff training on daily cleaning, backflushing, milk steaming, dosing and basic troubleshooting so your team can produce consistent drinks from day one.'
+  },
+  {
+    question: 'What brands and spare parts do you carry?',
+    answer: 'We specialize in brands like La Cimbali, Nuova Simonelli, La Marzocco, Rancilio, Astoria and Faema. Coffee Machines Hub also stocks pumps, gaskets, group-head components, and other original spare parts.'
+  },
+  {
+    question: 'How quickly can you repair a machine?',
+    answer: 'We prioritize service calls for cafés. Typical on-site response times depend on location but we aim for the fastest possible turnaround to minimize downtime.'
+  },
+  {
+    question: 'Do you offer service contracts?',
+    answer: 'Yes. Choose from flexible service plans (monthly, bi-annual, or annual) that include preventive maintenance, parts discounts, and priority call-outs.'
+  },
+  {
+    question: 'Can Coffee Machines Hub help expand my setup later?',
+    answer: 'Absolutely. We advise on upgrades, additional machines, workflow changes, and relocation support as your business scales.'
+  },
+  {
+    question: 'How do I book a free consultation?',
+    answer: 'Contact Coffee Machines Hub via phone, WhatsApp, or the contact form on this page. We’ll schedule a call or site visit to evaluate your needs.'
+  },
+  {
+    question: 'Ready to upgrade your café?',
+    answer: 'Get a free consultation and machine demo from Coffee Machines Hub — professional installations, lifetime maintenance options, and fast repairs.'
   }
 ];
