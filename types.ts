@@ -9,18 +9,22 @@ export interface Product {
   title: string;
   price: number;
   image: string;
-  images?: string[]; // Multiple images support
+  images?: string[]; 
   hoverImage?: string; 
   hoverVideo?: string; 
   category?: string;
   tags?: string[];
   soldOut?: boolean;
-  isFeatured?: boolean; // New for Home page curation
+  isFeatured?: boolean; 
   subtitle?: string; 
   roastLevel?: string;
   origin?: string;
   description?: string;
   features?: Feature[];
+}
+
+export interface CartItem extends Product {
+  quantity: number;
 }
 
 export interface NavLink {
@@ -54,6 +58,8 @@ export interface Order {
   date: string;
   customerName: string;
   email: string;
+  address: string;
+  phone: string;
   total: number;
   status: 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
   items: {
@@ -69,7 +75,7 @@ export interface User {
   name: string;
   email: string;
   role: 'admin' | 'customer';
-  wishlist: string[]; // Product IDs
+  wishlist: string[]; 
 }
 
 export interface TeamMember {

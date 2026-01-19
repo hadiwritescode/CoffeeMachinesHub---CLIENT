@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Plus, Trash, User, Upload } from 'lucide-react';
+import { Plus, Trash, User, Upload, Loader2 } from 'lucide-react';
 import { TeamMember, Testimonial } from '../../types';
 
 const ContentManager: React.FC = () => {
-  const { siteContent, updateSiteContent, testimonials, setTestimonials } = useStore();
+  const { 
+      siteContent, updateSiteContent, 
+      testimonials, addTestimonial, removeTestimonial,
+      uploadFile 
+  } = useStore();
+  
   const [activeTab, setActiveTab] = useState<'home' | 'services' | 'about' | 'contact' | 'socials'>('home');
   const [subTab, setSubTab] = useState<string>('hero');
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
 
   // Form States
   const [heroForm, setHeroForm] = useState(siteContent.hero);
@@ -18,15 +24,15 @@ const ContentManager: React.FC = () => {
   const [socialsForm, setSocialsForm] = useState(siteContent.socials);
   const [teamList, setTeamList] = useState<TeamMember[]>(siteContent.team);
 
-  const saveHomeHero = () => { updateSiteContent('hero', heroForm); alert('Saved!'); };
-  const saveBrands = () => { updateSiteContent('home', { ...siteContent.home, brands }); alert('Saved!'); };
-  const saveServices = () => { updateSiteContent('services', serviceForm); alert('Saved!'); };
-  const saveAbout = () => { updateSiteContent('about', aboutForm); alert('Saved!'); };
-  const saveTeam = () => { updateSiteContent('team', teamList); alert('Saved!'); };
-  const saveContact = () => { updateSiteContent('contact', contactForm); alert('Saved!'); };
-  const saveSocials = () => { updateSiteContent('socials', socialsForm); alert('Saved!'); };
+  const saveHomeHero = async () => { await updateSiteContent('hero', heroForm); alert('Saved!'); };
+  const saveBrands = async () => { await updateSiteContent('home', { ...siteContent.home, brands }); alert('Saved!'); };
+  const saveServices = async () => { await updateSiteContent('services', serviceForm); alert('Saved!'); };
+  const saveAbout = async () => { await updateSiteContent('about', aboutForm); alert('Saved!'); };
+  const saveTeam = async () => { await updateSiteContent('team', teamList); alert('Saved!'); };
+  const saveContact = async () => { await updateSiteContent('contact', contactForm); alert('Saved!'); };
+  const saveSocials = async () => { await updateSiteContent('socials', socialsForm); alert('Saved!'); };
 
-  const handleFileUpload = (
+  const handleFileUpload = async (
       e: React.ChangeEvent<HTMLInputElement>, 
       setter: React.Dispatch<React.SetStateAction<any>>, 
       field: string,
@@ -34,34 +40,41 @@ const ContentManager: React.FC = () => {
   ) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onloadend = () => {
-          setter({ ...obj, [field]: reader.result as string });
-      };
-      reader.readAsDataURL(file);
+      
+      setUploadingField(field);
+      try {
+          const url = await uploadFile(file, 'content');
+          setter({ ...obj, [field]: url });
+      } catch (e) {
+          alert('Upload failed');
+      } finally {
+          setUploadingField(null);
+      }
   };
 
-  const handleTeamUpload = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleTeamUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onloadend = () => {
+      
+      setUploadingField(`team-${index}`);
+      try {
+          const url = await uploadFile(file, 'team');
           const newList = [...teamList];
-          newList[index].img = reader.result as string;
+          newList[index].img = url;
           setTeamList(newList);
-      };
-      reader.readAsDataURL(file);
+      } catch(e) {
+          alert('Upload failed');
+      } finally {
+          setUploadingField(null);
+      }
   };
 
   // Testimonial Helpers
-  const addTestimonial = () => {
-    setTestimonials([...testimonials, { id: `new-${Date.now()}`, name: 'New User', role: 'Customer', text: 'Great service!', rating: 5 }]);
+  const handleAddTestimonial = async () => {
+    await addTestimonial({ id: `new-${Date.now()}`, name: 'New User', role: 'Customer', text: 'Review...', rating: 5 });
   };
-  const updateTestimonial = (id: string, field: keyof Testimonial, value: any) => {
-    setTestimonials(testimonials.map(t => t.id === id ? { ...t, [field]: value } : t));
-  };
-  const deleteTestimonial = (id: string) => {
-    setTestimonials(testimonials.filter(t => t.id !== id));
+  const handleDeleteTestimonial = async (id: string) => {
+    await removeTestimonial(id);
   };
 
   // Team Helpers
@@ -124,17 +137,18 @@ const ContentManager: React.FC = () => {
                         {testimonials.map(t => (
                             <div key={t.id} className="border p-4 rounded-xl flex gap-4 items-start">
                                 <div className="flex-grow grid grid-cols-2 gap-4">
-                                    <InputGroup label="Name" value={t.name} onChange={v => updateTestimonial(t.id, 'name', v)} />
-                                    <InputGroup label="Role" value={t.role} onChange={v => updateTestimonial(t.id, 'role', v)} />
+                                    <div className="col-span-2 text-xs text-gray-400">ID: {t.id} (Managed via Firebase)</div>
+                                    <InputGroup label="Name" value={t.name} onChange={() => {}} /> 
+                                    <InputGroup label="Role" value={t.role} onChange={() => {}} />
                                     <div className="col-span-2">
                                         <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Review</label>
-                                        <textarea className="w-full border p-2 rounded-lg" value={t.text} onChange={e => updateTestimonial(t.id, 'text', e.target.value)} />
+                                        <textarea className="w-full border p-2 rounded-lg" value={t.text} readOnly />
                                     </div>
                                 </div>
-                                <button onClick={() => deleteTestimonial(t.id)} className="text-red-400 hover:text-red-600 p-2"><Trash size={18} /></button>
+                                <button onClick={() => handleDeleteTestimonial(t.id)} className="text-red-400 hover:text-red-600 p-2"><Trash size={18} /></button>
                             </div>
                         ))}
-                        <button onClick={addTestimonial} className="flex items-center gap-2 text-nomad-gold font-bold uppercase text-xs"><Plus size={16} /> Add Testimonial</button>
+                        <button onClick={handleAddTestimonial} className="flex items-center gap-2 text-nomad-gold font-bold uppercase text-xs"><Plus size={16} /> Add Testimonial (Placeholder)</button>
                     </div>
                 )}
              </div>
@@ -149,6 +163,7 @@ const ContentManager: React.FC = () => {
                  <ImageUploadGroup 
                     label="Hero Image" 
                     preview={serviceForm.heroImage} 
+                    loading={uploadingField === 'heroImage'}
                     onChange={(e) => handleFileUpload(e, setServiceForm, 'heroImage', serviceForm)} 
                  />
                  
@@ -159,6 +174,7 @@ const ContentManager: React.FC = () => {
                  <ImageUploadGroup 
                     label="Image" 
                     preview={serviceForm.section1Image} 
+                    loading={uploadingField === 'section1Image'}
                     onChange={(e) => handleFileUpload(e, setServiceForm, 'section1Image', serviceForm)} 
                  />
 
@@ -169,6 +185,7 @@ const ContentManager: React.FC = () => {
                  <ImageUploadGroup 
                     label="Image" 
                     preview={serviceForm.section2Image} 
+                    loading={uploadingField === 'section2Image'}
                     onChange={(e) => handleFileUpload(e, setServiceForm, 'section2Image', serviceForm)} 
                  />
 
@@ -192,6 +209,7 @@ const ContentManager: React.FC = () => {
                          <ImageUploadGroup 
                             label="Hero Image" 
                             preview={aboutForm.heroImage} 
+                            loading={uploadingField === 'heroImage'}
                             onChange={(e) => handleFileUpload(e, setAboutForm, 'heroImage', aboutForm)} 
                          />
                          <InputGroup label="Story Title" value={aboutForm.storyTitle} onChange={v => setAboutForm({...aboutForm, storyTitle: v})} />
@@ -212,7 +230,8 @@ const ContentManager: React.FC = () => {
                                      <div>
                                         <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Photo</label>
                                         <label className="cursor-pointer bg-gray-50 border p-2 rounded flex items-center gap-2 hover:bg-gray-100">
-                                            <Upload size={14} /> <span className="text-xs">Upload</span>
+                                            {uploadingField === `team-${i}` ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} 
+                                            <span className="text-xs">Upload</span>
                                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleTeamUpload(e, i)} />
                                         </label>
                                      </div>
@@ -260,14 +279,14 @@ const InputGroup = ({ label, value, onChange }: { label: string, value: string, 
     </div>
 );
 
-const ImageUploadGroup = ({ label, preview, onChange }: { label: string, preview: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => (
+const ImageUploadGroup = ({ label, preview, onChange, loading }: { label: string, preview: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, loading: boolean }) => (
     <div>
         <label className="block text-xs font-bold uppercase text-gray-500 mb-2">{label}</label>
         <div className="flex items-center gap-4">
             {preview && <img src={preview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border" />}
-            <label className="cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-2">
-                <Upload size={16} className="text-gray-500" />
-                <span className="text-sm font-medium text-gray-600">Upload Image</span>
+            <label className={`cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-2 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
+                {loading ? <Loader2 size={16} className="animate-spin text-nomad-gold" /> : <Upload size={16} className="text-gray-500" />}
+                <span className="text-sm font-medium text-gray-600">{loading ? 'Uploading...' : 'Upload Image'}</span>
                 <input type="file" className="hidden" accept="image/*" onChange={onChange} />
             </label>
         </div>

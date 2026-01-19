@@ -15,34 +15,29 @@ const CategoryManager: React.FC = () => {
     items: []
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingCategory || !editingCategory.title) return;
     
-    // Check if updating or creating
-    const exists = categories.some(c => c.title === editingCategory.title && c !== editingCategory); // simplistic check
-    if (exists) {
-        alert("Category title must be unique (or you are editing existing one).");
-    }
-
-    // Since we don't have IDs for categories in NavCategory type, we match by title logic for simplicity in this demo,
-    // or just replace the whole array if we were tracking index.
-    // Let's assume we are replacing the matching title or adding new.
-    
+    // Check if updating or creating (Match by title)
     const index = categories.findIndex(c => c.title === editingCategory.title);
     let newCats = [...categories];
+    
     if (index >= 0) {
+        // Update existing (merging items logic or full replace?) -> Full replace for simplicity in admin
         newCats[index] = editingCategory;
     } else {
         newCats.push(editingCategory);
     }
-    setCategories(newCats);
+    
+    await setCategories(newCats);
     setIsModalOpen(false);
     setEditingCategory(null);
   };
 
-  const handleDelete = (title: string) => {
+  const handleDelete = async (title: string) => {
     if (confirm('Delete this category?')) {
-        setCategories(categories.filter(c => c.title !== title));
+        const newCats = categories.filter(c => c.title !== title);
+        await setCategories(newCats);
     }
   };
 
@@ -66,7 +61,7 @@ const CategoryManager: React.FC = () => {
   };
 
   const startEdit = (cat: NavCategory) => {
-    setEditingCategory({ ...cat }); // Clone
+    setEditingCategory({ ...cat }); 
     setIsModalOpen(true);
   };
 

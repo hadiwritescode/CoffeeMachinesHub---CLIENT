@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Edit, Trash, Plus, Search, Star, X, Upload, Image as ImageIcon } from 'lucide-react';
+import { Edit, Trash, Plus, Search, Star, X, Upload, Loader2 } from 'lucide-react';
 import { Product } from '../../types';
 
 const ProductManager: React.FC = () => {
-  const { products, setProducts, categories } = useStore();
+  const { products, addProduct, updateProduct, removeProduct, categories, uploadFile } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   
   // Filtering State
@@ -16,6 +16,7 @@ const ProductManager: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(''); 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // STRICT CATEGORY ENFORCEMENT
   const allCategories = categories; 
@@ -62,28 +63,25 @@ const ProductManager: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, isMultiple: boolean = false) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isMultiple: boolean = false) => {
     const files = e.target.files;
     if (!files || !editingProduct) return;
 
-    if (isMultiple) {
-        const promises = Array.from(files).map(file => {
-            return new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(file);
-            });
-        });
-        Promise.all(promises).then(base64Images => {
-            setEditingProduct(prev => prev ? { ...prev, images: [...(prev.images || []), ...base64Images] } : null);
-        });
-    } else {
-        const file = files[0];
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setEditingProduct(prev => prev ? { ...prev, image: reader.result as string } : null);
-        };
-        reader.readAsDataURL(file);
+    setIsUploading(true);
+    try {
+        if (isMultiple) {
+            const uploadPromises = Array.from(files).map(file => uploadFile(file, 'products'));
+            const urls = await Promise.all(uploadPromises);
+            setEditingProduct(prev => prev ? { ...prev, images: [...(prev.images || []), ...urls] } : null);
+        } else {
+            const url = await uploadFile(files[0], 'products');
+            setEditingProduct(prev => prev ? { ...prev, image: url } : null);
+        }
+    } catch (error) {
+        console.error("Upload failed", error);
+        alert("Image upload failed. Please try again.");
+    } finally {
+        setIsUploading(false);
     }
   };
 
@@ -94,7 +92,7 @@ const ProductManager: React.FC = () => {
       setEditingProduct({ ...editingProduct, images: newImages });
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
 
@@ -113,28 +111,26 @@ const ProductManager: React.FC = () => {
         finalProduct.image = finalProduct.images[0];
     }
 
-    if (products.some(p => p.id === finalProduct.id)) {
-        setProducts(products.map(p => p.id === finalProduct.id ? finalProduct : p));
+    if (!finalProduct.id) {
+        // New Product - Generate Slug ID
+        finalProduct.id = finalProduct.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4);
+        await addProduct(finalProduct);
     } else {
-        const p = { 
-            ...finalProduct, 
-            id: finalProduct.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') 
-        };
-        setProducts([p, ...products]);
+        await updateProduct(finalProduct);
     }
+    
     setIsModalOpen(false);
     setEditingProduct(null);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this product?')) {
-      setProducts(products.filter(p => p.id !== id));
+      await removeProduct(id);
     }
   };
 
-  const toggleFeatured = (product: Product) => {
-      const updated = { ...product, isFeatured: !product.isFeatured };
-      setProducts(products.map(p => p.id === product.id ? updated : p));
+  const toggleFeatured = async (product: Product) => {
+      await updateProduct({ ...product, isFeatured: !product.isFeatured });
   };
 
   const filtered = products.filter(p => {
@@ -373,8 +369,8 @@ const ProductManager: React.FC = () => {
                         {editingProduct.image && (
                             <img src={editingProduct.image} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-gray-200" />
                         )}
-                        <label className="cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-2">
-                            <Upload size={16} className="text-gray-500" />
+                        <label className={`cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-2 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                            {isUploading ? <Loader2 size={16} className="animate-spin text-nomad-gold" /> : <Upload size={16} className="text-gray-500" />}
                             <span className="text-sm font-medium text-gray-600">Upload Image</span>
                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, false)} />
                         </label>
@@ -392,8 +388,8 @@ const ProductManager: React.FC = () => {
                                 </button>
                             </div>
                         ))}
-                        <label className="cursor-pointer w-20 h-20 bg-gray-50 border border-dashed border-gray-300 rounded-xl hover:bg-gray-100 transition-colors flex flex-col items-center justify-center gap-1">
-                            <Plus size={20} className="text-gray-400" />
+                        <label className={`cursor-pointer w-20 h-20 bg-gray-50 border border-dashed border-gray-300 rounded-xl hover:bg-gray-100 transition-colors flex flex-col items-center justify-center gap-1 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                            {isUploading ? <Loader2 size={20} className="animate-spin text-nomad-gold" /> : <Plus size={20} className="text-gray-400" />}
                             <span className="text-[10px] font-bold uppercase text-gray-400">Add</span>
                             <input type="file" className="hidden" accept="image/*" multiple onChange={(e) => handleImageUpload(e, true)} />
                         </label>
@@ -424,7 +420,9 @@ const ProductManager: React.FC = () => {
                   </div>
 
                   <div className="flex gap-4 pt-4 border-t border-gray-100">
-                     <button type="submit" className="flex-1 bg-nomad-black text-white py-4 rounded-xl font-bold uppercase tracking-wider hover:bg-nomad-gold transition-colors shadow-lg">Save Product</button>
+                     <button type="submit" disabled={isUploading} className="flex-1 bg-nomad-black text-white py-4 rounded-xl font-bold uppercase tracking-wider hover:bg-nomad-gold transition-colors shadow-lg disabled:opacity-70">
+                        {isUploading ? 'Uploading...' : 'Save Product'}
+                     </button>
                      <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-xl font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors">Cancel</button>
                   </div>
                </form>

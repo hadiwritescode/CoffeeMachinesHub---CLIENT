@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Edit, Trash, Plus, Upload } from 'lucide-react';
+import { Edit, Trash, Plus, Upload, Loader2 } from 'lucide-react';
 import { BlogPost } from '../../types';
 
 const BlogManager: React.FC = () => {
-  const { blogPosts, setBlogPosts } = useStore();
+  const { blogPosts, addBlogPost, updateBlogPost, removeBlogPost, uploadFile } = useStore();
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const newPost: BlogPost = {
     id: '',
@@ -19,34 +20,38 @@ const BlogManager: React.FC = () => {
     author: 'Nomad Team'
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !editingPost) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-        setEditingPost({ ...editingPost, image: reader.result as string });
-    };
-    reader.readAsDataURL(file);
+    setIsUploading(true);
+    try {
+        const url = await uploadFile(file, 'blogs');
+        setEditingPost({ ...editingPost, image: url });
+    } catch (error) {
+        alert("Upload failed.");
+    } finally {
+        setIsUploading(false);
+    }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPost) return;
 
-    if (blogPosts.some(p => p.id === editingPost.id)) {
-        setBlogPosts(blogPosts.map(p => p.id === editingPost.id ? editingPost : p));
+    if (editingPost.id) {
+        await updateBlogPost(editingPost);
     } else {
         const p = { ...editingPost, id: editingPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') };
-        setBlogPosts([p, ...blogPosts]);
+        await addBlogPost(p);
     }
     setIsModalOpen(false);
     setEditingPost(null);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Delete this post?')) {
-      setBlogPosts(blogPosts.filter(p => p.id !== id));
+      await removeBlogPost(id);
     }
   };
 
@@ -98,8 +103,9 @@ const BlogManager: React.FC = () => {
                     <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Cover Image</label>
                     <div className="flex gap-4 items-center">
                         {editingPost.image && <img src={editingPost.image} alt="Preview" className="w-16 h-16 rounded object-cover border" />}
-                        <label className="cursor-pointer bg-gray-50 border border-dashed p-2 rounded-lg hover:bg-gray-100 flex items-center gap-2">
-                            <Upload size={16} /> <span className="text-sm">Choose File</span>
+                        <label className={`cursor-pointer bg-gray-50 border border-dashed p-2 rounded-lg hover:bg-gray-100 flex items-center gap-2 ${isUploading ? 'opacity-50' : ''}`}>
+                            {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} 
+                            <span className="text-sm">Choose File</span>
                             <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
                         </label>
                     </div>
@@ -113,7 +119,7 @@ const BlogManager: React.FC = () => {
                     <textarea className="w-full border p-2 rounded-lg font-mono text-sm" rows={12} value={editingPost.content} onChange={e => setEditingPost({...editingPost, content: e.target.value})} />
                   </div>
                   <div className="flex gap-4 pt-4">
-                     <button type="submit" className="flex-1 bg-nomad-black text-white py-3 rounded-xl font-bold uppercase">Save Post</button>
+                     <button type="submit" disabled={isUploading} className="flex-1 bg-nomad-black text-white py-3 rounded-xl font-bold uppercase disabled:opacity-70">Save Post</button>
                      <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold uppercase">Cancel</button>
                   </div>
                </form>
