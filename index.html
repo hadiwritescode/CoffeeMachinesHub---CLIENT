@@ -41,6 +41,7 @@
               'reveal': 'reveal 1.5s cubic-bezier(0.77, 0, 0.175, 1) forwards',
               'toast-in': 'toastIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
               'marquee': 'marquee 25s linear infinite',
+              'marquee-reverse': 'marqueeReverse 25s linear infinite',
             },
             keyframes: {
               fadeIn: {
@@ -74,6 +75,10 @@
               marquee: {
                 '0%': { transform: 'translateX(0%)' },
                 '100%': { transform: 'translateX(-100%)' },
+              },
+              marqueeReverse: {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(0%)' },
               }
             }
           }

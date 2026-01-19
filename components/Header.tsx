@@ -122,7 +122,7 @@ const Header: React.FC = () => {
             className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:transform-none md:translate-x-0 md:translate-y-0 z-50 transition-transform duration-300 hover:scale-105"
           >
             <Logo 
-                className={`transition-all duration-300 ${isScrolled ? 'h-12 md:h-14 w-auto' : 'h-16 md:h-20 w-auto'}`} 
+                className={`transition-all duration-300 ${isScrolled ? 'h-16 md:h-20 w-auto' : 'h-24 md:h-28 w-auto'}`} 
                 fill={mobileMenuOpen ? '#3B261B' : getLogoFill()} // Force brown logo when menu open
             />
           </Link>
@@ -159,7 +159,7 @@ const Header: React.FC = () => {
                     
                     <div className="container mx-auto px-6 md:px-12 py-12">
                       <div className="flex flex-col md:flex-row gap-16">
-                        <div className="flex-grow grid grid-cols-3 gap-12">
+                        <div className="flex-grow grid grid-cols-4 gap-8">
                             {link.subItems.map((category) => (
                               <div key={category.title} className="flex flex-col space-y-6">
                                 <h3 className="font-serif font-bold text-xl text-nomad-black border-b border-gray-200 pb-2">{category.title}</h3>
@@ -184,9 +184,9 @@ const Header: React.FC = () => {
                            <div className="overflow-hidden rounded-xl mb-4 aspect-square relative">
                               <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&q=80&w=400" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Featured" />
                            </div>
-                           <p className="font-serif font-bold text-xl mb-1 text-nomad-black">New Arrivals</p>
-                           <p className="text-gray-500 text-xs mb-3">Check out the latest beans from Ethiopia.</p>
-                           <Link to="/shop" className="text-xs underline font-bold uppercase tracking-wider text-nomad-gold hover:text-nomad-black transition-colors">Shop Now</Link>
+                           <p className="font-serif font-bold text-xl mb-1 text-nomad-black">Professional Setup</p>
+                           <p className="text-gray-500 text-xs mb-3">Everything you need for a café-quality espresso bar at home.</p>
+                           <Link to="/shop" className="text-xs underline font-bold uppercase tracking-wider text-nomad-gold hover:text-nomad-black transition-colors">Explore Now</Link>
                         </div>
                       </div>
                     </div>
@@ -269,7 +269,7 @@ const Header: React.FC = () => {
         {/* Mobile Menu Content - Using inset-y-0 and h-[100dvh] for full height on mobile */}
         <div className={`fixed inset-y-0 left-0 w-[90%] max-w-sm h-[100dvh] bg-nomad-paper z-[60] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="p-6 flex justify-between items-center border-b border-gray-200 bg-nomad-paper shrink-0">
-             <Logo className="h-12 w-auto" fill="#3B261B" />
+             <Logo className="h-16 w-auto" fill="#3B261B" />
              {/* Close button for menu */}
              <button onClick={() => setMobileMenuOpen(false)} className="text-nomad-black p-2">
                  <X size={24} />

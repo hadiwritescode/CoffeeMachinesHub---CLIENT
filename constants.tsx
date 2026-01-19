@@ -7,16 +7,20 @@ export const NAVIGATION_LINKS: NavLink[] = [
     href: '/shop',
     subItems: [
       {
-        title: 'Coffee',
-        items: ['Blends', 'Single Origin', 'Decaf', 'Exotic', 'Sample Packs']
+        title: 'Machines',
+        items: ['Espresso Machines', 'Commercial Systems', 'Automatic', 'Manual Lever']
       },
       {
-        title: 'Brew Equipment',
-        items: ['Brewers', 'Espresso Machines', 'Grinders', 'Kettles', 'Scales', 'Filters & Accessories']
+        title: 'Grinders',
+        items: ['Domestic Grinders', 'Commercial Grinders', 'Burr Sets', 'Accessories']
       },
       {
-        title: 'Merchandise',
-        items: ['Apparel', 'Drinkware', 'Tote Bags']
+        title: 'Blenders',
+        items: ['High-Performance', 'Commercial Blenders', 'Personal Blenders']
+      },
+      {
+        title: 'Accessories',
+        items: ['Barista Tools', 'Cleaning Supplies', 'Parts & Spares', 'Drinkware']
       }
     ]
   },
@@ -24,6 +28,27 @@ export const NAVIGATION_LINKS: NavLink[] = [
   { label: 'ABOUT', href: '/about' },
   { label: 'BLOGS', href: '/blogs' },
   { label: 'CONTACT', href: '/contact' },
+];
+
+export const TESTIMONIALS = [
+  {
+    name: "Ahmed Raza",
+    role: "Café Owner",
+    text: "The equipment from Coffee Machines Hub transformed our workflow. Their tech support is unmatched in Pakistan.",
+    rating: 5
+  },
+  {
+    name: "Sara Khan",
+    role: "Home Barista",
+    text: "Found the perfect espresso machine for my home. The guidance I received during the consultation was incredibly helpful.",
+    rating: 5
+  },
+  {
+    name: "Zeeshan Ali",
+    role: "Hotel Manager",
+    text: "Reliable commercial machines and prompt maintenance. They are our go-to partner for all things coffee.",
+    rating: 5
+  }
 ];
 
 const STOCK_VIDEOS = {
