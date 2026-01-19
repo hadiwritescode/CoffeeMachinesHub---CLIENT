@@ -6,7 +6,7 @@ import { Instagram, Facebook, Youtube, AtSign } from 'lucide-react';
 const Footer: React.FC = () => {
   return (
     // md:fixed ensures it only uses the reveal effect on larger screens
-    // On mobile, it acts as a normal block element
+    // The height matches the margin-bottom in App.tsx
     <footer className="w-full bg-nomad-black text-nomad-paper z-0 md:fixed md:bottom-0 md:left-0 md:h-[450px] flex flex-col justify-between pt-16 pb-8 md:pt-0 md:pb-0">
       <div className="container mx-auto px-6 md:px-12 h-full flex flex-col justify-center">
         
@@ -29,8 +29,8 @@ const Footer: React.FC = () => {
             <div className="md:col-span-2 md:col-start-6 flex flex-col items-center md:items-start space-y-4">
                <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-2">Shop</h3>
                <Link to="/shop?category=Coffee" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Beans</Link>
-               <Link to="/shop?category=Brew Equipment" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Equipment</Link>
-               <Link to="/shop?category=Commercial" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Commercial</Link>
+               <Link to="/shop?category=Gear" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Equipment</Link>
+               <Link to="/services" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Commercial</Link>
                <Link to="/shop?category=Merchandise" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Merch</Link>
             </div>
 
@@ -46,10 +46,11 @@ const Footer: React.FC = () => {
             {/* Links Column 3 */}
             <div className="md:col-span-2 flex flex-col items-center md:items-start space-y-4">
                <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-2">Legal</h3>
-               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Shipping</Link>
-               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Returns</Link>
-               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Privacy</Link>
-               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Terms</Link>
+               {/* Pointing to Contact for now as per scope */}
+               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Shipping Policy</Link>
+               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Returns & Exchange</Link>
+               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Privacy Policy</Link>
+               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Terms of Service</Link>
             </div>
         </div>
 
@@ -60,13 +61,13 @@ const Footer: React.FC = () => {
             
             {/* Socials Centered */}
             <div className="flex space-x-8 order-1 md:order-2 md:absolute md:left-1/2 md:-translate-x-1/2">
-                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Instagram"><Instagram size={20} /></a>
-                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Facebook"><Facebook size={20} /></a>
-                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="YouTube"><Youtube size={20} /></a>
+                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Instagram"><Instagram size={20} /></a>
+                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Facebook"><Facebook size={20} /></a>
+                <a href="https://youtube.com" target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="YouTube"><Youtube size={20} /></a>
                 <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Threads"><AtSign size={20} /></a>
             </div>
 
-            {/* Empty div to balance spacing on desktop if needed, helps ensure right side is clear for WhatsApp widget */}
+            {/* Spacer for balance */}
             <div className="hidden md:block w-32 order-3"></div>
         </div>
       </div>

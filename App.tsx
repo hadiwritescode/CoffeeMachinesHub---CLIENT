@@ -20,7 +20,14 @@ const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    // Immediate scroll to top on route change
     window.scrollTo(0, 0);
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    };
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -29,15 +36,18 @@ const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
           observer.unobserve(entry.target); 
         }
       });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    }, observerOptions);
 
-    setTimeout(() => {
-      // Observe both fade-up and fade-right elements
+    // Small delay to ensure DOM is rendered before observing
+    const timeoutId = setTimeout(() => {
       const elements = document.querySelectorAll('.fade-up, .fade-right');
       elements.forEach(el => observer.observe(el));
     }, 100);
 
-    return () => observer.disconnect();
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
   }, [pathname]);
 
   return <>{children}</>;
@@ -49,12 +59,11 @@ const App: React.FC = () => {
       <PageWrapper>
         <div className="flex flex-col min-h-screen font-sans text-nomad-black bg-nomad-black selection:bg-nomad-gold selection:text-white">
           
-          {/* Header moved outside to ensure it sits on top of all content correctly */}
           <Header />
 
-          {/* Main Content Wrapper - Shadows Footer */}
-          {/* mb-0 on mobile (footer stacks), mb-[450px] on desktop (footer reveals) */}
-          <div className="relative z-10 bg-nomad-paper shadow-2xl rounded-b-[2rem] md:rounded-b-[4rem] mb-0 md:mb-[450px] overflow-hidden min-h-screen flex flex-col transition-all duration-300">
+          {/* Main Content Wrapper */}
+          {/* The margin-bottom on desktop matches the Footer height to create the reveal effect */}
+          <div className="relative z-10 bg-nomad-paper shadow-2xl rounded-b-[2rem] md:rounded-b-[4rem] mb-0 md:mb-[450px] overflow-hidden min-h-screen flex flex-col transition-all duration-300 w-full">
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -73,11 +82,9 @@ const App: React.FC = () => {
                 <Route path="*" element={<Home />} />
               </Routes>
             </main>
-            {/* Features Banner added at the bottom of the content card */}
             <FeaturesBanner />
           </div>
           
-          {/* Fixed Footer (Revealed on Scroll on Desktop, Static on Mobile) */}
           <Footer />
           
           <WhatsAppWidget />

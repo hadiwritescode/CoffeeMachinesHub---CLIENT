@@ -8,7 +8,7 @@ const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState<string | null>(null); // Track open submenu in mobile
+  const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -17,8 +17,7 @@ const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Pages where header should be transparent at top (Hero sections)
-  // Product pages (/product/:id) should have a SOLID header.
+  // Pages where header should be transparent at top
   const isTransparentRoute = location.pathname === '/' || 
                              location.pathname === '/shop' ||
                              (location.pathname.startsWith('/blogs/') && location.pathname !== '/blogs');
@@ -27,9 +26,9 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 10); // Lower threshold for quicker reaction
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -42,15 +41,17 @@ const Header: React.FC = () => {
   }, [location]);
 
   useEffect(() => {
-    if (searchOpen && searchInputRef.current) {
+    if (searchOpen) {
+        // Slight delay to allow animation to start
         setTimeout(() => searchInputRef.current?.focus(), 100);
     }
-    // Prevent body scroll when menu/search is open
+    
     if (searchOpen || mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
+    return () => { document.body.style.overflow = 'unset'; };
   }, [searchOpen, mobileMenuOpen]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -76,24 +77,18 @@ const Header: React.FC = () => {
     setMobileSubmenuOpen(mobileSubmenuOpen === label ? null : label);
   };
 
-  // Header Logic
   const getHeaderClasses = () => {
-    // If scrolled, solid background
     if (isScrolled) {
       return 'bg-nomad-paper/95 backdrop-blur-md shadow-sm py-3 text-nomad-black';
     }
-    // Transparent routes (Home, Shop Hero, Blog Post Hero) gets transparent bg until scrolled
     if (isTransparentRoute && !mobileMenuOpen) {
       return 'bg-transparent py-6 text-white hover:bg-nomad-black/10';
     }
-    // Default for other pages (Product Detail, Cart, Login, etc) is solid paper color
-    // Added shadow-sm and border to ensure it's visible against the matching background
     return 'bg-nomad-paper py-5 text-nomad-black shadow-sm border-b border-nomad-black/5';
   };
 
   const getLogoFill = () => {
     if (isScrolled) return 'currentColor';
-    // Transparent routes use white logo, others use dark
     if (isTransparentRoute && !mobileMenuOpen) return 'white';
     return 'currentColor';
   };
@@ -103,8 +98,8 @@ const Header: React.FC = () => {
   return (
     <>
       <header 
-        className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${getHeaderClasses()} ${isHomePage ? 'animate-slide-down' : ''}`}
-        style={{ animationDelay: isHomePage ? '0.2s' : '0s', opacity: isHomePage ? 0 : 1, animationFillMode: 'forwards' }}
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ease-in-out ${getHeaderClasses()} ${isHomePage ? 'animate-slide-down' : ''}`}
+        style={{ animationDelay: isHomePage ? '0.1s' : '0s', opacity: isHomePage ? 0 : 1, animationFillMode: 'forwards' }}
       >
         <div className="container mx-auto px-6 md:px-12 flex items-center justify-between relative">
           
@@ -112,18 +107,19 @@ const Header: React.FC = () => {
           <button 
             className="md:hidden mr-4 focus:outline-none transition-colors p-1"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Menu"
           >
             {mobileMenuOpen ? <X size={24} className="text-nomad-black z-50 relative" /> : <Menu size={24} />}
           </button>
 
-          {/* Logo - Centered on mobile via absolute positioning */}
+          {/* Logo */}
           <Link 
             to="/" 
             className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:transform-none md:translate-x-0 md:translate-y-0 z-50 transition-transform duration-300 hover:scale-105"
           >
             <Logo 
-                className={`transition-all duration-300 ${isScrolled ? 'h-16 md:h-20 w-auto' : 'h-24 md:h-28 w-auto'}`} 
-                fill={mobileMenuOpen ? '#3B261B' : getLogoFill()} // Force brown logo when menu open
+                className={`transition-all duration-300 ${isScrolled ? 'h-12 md:h-16 w-auto' : 'h-16 md:h-20 w-auto'}`} 
+                fill={mobileMenuOpen ? '#3B261B' : getLogoFill()}
             />
           </Link>
 
@@ -210,7 +206,7 @@ const Header: React.FC = () => {
             </Link>
             <Link to="/cart" className="hover:text-nomad-gold transition-colors p-1 relative group" aria-label="Cart">
               <ShoppingBag strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-nomad-gold rounded-full flex items-center justify-center text-[8px] font-bold text-white">0</span>
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-nomad-gold rounded-full flex items-center justify-center text-[8px] font-bold text-white transition-transform group-hover:scale-110">0</span>
             </Link>
           </div>
         </div>
@@ -253,7 +249,7 @@ const Header: React.FC = () => {
                                     navigate(`/shop?search=${term}`);
                                     setSearchOpen(false);
                                 }}
-                                className="px-6 py-3 bg-white border border-gray-100 rounded-full text-sm font-medium text-gray-600 hover:bg-nomad-black hover:text-white transition-all duration-300"
+                                className="px-6 py-3 bg-white border border-gray-100 rounded-full text-sm font-medium text-gray-600 hover:bg-nomad-black hover:text-white transition-all duration-300 hover:-translate-y-0.5"
                             >
                                 {term}
                             </button>
@@ -266,12 +262,11 @@ const Header: React.FC = () => {
         {/* Mobile Menu Overlay */}
         <div className={`fixed inset-0 bg-nomad-black/60 backdrop-blur-sm z-[55] transition-opacity duration-300 md:hidden ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setMobileMenuOpen(false)}></div>
         
-        {/* Mobile Menu Content - Using inset-y-0 and h-[100dvh] for full height on mobile */}
+        {/* Mobile Menu Content */}
         <div className={`fixed inset-y-0 left-0 w-[90%] max-w-sm h-[100dvh] bg-nomad-paper z-[60] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="p-6 flex justify-between items-center border-b border-gray-200 bg-nomad-paper shrink-0">
-             <Logo className="h-16 w-auto" fill="#3B261B" />
-             {/* Close button for menu */}
-             <button onClick={() => setMobileMenuOpen(false)} className="text-nomad-black p-2">
+             <Logo className="h-14 w-auto" fill="#3B261B" />
+             <button onClick={() => setMobileMenuOpen(false)} className="text-nomad-black p-2 hover:rotate-90 transition-transform duration-300">
                  <X size={24} />
              </button>
           </div>
@@ -281,7 +276,7 @@ const Header: React.FC = () => {
                  <div className="flex justify-between items-center">
                     {link.subItems ? (
                         <button 
-                            className="flex-grow text-lg font-serif font-bold text-nomad-black py-3 text-left flex justify-between items-center"
+                            className="flex-grow text-lg font-serif font-bold text-nomad-black py-3 text-left flex justify-between items-center active:text-nomad-gold transition-colors"
                             onClick={() => toggleMobileSubmenu(link.label)}
                         >
                             {link.label}
@@ -290,7 +285,7 @@ const Header: React.FC = () => {
                     ) : (
                         <Link 
                             to={link.href} 
-                            className="flex-grow text-lg font-serif font-bold text-nomad-black py-3"
+                            className="flex-grow text-lg font-serif font-bold text-nomad-black py-3 active:text-nomad-gold transition-colors"
                             onClick={() => setMobileMenuOpen(false)}
                         >
                             {link.label}
@@ -300,7 +295,7 @@ const Header: React.FC = () => {
                  
                  {/* Mobile Submenu */}
                  {link.subItems && (
-                   <div className={`pl-4 space-y-4 overflow-hidden transition-all duration-300 ${mobileSubmenuOpen === link.label ? 'max-h-[800px] mb-4 mt-2' : 'max-h-0'}`}>
+                   <div className={`pl-4 space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${mobileSubmenuOpen === link.label ? 'max-h-[800px] mb-4 mt-2 opacity-100' : 'max-h-0 opacity-0'}`}>
                       {link.subItems.map(sub => (
                         <div key={sub.title}>
                           <h4 className="text-[10px] font-bold text-nomad-gold uppercase mb-2 tracking-widest">{sub.title}</h4>
@@ -328,9 +323,9 @@ const Header: React.FC = () => {
              <Link to="/login" className="flex items-center space-x-3 text-sm font-bold uppercase tracking-wider text-gray-600 mb-4 hover:text-nomad-black" onClick={() => setMobileMenuOpen(false)}>
                <User size={18} /> <span>Sign In / Register</span>
              </Link>
-             <div className="flex items-center space-x-3 text-sm font-medium text-gray-500">
-               <Phone size={18} /> <span>+92 300 123 4567</span>
-             </div>
+             <a href="tel:+923104811011" className="flex items-center space-x-3 text-sm font-medium text-gray-500 hover:text-nomad-black">
+               <Phone size={18} /> <span>+92 310 481 1011</span>
+             </a>
           </div>
         </div>
       </header>

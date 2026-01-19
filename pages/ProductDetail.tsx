@@ -55,7 +55,7 @@ const ProductDetail: React.FC = () => {
   };
 
   const handleWhatsAppClick = () => {
-    const phoneNumber = '923001234567';
+    const phoneNumber = '923104811011';
     const productUrl = window.location.href;
     const message = `Hi, I'm interested in ordering ${product.title}. \n\nOptions selected: \n- Grind: ${selectedGrind} \n\nLink: ${productUrl}`;
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
@@ -243,7 +243,7 @@ const ProductDetail: React.FC = () => {
                             <MessageCircle size={20} />
                             Order via WhatsApp
                         </button>
-                        <button className="w-full sm:w-14 h-14 flex items-center justify-center border border-gray-200 rounded-full hover:border-nomad-gold hover:text-nomad-gold transition-colors">
+                        <button className="w-full sm:w-14 h-14 flex items-center justify-center border border-gray-200 rounded-full hover:border-nomad-gold hover:text-nomad-gold transition-colors active:scale-95">
                             <Heart size={20} />
                         </button>
                     </div>
