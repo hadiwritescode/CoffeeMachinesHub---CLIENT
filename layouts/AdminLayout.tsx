@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee, List, BookOpen, Menu, X, Loader2 } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee, List, BookOpen, Menu, X, Loader2, MessageSquare } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import Logo from '../components/Logo';
 
@@ -20,7 +20,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   useEffect(() => {
     if (!loading) {
         if (!currentUser) {
-            navigate('/login', { replace: true });
+            navigate('/admin/login', { replace: true });
         } else if (currentUser.role !== 'admin') {
             navigate('/profile', { replace: true });
         }
@@ -29,9 +29,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   if (loading || !currentUser || currentUser.role !== 'admin') {
       return (
-          <div className="fixed inset-0 z-50 bg-nomad-paper flex flex-col items-center justify-center">
+          <div className="fixed inset-0 z-50 bg-nomad-black flex flex-col items-center justify-center text-white">
               <Loader2 size={48} className="animate-spin text-nomad-gold mb-4" />
-              <p className="text-nomad-black font-bold uppercase tracking-widest text-xs">Authenticating...</p>
+              <p className="font-bold uppercase tracking-widest text-xs">Authenticating...</p>
           </div>
       );
   }
@@ -41,6 +41,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { label: 'Products', path: '/admin/products', icon: Coffee },
     { label: 'Categories', path: '/admin/categories', icon: List },
     { label: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+    { label: 'Messages', path: '/admin/messages', icon: MessageSquare },
     { label: 'Blogs', path: '/admin/blogs', icon: BookOpen },
     { label: 'Content', path: '/admin/content', icon: FileText },
   ];
@@ -50,7 +51,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans relative z-0">
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 w-full bg-nomad-black text-white z-40 px-6 py-4 flex justify-between items-center shadow-md">
+      <div className="md:hidden fixed top-0 w-full bg-nomad-black text-white z-[70] px-6 py-4 flex justify-between items-center shadow-md">
         <Logo className="h-8 w-auto text-nomad-gold" />
         <button onClick={toggleSidebar} className="text-white focus:outline-none">
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
@@ -60,13 +61,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       {/* Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/50 z-[60] md:hidden backdrop-blur-sm"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
 
       {/* Sidebar */}
-      <aside className={`w-64 bg-nomad-black text-white flex flex-col fixed h-full z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+      <aside className={`w-64 bg-nomad-black text-white flex flex-col fixed h-full z-[80] md:z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         <div className="p-8 flex flex-col items-center border-b border-gray-700 hidden md:flex">
           <Logo className="h-12 w-auto text-nomad-gold mb-4" />
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Admin Panel</span>

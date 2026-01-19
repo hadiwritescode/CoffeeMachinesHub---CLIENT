@@ -78,21 +78,24 @@ const Services: React.FC = () => {
            </div>
         </div>
 
-        {/* Service 3 */}
+        {/* Service 3 (Dynamic) */}
         <div className="bg-nomad-cream rounded-[3rem] p-8 md:p-16 fade-up">
            <div className="flex flex-col md:flex-row items-center gap-12">
                <div className="w-full md:w-1/2">
-                   <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Equipment Sourcing & Tech Support</h2>
+                   <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">{content.section3Title || "Equipment Sourcing & Tech Support"}</h2>
                    <p className="text-gray-600 leading-relaxed mb-8">
-                       Your machine is the heart of your operation. We are authorized distributors for La Marzocco, Mahlkönig, and more. 
-                       Plus, our certified technicians are always on call to ensure minimal downtime.
+                       {content.section3Text || "Your machine is the heart of your operation. We are authorized distributors for La Marzocco, Mahlkönig, and more. Plus, our certified technicians are always on call to ensure minimal downtime."}
                    </p>
-                   <Link to="/shop?category=Commercial" className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors">
+                   <Link to="/shop?category=Machines" className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors">
                        View Equipment Catalog
                    </Link>
                </div>
                <div className="w-full md:w-1/2">
-                   <img src="https://images.unsplash.com/photo-1522923985141-860e65383563?auto=format&fit=crop&q=80&w=800" alt="Tech" className="rounded-2xl shadow-lg rotate-2 hover:rotate-0 transition-transform duration-500" />
+                   <img 
+                     src={content.section3Image || "https://images.unsplash.com/photo-1522923985141-860e65383563?auto=format&fit=crop&q=80&w=800"} 
+                     alt="Tech" 
+                     className="rounded-2xl shadow-lg rotate-2 hover:rotate-0 transition-transform duration-500 w-full" 
+                   />
                </div>
            </div>
         </div>

@@ -35,9 +35,9 @@ const ProductDetail = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [activeImage, setActiveImage] = useState('');
 
-  // Suggest similar products based on category
+  // Suggest similar products based on category, excluding current
   const relatedProducts = products
-    .filter(p => p.id !== id && p.category === product?.category)
+    .filter(p => p.id !== id && product?.category && p.category === product.category)
     .slice(0, 3);
 
   if (!product) {

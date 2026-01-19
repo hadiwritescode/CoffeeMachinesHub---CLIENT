@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { MessageCircle, Send, X, Phone } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
 
 const WhatsAppWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const { siteContent } = useStore();
 
-  // Replace with the actual phone number
-  const PHONE_NUMBER = '923001234567'; 
+  // Dynamic Phone Number
+  const PHONE_NUMBER = siteContent.contact.phone.replace(/[^0-9]/g, '') || '923104811011';
   
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();

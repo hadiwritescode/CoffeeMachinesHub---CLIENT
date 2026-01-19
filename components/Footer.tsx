@@ -7,7 +7,7 @@ import { useStore } from '../context/StoreContext';
 const { Link } = ReactRouterDOM;
 
 const Footer: React.FC = () => {
-  const { siteContent } = useStore();
+  const { siteContent, categories } = useStore();
   
   // Safe fallback
   const description = siteContent.footer?.description || "Purveyors of the finest coffee gear and sustainably sourced beans.";
@@ -31,13 +31,14 @@ const Footer: React.FC = () => {
                 </p>
             </div>
 
-            {/* Links Column 1 */}
+            {/* Links Column 1: Dynamic Categories */}
             <div className="md:col-span-2 md:col-start-6 flex flex-col items-center md:items-start space-y-4">
                <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-2">Shop</h3>
-               <Link to="/shop?category=Machines" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Machines</Link>
-               <Link to="/shop?category=Grinders" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Grinders</Link>
-               <Link to="/shop?category=Blenders" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Blenders</Link>
-               <Link to="/shop?category=Accessories" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Accessories</Link>
+               {categories.slice(0, 5).map(cat => (
+                   <Link key={cat.title} to={`/shop?category=${encodeURIComponent(cat.title)}`} className="text-nomad-paper/70 hover:text-white transition-colors text-sm">
+                       {cat.title}
+                   </Link>
+               ))}
             </div>
 
             {/* Links Column 2 */}
@@ -61,14 +62,14 @@ const Footer: React.FC = () => {
 
         <div className="border-t border-nomad-gold/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-nomad-paper/50 text-xs font-mono text-center md:text-left order-2 md:order-1">
-              © 2026 Coffee Machines Hub. All rights reserved.
+              © {new Date().getFullYear()} Coffee Machines Hub. All rights reserved.
             </p>
             
             <div className="flex space-x-8 order-1 md:order-2">
                 <a href={siteContent.socials.instagram} target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Instagram"><Instagram size={20} /></a>
                 <a href={siteContent.socials.facebook} target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Facebook"><Facebook size={20} /></a>
                 <a href={siteContent.socials.youtube} target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="YouTube"><Youtube size={20} /></a>
-                <a href={siteContent.socials.twitter} target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Threads"><AtSign size={20} /></a>
+                <a href={siteContent.socials.twitter} target="_blank" rel="noreferrer" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Twitter"><AtSign size={20} /></a>
             </div>
         </div>
       </div>

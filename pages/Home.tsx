@@ -12,7 +12,7 @@ const Home: React.FC = () => {
   const [heroSearch, setHeroSearch] = useState('');
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const navigate = useNavigate();
-  const { products, siteContent, testimonials } = useStore();
+  const { products, siteContent, testimonials, categories } = useStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,26 +38,28 @@ const Home: React.FC = () => {
     }
   };
 
-  const trendingTerms = ['Espresso Machines', 'Commercial Grinders', 'Coffee Blends', 'Barista Accessories'];
+  const trendingTerms = ['Espresso', 'Grinder', 'Roast', 'Accessories'];
   
-  // Filter products for sections (Using strict categories)
-  const machineProducts = products.filter(p => p.category === 'Machines' || p.tags?.includes('Machines')).slice(0, 6);
+  // DYNAMIC SECTION LOGIC:
+  // 1. Identify "Main" category (prefer ones with 'Machine', else take first)
+  const mainCategory = categories.find(c => c.title.toLowerCase().includes('machine')) || categories[0] || { title: 'Machines' };
   
-  // "Curated Favorites" uses isFeatured flag, or falls back to 'Grinders'
+  // 2. Filter products for the main slider
+  const machineProducts = products.filter(p => p.category === mainCategory.title || p.tags?.includes(mainCategory.title)).slice(0, 6);
+  
+  // 3. Featured / Favorites Section
   const featuredProducts = products.filter(p => p.isFeatured);
-  const displayFavorites = featuredProducts.length > 0 ? featuredProducts : products.filter(p => p.category === 'Grinders').slice(0, 6);
+  // Fallback if no featured items: use the 2nd category or just more random items
+  const displayFavorites = featuredProducts.length > 0 
+    ? featuredProducts 
+    : products.filter(p => p.category !== mainCategory.title).slice(0, 6);
 
-  // Safe accessors for content
-  const hero = siteContent?.hero || {
-    title: "Coffee Machines Hub",
-    subtitle: "",
-    videoUrl: "",
-    buttonText: "Shop Now"
-  };
+  // Content Accessors
+  const hero = siteContent?.hero || { title: "Coffee Machines Hub", subtitle: "", videoUrl: "", buttonText: "Shop Now" };
   const homeText = siteContent?.home || {
     collectionTitle: "Collections",
     collectionSubtitle: "Curated Excellence",
-    featuredTitle: "Top Rated Machines",
+    featuredTitle: `Top Rated ${mainCategory.title}`,
     favoritesTitle: "Essentials",
     favoritesSubtitle: "Curated Favorites",
     partnersText: "Trusted Partners & Global Brands",
@@ -186,17 +188,24 @@ const Home: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 h-[120vh] md:h-[60vh]">
-             {[
-                { title: "Machines", image: "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=800", video: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4" },
-                { title: "Grinders", image: "https://images.unsplash.com/photo-1618116523910-1840b2f69830?auto=format&fit=crop&q=80&w=800", video: "https://videos.pexels.com/video-files/4443026/4443026-uhd_2560_1440_25fps.mp4" },
-                { title: "Blenders", image: "https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&q=80&w=800", video: "https://videos.pexels.com/video-files/3195979/3195979-uhd_2560_1440_25fps.mp4" },
-                { title: "Accessories", image: "https://images.unsplash.com/photo-1544655615-5654316d2e61?auto=format&fit=crop&q=80&w=800", video: "https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4" }
-             ].map((cat, idx) => (
+             {/* Dynamic Category Cards - Show up to 4 */}
+             {categories.slice(0, 4).map((cat, idx) => (
                 <div key={idx} className="fade-right h-full" style={{ transitionDelay: `${300 + idx * 100}ms` }}>
                     <CategoryCard 
                         title={cat.title} 
-                        image={cat.image} 
-                        video={cat.video}
+                        // Use placeholders or future DB images. For now using reliable stock.
+                        image={[
+                            "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=800",
+                            "https://images.unsplash.com/photo-1618116523910-1840b2f69830?auto=format&fit=crop&q=80&w=800",
+                            "https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&q=80&w=800",
+                            "https://images.unsplash.com/photo-1544655615-5654316d2e61?auto=format&fit=crop&q=80&w=800"
+                        ][idx % 4]}
+                        video={[
+                            "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4",
+                            "https://videos.pexels.com/video-files/4443026/4443026-uhd_2560_1440_25fps.mp4",
+                            "https://videos.pexels.com/video-files/3195979/3195979-uhd_2560_1440_25fps.mp4",
+                            "https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4"
+                        ][idx % 4]}
                     />
                 </div>
              ))}
@@ -209,14 +218,14 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Featured Collection - Top Rated Machines */}
+      {/* Featured Collection - Top Rated Main Category */}
       <section className="relative z-10 py-16 md:py-24 bg-white rounded-t-[3rem] -mt-12 shadow-2xl overflow-hidden">
         <div className="container mx-auto px-0 md:px-12">
            <div className="flex flex-col md:flex-row items-center justify-between mb-8 md:mb-12 gap-6 px-6 md:px-0">
              <h2 className="text-3xl md:text-5xl font-serif font-medium text-nomad-black fade-right text-center md:text-left">
                 {homeText.featuredTitle}
              </h2>
-             <Link to="/shop?category=Machines" className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors fade-right whitespace-nowrap hidden md:inline-block">
+             <Link to={`/shop?category=${encodeURIComponent(mainCategory.title)}`} className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors fade-right whitespace-nowrap hidden md:inline-block">
                 View Catalog
              </Link>
            </div>
@@ -228,10 +237,13 @@ const Home: React.FC = () => {
                   <ProductCard product={product} variant="poster" />
                 </div>
               ))}
+              {machineProducts.length === 0 && (
+                  <div className="w-full text-center py-10 text-gray-400">No products found in this category yet.</div>
+              )}
            </div>
            
            <div className="px-6 md:hidden text-center mt-2">
-             <Link to="/shop?category=Machines" className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors">
+             <Link to={`/shop?category=${encodeURIComponent(mainCategory.title)}`} className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors">
                 View Catalog
              </Link>
            </div>

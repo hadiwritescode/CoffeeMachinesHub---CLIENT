@@ -7,7 +7,7 @@ import { useStore } from '../context/StoreContext';
 const { Link } = ReactRouterDOM;
 
 const Cart: React.FC = () => {
-  const { cart, removeFromCart, updateCartQuantity, clearCart, createOrder, currentUser, products } = useStore();
+  const { cart, removeFromCart, updateCartQuantity, clearCart, createOrder, currentUser, products, siteContent } = useStore();
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'details' | 'success'>('cart');
   const [formData, setFormData] = useState({
       name: '',
@@ -48,10 +48,12 @@ const Cart: React.FC = () => {
           }))
       });
 
-      // Send WhatsApp
+      // Send WhatsApp - Dynamic Phone Number
+      const contactPhone = siteContent.contact.phone.replace(/[^0-9]/g, '') || '923104811011';
       const itemsList = cart.map(i => `${i.quantity}x ${i.title}`).join('%0A');
       const waMsg = `Hi, I would like to inquire about an order:%0AOrder ID: ${orderId}%0A%0AItems:%0A${itemsList}%0A%0ACustomer: ${formData.name}%0AAddress: ${formData.address}`;
-      window.open(`https://wa.me/923104811011?text=${waMsg}`, '_blank');
+      
+      window.open(`https://wa.me/${contactPhone}?text=${waMsg}`, '_blank');
 
       clearCart();
       setCheckoutStep('success');

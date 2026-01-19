@@ -1,14 +1,20 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper function to check if user is admin
+    // ---------------- HELPER FUNCTIONS ----------------
     function isAdmin() {
       return request.auth != null && 
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Public Read / Admin Write Collections
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ---------------- PUBLIC DATA ----------------
+    // Products, Categories, Blogs, Content, Testimonials: Everyone can read, Only Admin writes.
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -30,25 +36,34 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ---------------- SENSITIVE DATA ----------------
+
     // Orders
-    // Anyone can create (public checkout)
-    // Only owner (by email match) or Admin can read
+    // Create: Public (Guests can checkout)
+    // Read: Admins see all. Users see orders matching their email (logic handled in query, secured here).
+    // Note: Since orders are linked by email (legacy checkout), we validate the query email matches the auth email for non-admins.
     match /orders/{orderId} {
       allow create: if true;
-      allow read: if request.auth != null && (resource.data.email == request.auth.token.email || isAdmin());
+      allow read: if isAdmin() || (request.auth != null && resource.data.email == request.auth.token.email);
       allow update, delete: if isAdmin();
     }
 
     // Messages (Contact Form)
+    // Create: Public
+    // Read/Update/Delete: Admin Only
     match /messages/{msgId} {
       allow create: if true;
       allow read, update, delete: if isAdmin();
     }
 
     // Users
-    // Users can read/write ONLY their own data
+    // Read/Write: Owner or Admin.
+    // Security: Prevent users from escalating their role to 'admin' via update.
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.role == 'customer';
+      allow update: if (isOwner(userId) || isAdmin()) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+      allow write: if isAdmin(); 
     }
   }
 }

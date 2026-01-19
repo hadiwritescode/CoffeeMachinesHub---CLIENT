@@ -4,17 +4,19 @@ import { Phone, Search, User, ShoppingBag, Menu, X, ArrowRight, ChevronRight, Ch
 import { NAVIGATION_LINKS } from '../constants';
 import Logo from './Logo';
 import { useStore } from '../context/StoreContext';
+import { Product } from '../types';
 
 const { Link, useLocation, useNavigate } = ReactRouterDOM;
 
 const Header: React.FC = () => {
-  const { cart } = useStore();
+  const { cart, products, categories } = useStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
   
   const searchInputRef = useRef<HTMLInputElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -29,6 +31,14 @@ const Header: React.FC = () => {
   const isHomePage = location.pathname === '/';
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+  // Dynamic Navigation Links
+  const dynamicNavLinks = NAVIGATION_LINKS.map(link => {
+    if (link.label === 'SHOP') {
+      return { ...link, subItems: categories };
+    }
+    return link;
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,6 +68,21 @@ const Header: React.FC = () => {
     }
     return () => { document.body.style.overflow = 'unset'; };
   }, [searchOpen, mobileMenuOpen]);
+
+  // Update suggestions when query changes
+  useEffect(() => {
+      if (searchQuery.trim().length > 1) {
+          const lowerQuery = searchQuery.toLowerCase();
+          const filtered = products.filter(p => 
+              p.title.toLowerCase().includes(lowerQuery) || 
+              p.category?.toLowerCase().includes(lowerQuery) ||
+              p.tags?.some(t => t.toLowerCase().includes(lowerQuery))
+          ).slice(0, 5);
+          setSuggestions(filtered);
+      } else {
+          setSuggestions([]);
+      }
+  }, [searchQuery, products]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +157,7 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6 lg:space-x-10 items-center h-full mx-auto">
-            {NAVIGATION_LINKS.map((link) => (
+            {dynamicNavLinks.map((link) => (
               <div 
                 key={link.label}
                 className="relative h-full flex items-center py-2 group"
@@ -148,11 +173,11 @@ const Header: React.FC = () => {
                   }`}
                 >
                   {link.label}
-                  {link.subItems && <ChevronDown size={10} className="mt-0.5 opacity-50" />}
+                  {link.subItems && link.subItems.length > 0 && <ChevronDown size={10} className="mt-0.5 opacity-50" />}
                 </Link>
                 
                 {/* Mega Menu Dropdown */}
-                {link.subItems && activeDropdown === link.label && (
+                {link.subItems && link.subItems.length > 0 && activeDropdown === link.label && (
                   <div 
                     className="fixed left-0 w-full bg-nomad-paper shadow-2xl z-40 border-t border-nomad-gray animate-in fade-in slide-in-from-top-1 duration-200 cursor-default text-nomad-black"
                     style={{ top: dropdownTop }}
@@ -231,7 +256,7 @@ const Header: React.FC = () => {
                 <X size={32} strokeWidth={0.5} className="md:w-10 md:h-10" />
             </button>
             
-            <div className="w-full max-w-4xl px-6 animate-slide-up">
+            <div className="w-full max-w-4xl px-6 animate-slide-up relative">
                 <form onSubmit={handleSearchSubmit} className="relative group">
                     <input 
                         ref={searchInputRef}
@@ -245,6 +270,27 @@ const Header: React.FC = () => {
                         <ArrowRight size={24} strokeWidth={1} className="md:w-8 md:h-8" />
                     </button>
                 </form>
+
+                {/* Search Suggestions */}
+                {suggestions.length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-4 bg-white rounded-2xl shadow-xl overflow-hidden z-50">
+                        {suggestions.map(product => (
+                            <Link 
+                                key={product.id} 
+                                to={`/product/${product.id}`} 
+                                className="flex items-center gap-4 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                                onClick={() => setSearchOpen(false)}
+                            >
+                                <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
+                                <div>
+                                    <h4 className="font-bold text-sm text-nomad-black">{product.title}</h4>
+                                    <p className="text-xs text-gray-500">{product.category}</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+
                 <div className="mt-8 md:mt-12 text-center">
                     <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4 md:mb-6">Trending Now</p>
                     <div className="flex flex-wrap justify-center gap-3 md:gap-4">
@@ -273,13 +319,13 @@ const Header: React.FC = () => {
         <div className={`fixed inset-y-0 left-0 w-[85%] max-w-sm h-[100dvh] bg-nomad-paper z-[60] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="p-6 flex justify-between items-center border-b border-gray-200 bg-nomad-paper shrink-0">
              <Logo className="h-10 w-auto" fill="#3B261B" />
-             {/* Close button handled by header toggle, but can add redundant close here if needed, or rely on outer click */}
+             {/* Close button handled by header toggle */}
           </div>
           <div className="flex-grow overflow-y-auto p-6 space-y-1">
-             {NAVIGATION_LINKS.map((link) => (
+             {dynamicNavLinks.map((link) => (
                <div key={link.label} className="border-b border-gray-200 last:border-0 pb-2 mb-2">
                  <div className="flex justify-between items-center">
-                    {link.subItems ? (
+                    {link.subItems && link.subItems.length > 0 ? (
                         <button 
                             className="flex-grow text-lg font-serif font-bold text-nomad-black py-3 text-left flex justify-between items-center active:text-nomad-gold transition-colors"
                             onClick={() => toggleMobileSubmenu(link.label)}
@@ -299,7 +345,7 @@ const Header: React.FC = () => {
                  </div>
                  
                  {/* Mobile Submenu */}
-                 {link.subItems && (
+                 {link.subItems && link.subItems.length > 0 && (
                    <div className={`pl-4 space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${mobileSubmenuOpen === link.label ? 'max-h-[800px] mb-4 mt-2 opacity-100' : 'max-h-0 opacity-0'}`}>
                       {link.subItems.map(sub => (
                         <div key={sub.title}>

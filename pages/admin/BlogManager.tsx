@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Edit, Trash, Plus, Upload, Loader2 } from 'lucide-react';
+import { Edit, Trash, Plus, Upload, Loader2, Link as LinkIcon } from 'lucide-react';
 import { BlogPost } from '../../types';
 
 const BlogManager: React.FC = () => {
@@ -106,13 +106,28 @@ const BlogManager: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Cover Image</label>
-                    <div className="flex gap-4 items-center">
-                        {editingPost.image && <img src={editingPost.image} alt="Preview" className="w-16 h-16 rounded object-cover border" />}
-                        <label className={`cursor-pointer bg-gray-50 border border-dashed p-2 rounded-lg hover:bg-gray-100 flex items-center gap-2 ${isUploading ? 'opacity-50' : ''}`}>
-                            {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} 
-                            <span className="text-sm">Choose File</span>
-                            <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
-                        </label>
+                    <div className="flex flex-col gap-3">
+                        <div className="flex gap-4 items-center">
+                            {editingPost.image && <img src={editingPost.image} alt="Preview" className="w-16 h-16 rounded object-cover border" />}
+                            <label className={`cursor-pointer bg-gray-50 border border-dashed p-2 rounded-lg hover:bg-gray-100 flex items-center gap-2 ${isUploading ? 'opacity-50' : ''}`}>
+                                {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} 
+                                <span className="text-sm">Choose File</span>
+                                <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
+                            </label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-gray-400">OR</span>
+                            <div className="relative flex-grow">
+                                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Paste image URL here..." 
+                                    className="w-full border p-2 pl-9 rounded-lg text-sm focus:ring-2 focus:ring-nomad-gold/20 outline-none"
+                                    value={editingPost.image}
+                                    onChange={(e) => setEditingPost({...editingPost, image: e.target.value})}
+                                />
+                            </div>
+                        </div>
                     </div>
                   </div>
                   <div>

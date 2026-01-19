@@ -55,6 +55,11 @@ export interface FAQItem {
   answer: string;
 }
 
+export interface CoreValue {
+  title: string;
+  text: string;
+}
+
 export interface Order {
   id: string;
   date: string;
@@ -137,6 +142,9 @@ export interface SiteContent {
     section2Title: string;
     section2Text: string;
     section2Image: string;
+    section3Title: string;
+    section3Text: string;
+    section3Image: string;
   };
   about: {
     heroTitle: string;
@@ -144,6 +152,7 @@ export interface SiteContent {
     heroImage: string;
     storyTitle: string;
     storyText: string;
+    values: CoreValue[];
   };
   contact: {
     address: string;

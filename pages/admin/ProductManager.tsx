@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Edit, Trash, Plus, Search, Star, X, Upload, Loader2, Minus } from 'lucide-react';
+import { Edit, Trash, Plus, Search, Star, X, Upload, Loader2, Minus, Link as LinkIcon } from 'lucide-react';
 import { Product, Feature } from '../../types';
 
 const ProductManager: React.FC = () => {
@@ -18,6 +18,7 @@ const ProductManager: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState<'info' | 'features'>('info');
+  const [galleryUrlInput, setGalleryUrlInput] = useState('');
 
   // STRICT CATEGORY ENFORCEMENT
   const allCategories = categories; 
@@ -63,6 +64,7 @@ const ProductManager: React.FC = () => {
 
   const handleOpenModal = (product: Product | null) => {
     setActiveTab('info');
+    setGalleryUrlInput('');
     if (product) {
       // Logic to pre-fill features if they are empty, so admin can edit the defaults
       const features = (product.features && product.features.length > 0) 
@@ -113,6 +115,16 @@ const ProductManager: React.FC = () => {
         setIsUploading(false);
         e.target.value = '';
     }
+  };
+
+  const addGalleryUrl = () => {
+      if (galleryUrlInput && editingProduct) {
+          setEditingProduct({
+              ...editingProduct,
+              images: [...(editingProduct.images || []), galleryUrlInput]
+          });
+          setGalleryUrlInput('');
+      }
   };
 
   const removeGalleryImage = (index: number) => {
@@ -434,15 +446,30 @@ const ProductManager: React.FC = () => {
 
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Main Image</label>
-                            <div className="flex items-center gap-4">
-                                {editingProduct.image && (
-                                    <img src={editingProduct.image} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-gray-200" />
-                                )}
-                                <label className={`cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-2 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                                    {isUploading ? <Loader2 size={16} className="animate-spin text-nomad-gold" /> : <Upload size={16} className="text-gray-500" />}
-                                    <span className="text-sm font-medium text-gray-600">Upload Image</span>
-                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, false)} />
-                                </label>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-4">
+                                    {editingProduct.image && (
+                                        <img src={editingProduct.image} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-gray-200" />
+                                    )}
+                                    <label className={`cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-2 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                        {isUploading ? <Loader2 size={16} className="animate-spin text-nomad-gold" /> : <Upload size={16} className="text-gray-500" />}
+                                        <span className="text-sm font-medium text-gray-600">Upload Image</span>
+                                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, false)} />
+                                    </label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-gray-400">OR</span>
+                                    <div className="relative flex-grow">
+                                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                                        <input
+                                            type="text"
+                                            placeholder="Paste image URL here..."
+                                            className="w-full border border-gray-200 p-2 pl-9 rounded-lg text-sm focus:ring-2 focus:ring-nomad-gold/20 outline-none"
+                                            value={editingProduct.image}
+                                            onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -459,9 +486,30 @@ const ProductManager: React.FC = () => {
                                 ))}
                                 <label className={`cursor-pointer w-20 h-20 bg-gray-50 border border-dashed border-gray-300 rounded-xl hover:bg-gray-100 transition-colors flex flex-col items-center justify-center gap-1 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
                                     {isUploading ? <Loader2 size={20} className="animate-spin text-nomad-gold" /> : <Plus size={20} className="text-gray-400" />}
-                                    <span className="text-[10px] font-bold uppercase text-gray-400">Add</span>
+                                    <span className="text-[10px] font-bold uppercase text-gray-400">Upload</span>
                                     <input type="file" className="hidden" accept="image/*" multiple onChange={(e) => handleImageUpload(e, true)} />
                                 </label>
+                            </div>
+                            <div className="flex gap-2 items-center">
+                                <div className="relative flex-grow">
+                                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                                    <input
+                                        type="text"
+                                        placeholder="Add gallery image via URL..."
+                                        className="w-full border border-gray-200 p-2 pl-9 rounded-lg text-sm focus:ring-2 focus:ring-nomad-gold/20 outline-none"
+                                        value={galleryUrlInput}
+                                        onChange={(e) => setGalleryUrlInput(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addGalleryUrl())}
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={addGalleryUrl}
+                                    className="bg-gray-100 p-2.5 rounded-lg hover:bg-gray-200 text-gray-600"
+                                    title="Add URL"
+                                >
+                                    <Plus size={18} />
+                                </button>
                             </div>
                         </div>
 

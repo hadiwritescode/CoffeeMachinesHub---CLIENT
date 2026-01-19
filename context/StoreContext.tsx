@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, BlogPost, Order, User, SiteContent, NavCategory, Testimonial, Message, CartItem } from '../types';
 import { BRAND_LOGOS, NAVIGATION_LINKS, FAQS } from '../constants';
 import { 
-  collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc 
+  collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc, query, where
 } from 'firebase/firestore';
 import { 
   signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,
@@ -37,6 +37,7 @@ interface StoreContextType {
   testimonials: Testimonial[];
   setTestimonials: React.Dispatch<React.SetStateAction<Testimonial[]>>;
   addTestimonial: (t: Testimonial) => Promise<void>;
+  updateTestimonial: (t: Testimonial) => Promise<void>;
   removeTestimonial: (id: string) => Promise<void>;
   
   messages: Message[];
@@ -91,14 +92,22 @@ const defaultSiteContent: SiteContent = {
     section1Image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=800",
     section2Title: "Barista Training",
     section2Text: "Empower your staff...",
-    section2Image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&q=80&w=800"
+    section2Image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&q=80&w=800",
+    section3Title: "Equipment Sourcing & Tech Support",
+    section3Text: "Your machine is the heart of your operation. We are authorized distributors for La Marzocco, Mahlkönig, and more. Plus, our certified technicians are always on call to ensure minimal downtime.",
+    section3Image: "https://images.unsplash.com/photo-1522923985141-860e65383563?auto=format&fit=crop&q=80&w=800"
   },
   about: {
     heroTitle: "The Pursuit of \n Excellence",
     heroSubtitle: "We believe that every cup of coffee tells a story...",
     heroImage: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&q=80&w=1600",
     storyTitle: "Our Origins",
-    storyText: "Coffee Machines Hub began as a small passion project..."
+    storyText: "Coffee Machines Hub began as a small passion project...",
+    values: [
+      { title: "Quality First", text: "We never compromise on the quality of our beans or the durability of our machines." },
+      { title: "Transparency", text: "We believe in direct trade and fair pricing for farmers and manufacturers." },
+      { title: "Education", text: "We don't just sell; we teach. Empowering our customers is our greatest joy." }
+    ]
   },
   contact: {
     address: "G-22, City Star Mall, Model Town Link Road, Lahore, Pakistan",
@@ -145,64 +154,31 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
   });
 
+  // 1. Fetch Public Data (Always Active)
   useEffect(() => {
-    // 1. Listen for Products (Safe)
     const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
-      setProductsState(snapshot.docs.map(doc => {
-          const d = doc.data();
-          return {
-              id: doc.id,
-              title: d.title || 'Untitled Product',
-              price: d.price || 0,
-              image: d.image || '',
-              images: d.images || [],
-              category: d.category || 'Uncategorized',
-              tags: d.tags || [],
-              description: d.description || '',
-              soldOut: !!d.soldOut,
-              isFeatured: !!d.isFeatured,
-              features: d.features || [],
-              ...d
-          } as Product;
-      }));
+      setProductsState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
     });
 
-    // 2. Listen for Categories (Safe)
     const unsubCats = onSnapshot(doc(db, 'content', 'navigation'), (docSnap) => {
       if (docSnap.exists()) {
         const rawCats = docSnap.data().categories || [];
-        const safeCats = rawCats.map((c: any) => ({
-            title: c.title || 'Untitled',
-            items: Array.isArray(c.items) ? c.items : []
-        }));
-        setCategoriesState(safeCats as NavCategory[]);
+        setCategoriesState(rawCats);
       } else {
+         // Initialize if empty
          const initialCategories = NAVIGATION_LINKS.find(l => l.label === 'SHOP')?.subItems || [];
          setDoc(doc(db, 'content', 'navigation'), { categories: initialCategories }).catch(console.error);
       }
     });
 
-    // 3. Listen for Blog Posts
     const unsubBlogs = onSnapshot(collection(db, 'blogs'), (snapshot) => {
       setBlogPostsState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost)));
     });
 
-    // 4. Listen for Orders
-    const unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
-      setOrdersState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)));
-    });
-
-    // 5. Listen for Messages
-    const unsubMessages = onSnapshot(collection(db, 'messages'), (snapshot) => {
-        setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message)));
-    });
-
-    // 6. Listen for Testimonials
     const unsubTestimonials = onSnapshot(collection(db, 'testimonials'), (snapshot) => {
         setTestimonialsState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial)));
     });
 
-    // 7. Listen for Site Content (Safe Merging)
     const unsubContent = onSnapshot(collection(db, 'content'), (snapshot) => {
         setSiteContentState(prev => {
             const next = { ...prev };
@@ -210,7 +186,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                 if (doc.id !== 'navigation') { 
                     const sectionKey = doc.id as keyof SiteContent;
                     const defaultSection = defaultSiteContent[sectionKey];
-                    
                     if (defaultSection && typeof defaultSection === 'object' && !Array.isArray(defaultSection)) {
                         next[sectionKey] = { ...defaultSection, ...doc.data() };
                     } else {
@@ -222,7 +197,13 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
         });
     });
 
-    // 8. Auth Listener (Critical Safe User Loading)
+    return () => {
+      unsubProducts(); unsubCats(); unsubBlogs(); unsubTestimonials(); unsubContent();
+    };
+  }, []);
+
+  // 2. Auth & User Profile (Critical)
+  useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -231,7 +212,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
             
             if (snapshot.exists()) {
                 const userData = snapshot.data();
-                
                 const safeUser: User = {
                     id: user.uid,
                     name: userData.name || user.displayName || 'Customer',
@@ -243,9 +223,11 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                     address: userData.address || '',
                     city: userData.city || ''
                 };
-
                 setCurrentUser(safeUser);
-                if (safeUser.cart.length > 0) setCartState(safeUser.cart);
+                // Merge DB cart with local cart if DB cart is not empty
+                if (safeUser.cart && safeUser.cart.length > 0) {
+                    setCartState(safeUser.cart);
+                }
             } else {
                 const newUser: User = {
                     id: user.uid,
@@ -269,12 +251,41 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
         setLoading(false);
       }
     });
-
-    return () => {
-      unsubProducts(); unsubCats(); unsubBlogs(); unsubOrders(); 
-      unsubMessages(); unsubTestimonials(); unsubContent(); unsubAuth();
-    };
+    return () => unsubAuth();
   }, []);
+
+  // 3. Conditional Data Subscription (Security)
+  useEffect(() => {
+      let unsubOrders: () => void = () => {};
+      let unsubMessages: () => void = () => {};
+
+      if (currentUser) {
+          if (currentUser.role === 'admin') {
+              // Admin: Fetch ALL orders and messages
+              unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
+                  setOrdersState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)));
+              });
+              unsubMessages = onSnapshot(collection(db, 'messages'), (snapshot) => {
+                  setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message)));
+              });
+          } else {
+              // Customer: Fetch ONLY their orders
+              const q = query(collection(db, 'orders'), where('email', '==', currentUser.email));
+              unsubOrders = onSnapshot(q, (snapshot) => {
+                  setOrdersState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)));
+              });
+              setMessages([]); // Clear sensitive admin data
+          }
+      } else {
+          setOrdersState([]);
+          setMessages([]);
+      }
+
+      return () => {
+          unsubOrders();
+          unsubMessages();
+      };
+  }, [currentUser]);
 
   // Sync Cart to LocalStorage for non-logged in users
   useEffect(() => {
@@ -288,17 +299,13 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const uploadFile = async (file: File, path: string): Promise<string> => {
     try {
       const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
-      
-      // 30s Timeout to prevent infinite loading if config is wrong or network is dead
       const timeout = new Promise((_, reject) => 
         setTimeout(() => reject(new Error("Upload timed out. Check network or storage rules.")), 30000)
       );
-
       const snapshot = await Promise.race([
         uploadBytes(storageRef, file),
         timeout
       ]) as any;
-
       const url = await getDownloadURL(snapshot.ref);
       return url;
     } catch (error: any) {
@@ -341,6 +348,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   const logout = async () => {
     await signOut(auth);
+    setCartState([]); // Clear cart state on logout
     showToast("Signed out");
   };
 
@@ -396,10 +404,17 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   const addTestimonial = async (t: Testimonial) => {
     await addDoc(collection(db, 'testimonials'), t);
+    showToast("Testimonial added");
+  };
+
+  const updateTestimonial = async (t: Testimonial) => {
+    await updateDoc(doc(db, 'testimonials', t.id), { ...t });
+    showToast("Testimonial updated");
   };
 
   const removeTestimonial = async (id: string) => {
     await deleteDoc(doc(db, 'testimonials', id));
+    showToast("Testimonial removed");
   };
 
   const addMessage = async (msg: Omit<Message, 'id' | 'date' | 'read'>) => {
@@ -407,7 +422,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   };
 
   const updateSiteContent = async (section: keyof SiteContent, data: any) => {
-    await setDoc(doc(db, 'content', section), data);
+    await setDoc(doc(db, 'content', section), data, { merge: true });
     showToast("Content updated");
   };
 
@@ -466,7 +481,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       categories, setCategories,
       orders, createOrder, updateOrderStatus,
       blogPosts, setBlogPosts: async () => {}, addBlogPost, updateBlogPost, removeBlogPost,
-      testimonials, setTestimonials: () => {}, addTestimonial, removeTestimonial,
+      testimonials, setTestimonials: () => {}, addTestimonial, updateTestimonial, removeTestimonial,
       messages, addMessage,
       siteContent, updateSiteContent,
       currentUser, login, register, logout, toggleWishlist, updateUserProfile,

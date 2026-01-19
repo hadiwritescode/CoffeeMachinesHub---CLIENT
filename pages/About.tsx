@@ -5,6 +5,7 @@ const About: React.FC = () => {
   const { siteContent } = useStore();
   const content = siteContent.about;
   const team = siteContent.team;
+  const values = content.values || [];
 
   return (
     <div className="animate-fade-in bg-nomad-paper pt-40 pb-20">
@@ -40,18 +41,13 @@ const About: React.FC = () => {
             <div className="bg-white p-10 md:p-12 rounded-3xl shadow-sm border border-gray-100">
                <h3 className="text-xl font-bold mb-6 uppercase tracking-widest text-nomad-black">Core Values</h3>
                <ul className="space-y-6">
-                  <li className="flex items-start">
-                     <span className="text-nomad-gold font-serif text-2xl mr-4 leading-none">01.</span>
-                     <p className="text-gray-600 leading-relaxed"><strong>Quality First.</strong> We never compromise on the quality of our beans or the durability of our machines.</p>
-                  </li>
-                  <li className="flex items-start">
-                     <span className="text-nomad-gold font-serif text-2xl mr-4 leading-none">02.</span>
-                     <p className="text-gray-600 leading-relaxed"><strong>Transparency.</strong> We believe in direct trade and fair pricing for farmers and manufacturers.</p>
-                  </li>
-                  <li className="flex items-start">
-                     <span className="text-nomad-gold font-serif text-2xl mr-4 leading-none">03.</span>
-                     <p className="text-gray-600 leading-relaxed"><strong>Education.</strong> We don't just sell; we teach. Empowering our customers is our greatest joy.</p>
-                  </li>
+                  {values.map((val, idx) => (
+                      <li key={idx} className="flex items-start">
+                         <span className="text-nomad-gold font-serif text-2xl mr-4 leading-none">0{idx + 1}.</span>
+                         <p className="text-gray-600 leading-relaxed"><strong>{val.title}.</strong> {val.text}</p>
+                      </li>
+                  ))}
+                  {values.length === 0 && <p className="text-gray-400 italic">No values defined yet.</p>}
                </ul>
             </div>
         </div>
