@@ -1,7 +1,7 @@
 import React from 'react';
 import Logo from './Logo';
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Instagram, Facebook, Youtube, AtSign } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
@@ -53,16 +53,21 @@ const Footer: React.FC = () => {
             </div>
         </div>
 
-        <div className="border-t border-nomad-gold/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-nomad-paper/50 text-xs font-mono">
+        <div className="border-t border-nomad-gold/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 relative">
+            <p className="text-nomad-paper/50 text-xs font-mono text-center md:text-left w-full md:w-auto order-2 md:order-1">
               © 2026 Coffee Machines Hub. All rights reserved.
             </p>
-            <div className="flex space-x-6">
-                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors"><Instagram size={18} /></a>
-                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors"><Facebook size={18} /></a>
-                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors"><Twitter size={18} /></a>
-                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors"><Linkedin size={18} /></a>
+            
+            {/* Socials Centered */}
+            <div className="flex space-x-8 order-1 md:order-2 md:absolute md:left-1/2 md:-translate-x-1/2">
+                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Instagram"><Instagram size={20} /></a>
+                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Facebook"><Facebook size={20} /></a>
+                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="YouTube"><Youtube size={20} /></a>
+                <a href="#" className="text-nomad-paper/60 hover:text-nomad-gold transition-colors" aria-label="Threads"><AtSign size={20} /></a>
             </div>
+
+            {/* Empty div to balance spacing on desktop if needed, helps ensure right side is clear for WhatsApp widget */}
+            <div className="hidden md:block w-32 order-3"></div>
         </div>
       </div>
     </footer>

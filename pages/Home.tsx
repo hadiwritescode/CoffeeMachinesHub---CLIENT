@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import CategoryCard from '../components/CategoryCard';
-import { BLENDS_PRODUCTS, BEST_COFFEES, GEAR_PRODUCTS, BRAND_LOGOS, TESTIMONIALS } from '../constants';
+import { BEST_COFFEES, GEAR_PRODUCTS, BRAND_LOGOS, TESTIMONIALS } from '../constants';
 import { ArrowRight, Play, Search, Star, Quote } from 'lucide-react';
 
 const Home: React.FC = () => {
@@ -65,10 +65,11 @@ const Home: React.FC = () => {
             </div>
 
             {/* Hero Content */}
-            <div className="relative z-10 container mx-auto px-6 md:px-12 text-center text-white h-full flex flex-col justify-center items-center">
-                <div className="w-full max-w-4xl mx-auto space-y-12">
-                    <h1 className="text-5xl md:text-7xl lg:text-9xl font-serif font-medium leading-none tracking-tight animate-slide-right" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
-                        Coffee <br/> Machines Hub
+            <div className="relative z-10 container mx-auto px-6 md:px-12 text-center text-white h-full flex flex-col justify-center items-center pt-20">
+                <div className="w-full max-w-6xl mx-auto space-y-12">
+                    {/* Updated Title: One line, smaller font, no overlap */}
+                    <h1 className="text-4xl md:text-6xl lg:text-8xl font-serif font-medium leading-none tracking-tight animate-slide-right whitespace-nowrap" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
+                        Coffee Machines Hub
                     </h1>
 
                     {/* Hero Search Bar */}
@@ -79,7 +80,7 @@ const Home: React.FC = () => {
                                 value={heroSearch}
                                 onChange={(e) => setHeroSearch(e.target.value)}
                                 placeholder="Search machines, grinders, and more..."
-                                className="w-full bg-white/10 backdrop-blur-xl border border-white/30 rounded-full py-5 px-10 text-white placeholder:text-white/60 focus:outline-none focus:bg-white/20 focus:border-white transition-all duration-300 text-lg md:text-xl shadow-2xl"
+                                className="w-full bg-white/10 backdrop-blur-xl border border-white/30 rounded-full py-5 px-10 text-white placeholder:text-white/60 focus:outline-none focus:bg-white/20 focus:border-white transition-all duration-300 text-lg md:text-xl shadow-2xl text-center md:text-left"
                             />
                             <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 bg-nomad-gold text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-white hover:text-nomad-black transition-all">
                                 <Search size={24} />
@@ -88,7 +89,7 @@ const Home: React.FC = () => {
                         
                         {/* Recommendations */}
                         <div className="mt-6 flex flex-wrap justify-center gap-3">
-                            <span className="text-xs font-bold uppercase tracking-widest text-white/50 w-full mb-2">Trending</span>
+                            <span className="text-xs font-bold uppercase tracking-widest text-white/50 w-full mb-2 block">Trending</span>
                             {trendingTerms.map(term => (
                                 <button 
                                     key={term}
@@ -140,12 +141,12 @@ const Home: React.FC = () => {
       {/* Categories Section */}
       <section className="relative z-10 py-16 md:py-24 bg-nomad-paper">
         <div className="container mx-auto px-6 md:px-12">
-          <div className="flex justify-between items-end mb-12">
-            <div className="max-w-xl">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div className="max-w-xl text-center md:text-left mx-auto md:mx-0">
                 <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block fade-right">Collections</span>
-                <h2 className="text-4xl md:text-5xl font-serif font-bold text-nomad-black fade-right">Curated Excellence</h2>
+                <h2 className="text-4xl md:text-5xl font-serif font-bold text-nomad-black fade-right leading-tight">Curated Excellence</h2>
             </div>
-            <Link to="/shop" className="hidden md:flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors pb-2 border-b border-transparent hover:border-nomad-gold fade-right">
+            <Link to="/shop" className="hidden md:flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors pb-2 border-b border-transparent hover:border-nomad-gold fade-right whitespace-nowrap">
                 View All Categories <ArrowRight size={16} className="ml-2" />
             </Link>
           </div>
@@ -170,12 +171,12 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Featured Collection - Blends */}
+      {/* Featured Collection - Top Rated Machines */}
       <section className="relative z-10 py-24 bg-white rounded-t-[3rem] -mt-12 shadow-2xl overflow-hidden">
         <div className="container mx-auto px-6 md:px-12">
-           <div className="flex items-center justify-between mb-12">
-             <h2 className="text-3xl md:text-5xl font-serif font-medium text-nomad-black fade-right">Top Rated Machines</h2>
-             <Link to="/shop?category=Machines" className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors fade-right">
+           <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+             <h2 className="text-3xl md:text-5xl font-serif font-medium text-nomad-black fade-right text-center md:text-left">Top Rated Machines</h2>
+             <Link to="/shop?category=Machines" className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors fade-right whitespace-nowrap">
                 View Catalog
              </Link>
            </div>
@@ -184,6 +185,25 @@ const Home: React.FC = () => {
               {GEAR_PRODUCTS.slice(0, 5).map((product, idx) => (
                 <div key={product.id} className="min-w-[280px] md:min-w-[340px] snap-center fade-right" style={{ transitionDelay: `${200 + idx * 100}ms` }}>
                   <ProductCard product={product} variant="poster" />
+                </div>
+              ))}
+           </div>
+        </div>
+      </section>
+
+      {/* Curated Favorites (Moved Up) */}
+      <section className="relative z-10 py-24 bg-white border-t border-gray-100">
+        <div className="container mx-auto px-6 md:px-12">
+           <div className="text-center max-w-2xl mx-auto mb-16">
+               <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block">Essentials</span>
+               <h2 className="text-3xl md:text-5xl font-serif font-medium mb-4 text-nomad-black">Curated Favorites</h2>
+               <p className="text-gray-500 text-lg font-light">Hand-picked selections that our community loves the most.</p>
+           </div>
+           
+           <div className="flex overflow-x-auto gap-8 pb-10 no-scrollbar snap-x snap-mandatory">
+              {BEST_COFFEES.map((product, idx) => (
+                <div key={product.id} className="min-w-[280px] md:min-w-[320px] snap-center fade-right">
+                  <ProductCard product={product} />
                 </div>
               ))}
            </div>
@@ -258,25 +278,6 @@ const Home: React.FC = () => {
                     />
                 ))}
             </div>
-        </div>
-      </section>
-
-      {/* Best Sellers */}
-      <section className="relative z-10 py-24 bg-nomad-paper">
-        <div className="container mx-auto px-6 md:px-12">
-           <div className="text-center max-w-2xl mx-auto mb-16">
-               <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block">Essentials</span>
-               <h2 className="text-3xl md:text-5xl font-serif font-medium mb-4 text-nomad-black">Curated Favorites</h2>
-               <p className="text-gray-500 text-lg font-light">Hand-picked selections that our community loves the most.</p>
-           </div>
-           
-           <div className="flex overflow-x-auto gap-8 pb-10 no-scrollbar snap-x snap-mandatory">
-              {BEST_COFFEES.map((product, idx) => (
-                <div key={product.id} className="min-w-[280px] md:min-w-[320px] snap-center fade-right">
-                  <ProductCard product={product} />
-                </div>
-              ))}
-           </div>
         </div>
       </section>
     </div>
