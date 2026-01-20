@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Edit, Trash, Plus, X, Upload, Loader2, Link as LinkIcon, Film } from 'lucide-react';
+import { Edit, Trash, Plus, X, Upload, Loader2, Link as LinkIcon, Film, Image as ImageIcon } from 'lucide-react';
 import { NavCategory } from '../../types';
 
 const CategoryManager: React.FC = () => {
@@ -98,14 +98,14 @@ const CategoryManager: React.FC = () => {
 
   return (
     <AdminLayout>
-       <div className="flex justify-between items-center mb-8">
+       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-nomad-black">Categories</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage shop collections and their visuals.</p>
+            <h1 className="text-3xl font-serif font-bold text-nomad-black">Collections</h1>
+            <p className="text-sm text-gray-500 mt-1">Manage home page collections and mega menu.</p>
           </div>
           <button 
             onClick={startNew}
-            className="bg-nomad-black text-white px-6 py-3 rounded-xl flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:bg-nomad-gold transition-colors"
+            className="bg-nomad-black text-white px-6 py-3 rounded-xl flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:bg-nomad-gold transition-colors shadow-lg w-full md:w-auto justify-center"
           >
             <Plus size={18} /> Add Category
           </button>
@@ -113,33 +113,35 @@ const CategoryManager: React.FC = () => {
 
        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((cat, idx) => (
-             <div key={idx} className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                <div className="h-40 bg-gray-100 relative group">
+             <div key={idx} className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col group">
+                <div className="h-48 bg-gray-100 relative overflow-hidden">
                     {cat.image ? (
-                        <img src={cat.image} className="w-full h-full object-cover" alt={cat.title} />
+                        <img src={cat.image} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={cat.title} />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-300">
-                            <Upload size={32} />
+                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
+                            <ImageIcon size={32} strokeWidth={1} className="mb-2" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">No Cover Image</span>
                         </div>
                     )}
-                    {cat.video && (
-                        <div className="absolute top-2 right-2 bg-nomad-black/50 p-1.5 rounded-full text-white">
-                            <Film size={14} />
-                        </div>
-                    )}
+                    <div className="absolute top-3 right-3 flex gap-2">
+                        {cat.video && (
+                            <div className="bg-nomad-black/60 backdrop-blur-md p-1.5 rounded-full text-white" title="Has hover video">
+                                <Film size={14} />
+                            </div>
+                        )}
+                        <button onClick={() => startEdit(cat)} className="bg-white/90 backdrop-blur-md p-1.5 rounded-full text-nomad-black hover:text-nomad-gold shadow-sm transition-colors"><Edit size={14}/></button>
+                    </div>
                 </div>
                 <div className="p-6 flex-grow">
                     <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-xl font-bold font-serif">{cat.title}</h3>
-                        <div className="flex gap-2">
-                            <button onClick={() => startEdit(cat)} className="p-2 text-gray-400 hover:text-nomad-black hover:bg-gray-50 rounded-lg transition-colors"><Edit size={18} /></button>
-                            <button onClick={() => handleDelete(cat.title)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash size={18} /></button>
-                        </div>
+                        <h3 className="text-xl font-bold font-serif text-nomad-black">{cat.title}</h3>
+                        <button onClick={() => handleDelete(cat.title)} className="text-gray-300 hover:text-red-500 transition-colors"><Trash size={18} /></button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {cat.items.map((item, i) => (
                             <span key={i} className="bg-gray-50 text-gray-500 border border-gray-100 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">{item}</span>
                         ))}
+                        {cat.items.length === 0 && <span className="text-xs italic text-gray-400">No sub-items</span>}
                     </div>
                 </div>
              </div>
@@ -147,15 +149,18 @@ const CategoryManager: React.FC = () => {
        </div>
 
        {isModalOpen && editingCategory && (
-         <div className="fixed inset-0 bg-black/60 z-[90] flex items-center justify-center p-4 backdrop-blur-sm">
+         <div className="fixed inset-0 bg-black/60 z-[90] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
             <div className="bg-white rounded-3xl p-6 md:p-8 max-w-xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-               <h2 className="text-2xl font-serif font-bold text-nomad-black mb-6">Manage Category</h2>
+               <div className="flex justify-between items-center mb-6">
+                   <h2 className="text-2xl font-serif font-bold text-nomad-black">Manage Category</h2>
+                   <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24}/></button>
+               </div>
                
                <div className="space-y-6">
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Category Title</label>
                     <input 
-                        className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none transition-all" 
+                        className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none transition-all font-medium" 
                         value={editingCategory.title} 
                         onChange={e => setEditingCategory({...editingCategory, title: e.target.value})} 
                         placeholder="e.g. Espresso Machines"
@@ -171,7 +176,7 @@ const CategoryManager: React.FC = () => {
                                     <img src={editingCategory.image} className="w-full h-full object-cover" alt="Preview" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                        <Upload size={24} />
+                                        <ImageIcon size={24} />
                                     </div>
                                 )}
                                 <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
@@ -183,7 +188,7 @@ const CategoryManager: React.FC = () => {
                                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                                 <input 
                                     className="w-full border border-gray-200 p-2 pl-9 rounded-lg text-xs"
-                                    placeholder="Image URL..."
+                                    placeholder="Or paste URL here..."
                                     value={editingCategory.image || ''}
                                     onChange={e => setEditingCategory({...editingCategory, image: e.target.value})}
                                 />
@@ -195,8 +200,9 @@ const CategoryManager: React.FC = () => {
                         <div className="flex flex-col gap-3">
                             <div className="aspect-video bg-gray-50 rounded-xl overflow-hidden border border-gray-100 relative group">
                                 {editingCategory.video ? (
-                                    <div className="w-full h-full flex items-center justify-center text-nomad-gold">
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-nomad-gold bg-nomad-gold/5">
                                         <Film size={24} />
+                                        <span className="text-[10px] font-bold mt-2">VIDEO SET</span>
                                     </div>
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-300">
@@ -222,7 +228,7 @@ const CategoryManager: React.FC = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Sub-Items</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Sub-Items (Mega Menu)</label>
                     <div className="flex gap-2 mb-4">
                         <input 
                             className="flex-grow border border-gray-200 p-3 rounded-xl text-sm" 

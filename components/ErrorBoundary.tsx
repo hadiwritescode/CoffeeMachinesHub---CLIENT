@@ -11,7 +11,7 @@ interface State {
   error: Error | null;
 }
 
-// Inherit from Component from 'react' to ensure 'this.props' is correctly recognized by the TypeScript compiler.
+// Inherit from Component to ensure 'this.props' is correctly recognized by the TypeScript compiler.
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
@@ -72,7 +72,7 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    // Explicitly return children from props; inheritance from Component provides access to this.props
+    // Return children from props; inheritance from Component ensures this.props is correctly typed.
     return this.props.children;
   }
 }

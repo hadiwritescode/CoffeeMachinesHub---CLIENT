@@ -40,21 +40,13 @@ const Home: React.FC = () => {
 
   const trendingTerms = ['Espresso', 'Grinder', 'Roast', 'Accessories'];
   
-  // DYNAMIC SECTION LOGIC:
-  // 1. Identify "Main" category (prefer ones with 'Machine', else take first)
   const mainCategory = categories.find(c => c.title.toLowerCase().includes('machine')) || categories[0] || { title: 'Machines' };
-  
-  // 2. Filter products for the main slider
   const machineProducts = products.filter(p => p.category === mainCategory.title || p.tags?.includes(mainCategory.title)).slice(0, 6);
-  
-  // 3. Featured / Favorites Section
   const featuredProducts = products.filter(p => p.isFeatured);
-  // Fallback if no featured items: use the 2nd category or just more random items
   const displayFavorites = featuredProducts.length > 0 
     ? featuredProducts 
     : products.filter(p => p.category !== mainCategory.title).slice(0, 6);
 
-  // Content Accessors
   const hero = siteContent?.hero || { title: "Coffee Machines Hub", subtitle: "", videoUrl: "", buttonText: "Shop Now" };
   const homeText = siteContent?.home || {
     collectionTitle: "Collections",
@@ -66,14 +58,6 @@ const Home: React.FC = () => {
     brands: []
   };
   const brands = homeText.brands || [];
-
-  // Reliable stock fallback visuals for categories that don't have them yet
-  const fallbackVisuals = [
-    { img: "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=800", vid: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4" },
-    { img: "https://images.unsplash.com/photo-1618116523910-1840b2f69830?auto=format&fit=crop&q=80&w=800", vid: "https://videos.pexels.com/video-files/4443026/4443026-uhd_2560_1440_25fps.mp4" },
-    { img: "https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&q=80&w=800", vid: "https://videos.pexels.com/video-files/3195979/3195979-uhd_2560_1440_25fps.mp4" },
-    { img: "https://images.unsplash.com/photo-1544655615-5654316d2e61?auto=format&fit=crop&q=80&w=800", vid: "https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4" }
-  ];
 
   return (
     <div className="bg-nomad-paper overflow-hidden">
@@ -89,7 +73,6 @@ const Home: React.FC = () => {
                 pointerEvents: scrollY > 800 ? 'none' : 'auto'
             }}
         >
-            {/* Video Background with Reveal Animation */}
             <div className="absolute inset-0 w-full h-full animate-hero-reveal origin-center">
                 <video 
                     autoPlay 
@@ -104,15 +87,12 @@ const Home: React.FC = () => {
                 <div className="absolute inset-0 bg-nomad-black/40"></div>
             </div>
 
-            {/* Hero Content */}
             <div className="relative z-10 container mx-auto px-6 md:px-12 text-center text-white h-full flex flex-col justify-center items-center pt-20">
                 <div className="w-full max-w-6xl mx-auto space-y-8 md:space-y-12">
-                    {/* Dynamic Title */}
                     <h1 className="text-4xl md:text-6xl lg:text-8xl font-serif font-medium leading-tight md:leading-none tracking-tight animate-slide-right whitespace-normal md:whitespace-nowrap" style={{ animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
                         {hero.title || "Coffee Machines Hub"}
                     </h1>
 
-                    {/* Hero Search Bar */}
                     <div className="animate-slide-up" style={{ animationDelay: '0.8s', opacity: 0, animationFillMode: 'forwards' }}>
                         <form onSubmit={handleHeroSearch} className="relative group w-full max-w-2xl mx-auto">
                             <input 
@@ -127,7 +107,6 @@ const Home: React.FC = () => {
                             </button>
                         </form>
                         
-                        {/* Recommendations */}
                         <div className="mt-6 flex flex-wrap justify-center gap-2 md:gap-3">
                             <span className="text-xs font-bold uppercase tracking-widest text-white/50 w-full mb-2 block">Trending</span>
                             {trendingTerms.map(term => (
@@ -178,15 +157,15 @@ const Home: React.FC = () => {
          </div>
       </div>
 
-      {/* Categories Photo Section */}
-      <section className="relative z-10 py-16 md:py-24 bg-nomad-paper">
+      {/* Categories Grid - Refactored to prevent overlap */}
+      <section className="relative z-10 py-16 md:py-32 bg-nomad-paper">
         <div className="container mx-auto px-6 md:px-12">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-12 gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 md:mb-20 gap-6">
             <div className="max-w-xl text-center md:text-left mx-auto md:mx-0">
                 <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block fade-right">
                     {homeText.collectionTitle}
                 </span>
-                <h2 className="text-4xl md:text-5xl font-serif font-bold text-nomad-black fade-right leading-tight">
+                <h2 className="text-4xl md:text-6xl font-serif font-bold text-nomad-black fade-right leading-tight">
                     {homeText.collectionSubtitle}
                 </h2>
             </div>
@@ -195,19 +174,18 @@ const Home: React.FC = () => {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 h-[120vh] md:h-[60vh]">
-             {/* Dynamic Category Cards - Show up to 4 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
              {categories.slice(0, 4).map((cat, idx) => (
-                <div key={idx} className="fade-right h-full" style={{ transitionDelay: `${300 + idx * 100}ms` }}>
+                <div key={idx} className="fade-right" style={{ transitionDelay: `${300 + idx * 100}ms` }}>
                     <CategoryCard 
                         title={cat.title} 
-                        image={cat.image || fallbackVisuals[idx % 4].img}
-                        video={cat.video || fallbackVisuals[idx % 4].vid}
+                        image={cat.image}
+                        video={cat.video}
                     />
                 </div>
              ))}
           </div>
-          <div className="mt-8 flex justify-center md:hidden">
+          <div className="mt-16 flex justify-center md:hidden">
               <Link to="/shop" className="items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors pb-1 border-b border-nomad-black hover:border-nomad-gold inline-flex">
                   View All Categories <ArrowRight size={14} className="ml-2" />
               </Link>
@@ -215,11 +193,11 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Featured Collection - Top Rated Main Category */}
-      <section className="relative z-10 py-16 md:py-24 bg-white rounded-t-[3rem] -mt-12 shadow-2xl overflow-hidden">
+      {/* Featured Collection - Refactored Spacing */}
+      <section className="relative z-10 py-16 md:py-32 bg-white rounded-t-[3rem] md:rounded-t-[5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="container mx-auto px-0 md:px-12">
-           <div className="flex flex-col md:flex-row items-center justify-between mb-8 md:mb-12 gap-6 px-6 md:px-0">
-             <h2 className="text-3xl md:text-5xl font-serif font-medium text-nomad-black fade-right text-center md:text-left">
+           <div className="flex flex-col md:flex-row items-center justify-between mb-10 md:mb-16 gap-6 px-6 md:px-0">
+             <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium text-nomad-black fade-right text-center md:text-left">
                 {homeText.featuredTitle}
              </h2>
              <Link to={`/shop?category=${encodeURIComponent(mainCategory.title)}`} className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors fade-right whitespace-nowrap hidden md:inline-block">
@@ -227,10 +205,9 @@ const Home: React.FC = () => {
              </Link>
            </div>
            
-           {/* Mobile Horizontal Scroll Snap */}
            <div className="flex overflow-x-auto gap-4 md:gap-8 pb-10 no-scrollbar snap-x snap-mandatory px-6 md:px-0 scroll-pl-6">
               {machineProducts.map((product, idx) => (
-                <div key={product.id} className="min-w-[260px] md:min-w-[340px] snap-start fade-right" style={{ transitionDelay: `${200 + idx * 100}ms` }}>
+                <div key={product.id} className="min-w-[280px] md:min-w-[340px] snap-start fade-right" style={{ transitionDelay: `${200 + idx * 100}ms` }}>
                   <ProductCard product={product} variant="poster" />
                 </div>
               ))}
@@ -239,7 +216,7 @@ const Home: React.FC = () => {
               )}
            </div>
            
-           <div className="px-6 md:hidden text-center mt-2">
+           <div className="px-6 md:hidden text-center mt-4">
              <Link to={`/shop?category=${encodeURIComponent(mainCategory.title)}`} className="text-xs font-bold uppercase tracking-widest border-b border-nomad-black pb-1 hover:text-nomad-gold hover:border-nomad-gold transition-colors">
                 View Catalog
              </Link>
@@ -247,14 +224,14 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Curated Favorites (Managed via Admin) */}
-      <section className="relative z-10 py-16 md:py-24 bg-white border-t border-gray-100">
+      {/* Curated Favorites */}
+      <section className="relative z-10 py-16 md:py-32 bg-white border-t border-gray-100">
         <div className="container mx-auto px-0 md:px-12">
-           <div className="text-center max-w-2xl mx-auto mb-12 px-6">
+           <div className="text-center max-w-2xl mx-auto mb-16 px-6">
                <span className="text-nomad-gold text-xs font-bold tracking-[0.2em] uppercase mb-4 block">
                    {homeText.favoritesTitle}
                </span>
-               <h2 className="text-3xl md:text-5xl font-serif font-medium mb-4 text-nomad-black">
+               <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium mb-4 text-nomad-black">
                    {homeText.favoritesSubtitle}
                </h2>
                <p className="text-gray-500 text-lg font-light">Hand-picked selections that our community loves the most.</p>
@@ -262,7 +239,7 @@ const Home: React.FC = () => {
            
            <div className="flex overflow-x-auto gap-4 md:gap-8 pb-10 no-scrollbar snap-x snap-mandatory px-6 md:px-0 scroll-pl-6">
               {displayFavorites.map((product, idx) => (
-                <div key={product.id} className="min-w-[260px] md:min-w-[320px] snap-start fade-right">
+                <div key={product.id} className="min-w-[280px] md:min-w-[320px] snap-start fade-right">
                   <ProductCard product={product} />
                 </div>
               ))}
@@ -270,16 +247,15 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Opposite Rotating Brand Logos */}
-      <section className="relative z-10 py-16 md:py-24 bg-nomad-paper border-t border-gray-100 overflow-hidden">
-        <div className="container mx-auto px-6 md:px-12 mb-12">
+      {/* Brands section */}
+      <section className="relative z-10 py-16 md:py-32 bg-nomad-paper border-t border-gray-100 overflow-hidden">
+        <div className="container mx-auto px-6 md:px-12 mb-16">
            <p className="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase text-center fade-right">
               {homeText.partnersText}
            </p>
         </div>
         
         <div className="space-y-12">
-            {/* Top Row - Moves Left */}
             <div className="flex animate-marquee whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700 [animation-duration:10s] md:[animation-duration:25s]">
                 {[...brands, ...brands].map((brand, idx) => (
                     <span key={`top-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-8 md:mx-16 hover:text-nomad-gold cursor-default transition-colors">
@@ -287,8 +263,6 @@ const Home: React.FC = () => {
                     </span>
                 ))}
             </div>
-
-            {/* Bottom Row - Moves Right */}
             <div className="flex animate-marquee-reverse whitespace-nowrap opacity-40 grayscale hover:grayscale-0 transition-all duration-700 [animation-duration:10s] md:[animation-duration:25s]">
                 {[...brands, ...brands].map((brand, idx) => (
                     <span key={`bottom-${idx}`} className="text-3xl md:text-5xl font-serif font-bold text-nomad-black mx-8 md:mx-16 hover:text-nomad-gold cursor-default transition-colors">
@@ -299,8 +273,8 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Rotating Testimonials Section */}
-      <section className="relative z-10 py-24 bg-white border-t border-gray-100">
+      {/* Testimonials */}
+      <section className="relative z-10 py-24 md:py-32 bg-white border-t border-gray-100">
         <div className="container mx-auto px-6 md:px-12 max-w-4xl text-center">
             <div className="flex justify-center mb-8">
                 <Quote size={48} className="text-nomad-gold opacity-20" />
@@ -328,7 +302,6 @@ const Home: React.FC = () => {
                 ))}
             </div>
 
-            {/* Pagination Dots */}
             <div className="flex justify-center gap-3 mt-12">
                 {testimonials.map((_, idx) => (
                     <button 
