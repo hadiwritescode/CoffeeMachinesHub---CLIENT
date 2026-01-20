@@ -12,9 +12,10 @@ interface State {
 
 /**
  * ErrorBoundary class component to catch rendering errors in its child component tree.
- * Explicitly extends React.Component to ensure proper 'props' and 'state' typing.
+ * Explicitly extends Component to ensure proper 'props' and 'state' typing.
  */
-class ErrorBoundary extends React.Component<Props, State> {
+// Use the imported Component class to ensure props and state are correctly inherited
+class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
     error: null
@@ -42,7 +43,7 @@ class ErrorBoundary extends React.Component<Props, State> {
 
   // Explicit return type added to render method for clarity and to assist TypeScript inference.
   public render(): ReactNode {
-    // Fix: Inheritance from React.Component ensures 'props' is defined on the class instance.
+    // Inheritance from Component ensures 'props' is defined on the class instance.
     const { children } = this.props;
 
     if (this.state.hasError) {
@@ -50,7 +51,7 @@ class ErrorBoundary extends React.Component<Props, State> {
         <div className="min-h-screen bg-nomad-black flex items-center justify-center p-6">
           <div className="bg-white p-8 md:p-12 rounded-3xl max-w-lg w-full text-center shadow-2xl">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
             <h1 className="text-2xl font-serif font-bold text-nomad-black mb-4">Something went wrong</h1>
             <p className="text-gray-500 mb-2 text-sm">The application encountered an unexpected error.</p>

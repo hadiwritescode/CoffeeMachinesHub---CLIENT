@@ -1,370 +1,181 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Product, BlogPost, Order, User, SiteContent, NavCategory, Testimonial, Message, CartItem } from '../types';
-import { BRAND_LOGOS, NAVIGATION_LINKS, FAQS } from '../constants';
+import { BRAND_LOGOS, NAVIGATION_LINKS, FAQS, INITIAL_CATEGORIES } from '../constants';
 import { 
-  collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc, query, where
+  collection, onSnapshot, doc, setDoc, getDoc, updateDoc, addDoc, query, where, deleteDoc
 } from 'firebase/firestore';
-import { 
-  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,
-  setPersistence, browserSessionPersistence
-} from 'firebase/auth';
-import { 
-  ref, uploadBytes, getDownloadURL 
-} from 'firebase/storage';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from '../firebase';
 import { useToast } from './ToastContext';
 
 interface StoreContextType {
   products: Product[];
-  setProducts: (products: Product[]) => void;
-  addProduct: (product: Product) => Promise<void>;
-  updateProduct: (product: Product) => Promise<void>;
-  removeProduct: (id: string) => Promise<void>;
   categories: NavCategory[];
-  setCategories: (categories: NavCategory[]) => Promise<void>;
-  orders: Order[];
-  createOrder: (orderData: Omit<Order, 'id' | 'date' | 'status'>) => Promise<string>;
-  updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
+  siteContent: SiteContent;
+  currentUser: User | null;
+  loading: boolean;
+  cart: CartItem[];
+  login: (e: string, p: string) => Promise<void>;
+  register: (e: string, p: string, n: string) => Promise<void>;
+  logout: () => Promise<void>;
+  addToCart: (p: Product) => void;
+  removeFromCart: (id: string) => void;
+  updateCartQuantity: (id: string, d: number) => void;
+  clearCart: () => void;
+  createOrder: (o: any) => Promise<string>;
+  updateOrderStatus: (id: string, s: any) => Promise<void>;
+  addMessage: (m: any) => Promise<void>;
+  toggleWishlist: (id: string) => Promise<void>;
+  updateUserProfile: (d: any) => Promise<void>;
+  uploadFile: (f: File, p: string) => Promise<string>;
+  updateSiteContent: (s: keyof SiteContent, d: any) => Promise<void>;
+  setCategories: (c: NavCategory[]) => Promise<void>;
   blogPosts: BlogPost[];
-  setBlogPosts: (posts: BlogPost[]) => Promise<void>;
-  addBlogPost: (post: BlogPost) => Promise<void>;
-  updateBlogPost: (post: BlogPost) => Promise<void>;
+  addBlogPost: (b: BlogPost) => Promise<void>;
+  updateBlogPost: (b: BlogPost) => Promise<void>;
   removeBlogPost: (id: string) => Promise<void>;
   testimonials: Testimonial[];
-  setTestimonials: React.Dispatch<React.SetStateAction<Testimonial[]>>;
   addTestimonial: (t: Testimonial) => Promise<void>;
   updateTestimonial: (t: Testimonial) => Promise<void>;
   removeTestimonial: (id: string) => Promise<void>;
   messages: Message[];
-  addMessage: (msg: Omit<Message, 'id' | 'date' | 'read'>) => Promise<void>;
-  siteContent: SiteContent;
-  updateSiteContent: (section: keyof SiteContent, data: any) => Promise<void>;
-  currentUser: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
-  logout: () => Promise<void>;
-  updateUserProfile: (data: Partial<User>) => Promise<void>;
-  toggleWishlist: (productId: string) => Promise<void>;
-  cart: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: string) => void;
-  updateCartQuantity: (productId: string, delta: number) => void;
-  clearCart: () => void;
-  uploadFile: (file: File, path: string) => Promise<string>;
-  loading: boolean;
+  orders: Order[];
 }
 
 const defaultSiteContent: SiteContent = {
-  hero: {
-    title: "Coffee Machines Hub",
-    subtitle: "Premium Coffee Gear & Beans.",
-    videoUrl: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4",
-    buttonText: "Shop Now"
-  },
-  home: { 
-    brands: BRAND_LOGOS,
-    collectionTitle: "Collections",
-    collectionSubtitle: "Curated Excellence",
-    featuredTitle: "Top Rated Machines",
-    favoritesTitle: "Essentials",
-    favoritesSubtitle: "Curated Favorites",
-    partnersText: "Trusted Partners & Global Brands"
-  },
-  shop: {
-    heroTitle: "All Products",
-    heroSubtitle: "Explore our complete collection of premium coffee and gear."
-  },
-  services: {
-    heroTitle: "Elevate Your \n Coffee Business",
-    heroSubtitle: "Comprehensive consulting...",
-    heroImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1600",
-    section1Title: "Wholesale Partner",
-    section1Text: "We don't just supply beans; we supply consistency...",
-    section1List: ["Custom Roasting Profiles", "Volume Discounts", "Reliable Logistics"],
-    section1Image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=800",
-    section2Title: "Barista Training",
-    section2Text: "Empower your staff...",
-    section2Image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&q=80&w=800",
-    section3Title: "Equipment Sourcing & Tech Support",
-    section3Text: "Your machine is the heart of your operation.",
-    section3Image: "https://images.unsplash.com/photo-1522923985141-860e65383563?auto=format&fit=crop&q=80&w=800"
-  },
-  about: {
-    heroTitle: "The Pursuit of \n Excellence",
-    heroSubtitle: "We believe that every cup of coffee tells a story...",
-    heroImage: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&q=80&w=1600",
-    storyTitle: "Our Origins",
-    storyText: "Coffee Machines Hub began as a small passion project...",
-    values: [
-      { title: "Quality First", text: "We never compromise on the quality of our beans." },
-      { title: "Transparency", text: "We believe in direct trade." },
-      { title: "Education", text: "We don't just sell; we teach." }
-    ]
-  },
-  contact: {
-    address: "G-22, City Star Mall, Model Town Link Road, Lahore, Pakistan",
-    email: "Coffeemachineshub@gmail.com",
-    phone: "03104811010",
-    faqs: FAQS
-  },
-  footer: {
-    description: "Purveyors of the finest coffee gear and sustainably sourced beans."
-  },
-  socials: {
-    instagram: "https://instagram.com",
-    facebook: "https://facebook.com",
-    youtube: "https://youtube.com",
-    twitter: "#"
-  },
-  team: [
-    { name: "Sarah Jenkins", role: "Head Roaster", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=400" },
-    { name: "David Chen", role: "Equipment Specialist", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400" },
-    { name: "Elena Rodriguez", role: "Q Grader", img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400" }
-  ]
+  hero: { title: "Coffee Machines Hub", subtitle: "Premium Coffee Gear & Beans.", videoUrl: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4", buttonText: "Shop Now" },
+  home: { brands: BRAND_LOGOS, collectionTitle: "Collections", collectionSubtitle: "Curated Excellence", featuredTitle: "Top Rated Machines", favoritesTitle: "Essentials", favoritesSubtitle: "Curated Favorites", partnersText: "Trusted Partners & Global Brands" },
+  shop: { heroTitle: "All Products", heroSubtitle: "Explore our complete collection." },
+  services: { heroTitle: "Elevate Your \n Coffee Business", heroSubtitle: "Comprehensive consulting...", heroImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1600", section1Title: "Wholesale Partner", section1Text: "Consistency is key...", section1Image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=800", section2Title: "Barista Training", section2Text: "Empower staff...", section2Image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&q=80&w=800", section3Title: "Tech Support", section3Text: "Minimizing downtime...", section3Image: "https://images.unsplash.com/photo-1522923985141-860e65383563?auto=format&fit=crop&q=80&w=800" },
+  about: { heroTitle: "The Pursuit of \n Excellence", heroSubtitle: "Every cup tells a story...", heroImage: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&q=80&w=1600", storyTitle: "Our Origins", storyText: "Started as a passion...", values: [{ title: "Quality", text: "No compromise." }] },
+  contact: { address: "Lahore, Pakistan", email: "info@coffeemachineshub.com", phone: "03104811010", faqs: FAQS },
+  footer: { description: "Purveyors of fine coffee gear." },
+  socials: { instagram: "#", facebook: "#", youtube: "#", twitter: "#" },
+  team: []
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const { showToast } = useToast();
-  const [products, setProductsState] = useState<Product[]>([]);
-  const [categories, setCategoriesState] = useState<NavCategory[]>([]);
-  const [blogPosts, setBlogPostsState] = useState<BlogPost[]>([]);
-  const [orders, setOrdersState] = useState<Order[]>([]);
-  const [testimonials, setTestimonialsState] = useState<Testimonial[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [siteContent, setSiteContentState] = useState<SiteContent>(defaultSiteContent);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategoriesState] = useState<NavCategory[]>(INITIAL_CATEGORIES);
+  const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const [cart, setCartState] = useState<CartItem[]>(() => {
-    try {
-        const saved = localStorage.getItem('cmh_cart');
-        return saved ? JSON.parse(saved) : [];
-    } catch {
-        return [];
-    }
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem('cmh_cart');
+    return saved ? JSON.parse(saved) : [];
   });
 
   useEffect(() => {
-    const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
-      setProductsState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
-    });
-
-    const unsubCats = onSnapshot(doc(db, 'content', 'navigation'), (docSnap) => {
-      if (docSnap.exists()) {
-        setCategoriesState(docSnap.data().categories || []);
-      }
-    });
-
-    const unsubBlogs = onSnapshot(collection(db, 'blogs'), (snapshot) => {
-      setBlogPostsState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost)));
-    });
-
-    const unsubTestimonials = onSnapshot(collection(db, 'testimonials'), (snapshot) => {
-        setTestimonialsState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial)));
-    });
-
-    const unsubContent = onSnapshot(collection(db, 'content'), (snapshot) => {
-        setSiteContentState(prev => {
-            const next = { ...prev };
-            snapshot.docs.forEach(doc => {
-                if (doc.id !== 'navigation') { 
-                    const sectionKey = doc.id as keyof SiteContent;
-                    next[sectionKey] = { ...(defaultSiteContent[sectionKey] || {}), ...doc.data() };
-                }
-            });
-            return next;
+    const unsubs = [
+      onSnapshot(collection(db, 'products'), s => setProducts(s.docs.map(d => ({ id: d.id, ...d.data() } as Product)))),
+      onSnapshot(collection(db, 'blogs'), s => setBlogPosts(s.docs.map(d => ({ id: d.id, ...d.data() } as BlogPost)))),
+      onSnapshot(collection(db, 'testimonials'), s => setTestimonials(s.docs.map(d => ({ id: d.id, ...d.data() } as Testimonial)))),
+      onSnapshot(collection(db, 'messages'), s => setMessages(s.docs.map(d => ({ id: d.id, ...d.data() } as Message)))),
+      onSnapshot(collection(db, 'orders'), s => setOrders(s.docs.map(d => ({ id: d.id, ...d.data() } as Order)))),
+      onSnapshot(doc(db, 'content', 'navigation'), d => d.exists() && setCategoriesState(d.data().categories)),
+      onSnapshot(collection(db, 'content'), s => {
+        setSiteContent(prev => {
+          const next = { ...prev };
+          s.docs.forEach(d => {
+            if (d.id !== 'navigation') (next as any)[d.id] = d.data();
+          });
+          return next;
         });
-    });
+      })
+    ];
 
-    return () => {
-      unsubProducts(); unsubCats(); unsubBlogs(); unsubTestimonials(); unsubContent();
-    };
+    // Safety timeout for loading state
+    const timer = setTimeout(() => setLoading(false), 2000);
+    return () => { unsubs.forEach(u => u()); clearTimeout(timer); };
   }, []);
 
   useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, async (user) => {
+    const unsub = onAuthStateChanged(auth, async user => {
       if (user) {
-        try {
-            const userDocRef = doc(db, 'users', user.uid);
-            const snapshot = await getDoc(userDocRef);
-            
-            if (snapshot.exists()) {
-                const userData = snapshot.data() as User;
-                setCurrentUser({ ...userData, id: user.uid });
-                if (userData.cart && userData.cart.length > 0 && cart.length === 0) {
-                  setCartState(userData.cart);
-                }
-            }
-        } catch (error) {
-            console.error("Profile Error:", error);
-        } finally {
-            setLoading(false);
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          const uData = snap.data() as User;
+          setCurrentUser({ ...uData, id: user.uid });
+          if (uData.cart?.length) setCart(uData.cart);
         }
       } else {
         setCurrentUser(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
-    return () => unsubAuth();
+    return unsub;
   }, []);
 
   useEffect(() => {
-    if (currentUser) {
-      updateDoc(doc(db, 'users', currentUser.id), { cart }).catch(console.error);
-    } else {
-      localStorage.setItem('cmh_cart', JSON.stringify(cart));
-    }
+    if (currentUser) updateDoc(doc(db, 'users', currentUser.id), { cart }).catch(() => {});
+    else localStorage.setItem('cmh_cart', JSON.stringify(cart));
   }, [cart, currentUser]);
 
-  const uploadFile = async (file: File, path: string): Promise<string> => {
-    const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
-    const snapshot = await uploadBytes(storageRef, file);
-    return await getDownloadURL(snapshot.ref);
-  };
-
-  const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
-    showToast("Welcome back!");
-  };
-
-  const register = async (email: string, password: string, name: string) => {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    const userData: User = {
-      id: result.user.uid,
-      name,
-      email,
-      role: 'customer',
-      wishlist: [],
-      cart: []
-    };
-    await setDoc(doc(db, 'users', result.user.uid), userData);
-  };
-
-  const logout = async () => {
-    await signOut(auth);
-    setCartState([]);
-    showToast("See you soon!");
-  };
-
-  const addProduct = async (product: Product) => {
-    await setDoc(doc(db, 'products', product.id), product);
-    showToast("Product saved");
-  };
-
-  const updateProduct = async (product: Product) => {
-    await updateDoc(doc(db, 'products', product.id), { ...product });
-  };
-
-  const removeProduct = async (id: string) => {
-    await deleteDoc(doc(db, 'products', id));
-  };
-
-  const setCategories = async (cats: NavCategory[]) => {
-    await setDoc(doc(db, 'content', 'navigation'), { categories: cats });
-  };
-
-  const createOrder = async (orderData: Omit<Order, 'id' | 'date' | 'status'>) => {
-    const orderId = `ORD-${Date.now().toString().slice(-6)}`;
-    const newOrder: Order = { ...orderData, id: orderId, date: new Date().toLocaleDateString(), status: 'Processing' };
-    await setDoc(doc(db, 'orders', orderId), newOrder);
-    return orderId;
-  };
-
-  const updateOrderStatus = async (orderId: string, status: Order['status']) => {
-    await updateDoc(doc(db, 'orders', orderId), { status });
-  };
-
-  const addBlogPost = async (post: BlogPost) => {
-    await setDoc(doc(db, 'blogs', post.id), post);
-  };
-
-  const updateBlogPost = async (post: BlogPost) => {
-    await updateDoc(doc(db, 'blogs', post.id), { ...post });
-  };
-
-  const removeBlogPost = async (id: string) => {
-    await deleteDoc(doc(db, 'blogs', id));
-  };
-
-  const addTestimonial = async (t: Testimonial) => {
-    await addDoc(collection(db, 'testimonials'), t);
-  };
-
-  const updateTestimonial = async (t: Testimonial) => {
-    await updateDoc(doc(db, 'testimonials', t.id), { ...t });
-  };
-
-  const removeTestimonial = async (id: string) => {
-    await deleteDoc(doc(db, 'testimonials', id));
-  };
-
-  const addMessage = async (msg: Omit<Message, 'id' | 'date' | 'read'>) => {
-    await addDoc(collection(db, 'messages'), { ...msg, date: new Date().toLocaleDateString(), read: false });
-  };
-
-  const updateSiteContent = async (section: keyof SiteContent, data: any) => {
-    await setDoc(doc(db, 'content', section), data, { merge: true });
-  };
-
-  const toggleWishlist = async (productId: string) => {
-    if (!currentUser) {
-      showToast("Log in to save items", "info");
-      return;
-    }
-    const isIn = currentUser.wishlist.includes(productId);
-    const newWishlist = isIn 
-      ? currentUser.wishlist.filter(id => id !== productId)
-      : [...currentUser.wishlist, productId];
-    
-    await updateDoc(doc(db, 'users', currentUser.id), { wishlist: newWishlist });
-    setCurrentUser({ ...currentUser, wishlist: newWishlist });
-  };
-
-  const updateUserProfile = async (data: Partial<User>) => {
-    if (!currentUser) return;
-    await updateDoc(doc(db, 'users', currentUser.id), data);
-    setCurrentUser({ ...currentUser, ...data });
-  };
-
-  const addToCart = (product: Product) => {
-    setCartState(prev => {
-      const existing = prev.find(p => p.id === product.id);
-      if (existing) {
-        return prev.map(p => p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p);
-      }
-      return [...prev, { ...product, quantity: 1 }];
+  const addToCart = (p: Product) => {
+    setCart(prev => {
+      const ex = prev.find(x => x.id === p.id);
+      if (ex) return prev.map(x => x.id === p.id ? { ...x, quantity: x.quantity + 1 } : x);
+      return [...prev, { ...p, quantity: 1 }];
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setCartState(prev => prev.filter(p => p.id !== productId));
+  const removeFromCart = (id: string) => setCart(prev => prev.filter(x => x.id !== id));
+  const updateCartQuantity = (id: string, d: number) => setCart(prev => prev.map(x => x.id === id ? { ...x, quantity: Math.max(1, x.quantity + d) } : x));
+  const clearCart = () => setCart([]);
+
+  const login = async (e: string, p: string) => { await signInWithEmailAndPassword(auth, e, p); showToast("Welcome back!"); };
+  const logout = async () => { await signOut(auth); clearCart(); showToast("Logged out"); };
+  const register = async (e: string, p: string, n: string) => {
+    const res = await createUserWithEmailAndPassword(auth, e, p);
+    const u: User = { id: res.user.uid, name: n, email: e, role: 'customer', wishlist: [], cart: [] };
+    await setDoc(doc(db, 'users', res.user.uid), u);
   };
 
-  const updateCartQuantity = (productId: string, delta: number) => {
-    setCartState(prev => prev.map(p => {
-      if (p.id === productId) {
-        return { ...p, quantity: Math.max(1, p.quantity + delta) };
-      }
-      return p;
-    }));
+  const uploadFile = async (f: File, p: string) => {
+    const sRef = ref(storage, `${p}/${Date.now()}_${f.name}`);
+    await uploadBytes(sRef, f);
+    return getDownloadURL(sRef);
   };
 
-  const clearCart = () => setCartState([]);
+  const createOrder = async (o: any) => {
+    const id = `ORD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    await setDoc(doc(db, 'orders', id), { ...o, id, date: new Date().toLocaleDateString(), status: 'Processing' });
+    return id;
+  };
+
+  const updateOrderStatus = async (id: string, s: any) => updateDoc(doc(db, 'orders', id), { status: s });
+  const addMessage = async (m: any) => addDoc(collection(db, 'messages'), { ...m, date: new Date().toLocaleDateString(), read: false });
+  const toggleWishlist = async (id: string) => {
+    if (!currentUser) return showToast("Please login first", "info");
+    const isIn = currentUser.wishlist.includes(id);
+    const next = isIn ? currentUser.wishlist.filter(x => x !== id) : [...currentUser.wishlist, id];
+    await updateDoc(doc(db, 'users', currentUser.id), { wishlist: next });
+    setCurrentUser({ ...currentUser, wishlist: next });
+  };
+  const updateUserProfile = async (d: any) => { if (currentUser) await updateDoc(doc(db, 'users', currentUser.id), d); };
+  const updateSiteContent = async (s: keyof SiteContent, d: any) => setDoc(doc(db, 'content', s), d, { merge: true });
+  const setCategories = async (c: NavCategory[]) => setDoc(doc(db, 'content', 'navigation'), { categories: c });
 
   return (
     <StoreContext.Provider value={{
-      products, setProducts: () => {}, addProduct, updateProduct, removeProduct,
-      categories, setCategories,
-      orders, createOrder, updateOrderStatus,
-      blogPosts, setBlogPosts: async () => {}, addBlogPost, updateBlogPost, removeBlogPost,
-      testimonials, setTestimonials: () => {}, addTestimonial, updateTestimonial, removeTestimonial,
-      messages, addMessage,
-      siteContent, updateSiteContent,
-      currentUser, login, register, logout, toggleWishlist, updateUserProfile,
-      cart, addToCart, removeFromCart, updateCartQuantity, clearCart,
-      uploadFile, loading
+      products, categories, siteContent, currentUser, loading, cart,
+      login, register, logout, addToCart, removeFromCart, updateCartQuantity, clearCart,
+      createOrder, updateOrderStatus, addMessage, toggleWishlist, updateUserProfile, uploadFile,
+      updateSiteContent, setCategories, blogPosts, addBlogPost: async b => setDoc(doc(db, 'blogs', b.id), b),
+      updateBlogPost: async b => updateDoc(doc(db, 'blogs', b.id), { ...b }),
+      removeBlogPost: async id => deleteDoc(doc(db, 'blogs', id)),
+      testimonials, addTestimonial: async t => addDoc(collection(db, 'testimonials'), t),
+      updateTestimonial: async t => updateDoc(doc(db, 'testimonials', t.id), { ...t }),
+      removeTestimonial: async id => deleteDoc(doc(db, 'testimonials', id)),
+      messages, orders
     }}>
       {children}
     </StoreContext.Provider>
@@ -372,7 +183,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 };
 
 export const useStore = () => {
-  const context = useContext(StoreContext);
-  if (!context) throw new Error('useStore must be used within StoreProvider');
-  return context;
+  const c = useContext(StoreContext);
+  if (!c) throw new Error("useStore error");
+  return c;
 };
