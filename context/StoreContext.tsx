@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Product, BlogPost, Order, User, SiteContent, NavCategory, Testimonial, Message, CartItem } from '../types';
 import { BRAND_LOGOS, NAVIGATION_LINKS, FAQS } from '../constants';
 import { 
@@ -20,45 +20,36 @@ interface StoreContextType {
   addProduct: (product: Product) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
-  
   categories: NavCategory[];
   setCategories: (categories: NavCategory[]) => Promise<void>;
-  
   orders: Order[];
   createOrder: (orderData: Omit<Order, 'id' | 'date' | 'status'>) => Promise<string>;
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
-  
   blogPosts: BlogPost[];
   setBlogPosts: (posts: BlogPost[]) => Promise<void>;
   addBlogPost: (post: BlogPost) => Promise<void>;
   updateBlogPost: (post: BlogPost) => Promise<void>;
   removeBlogPost: (id: string) => Promise<void>;
-  
   testimonials: Testimonial[];
   setTestimonials: React.Dispatch<React.SetStateAction<Testimonial[]>>;
   addTestimonial: (t: Testimonial) => Promise<void>;
   updateTestimonial: (t: Testimonial) => Promise<void>;
   removeTestimonial: (id: string) => Promise<void>;
-  
   messages: Message[];
   addMessage: (msg: Omit<Message, 'id' | 'date' | 'read'>) => Promise<void>;
-  
   siteContent: SiteContent;
   updateSiteContent: (section: keyof SiteContent, data: any) => Promise<void>;
-  
   currentUser: User | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (data: Partial<User>) => Promise<void>;
   toggleWishlist: (productId: string) => Promise<void>;
-  
   cart: CartItem[];
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
   updateCartQuantity: (productId: string, delta: number) => void;
   clearCart: () => void;
-  
   uploadFile: (file: File, path: string) => Promise<string>;
   loading: boolean;
 }
@@ -95,7 +86,7 @@ const defaultSiteContent: SiteContent = {
     section2Text: "Empower your staff...",
     section2Image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&q=80&w=800",
     section3Title: "Equipment Sourcing & Tech Support",
-    section3Text: "Your machine is the heart of your operation. We are authorized distributors for La Marzocco, Mahlkönig, and more. Plus, our certified technicians are always on call to ensure minimal downtime.",
+    section3Text: "Your machine is the heart of your operation.",
     section3Image: "https://images.unsplash.com/photo-1522923985141-860e65383563?auto=format&fit=crop&q=80&w=800"
   },
   about: {
@@ -105,9 +96,9 @@ const defaultSiteContent: SiteContent = {
     storyTitle: "Our Origins",
     storyText: "Coffee Machines Hub began as a small passion project...",
     values: [
-      { title: "Quality First", text: "We never compromise on the quality of our beans or the durability of our machines." },
-      { title: "Transparency", text: "We believe in direct trade and fair pricing for farmers and manufacturers." },
-      { title: "Education", text: "We don't just sell; we teach. Empowering our customers is our greatest joy." }
+      { title: "Quality First", text: "We never compromise on the quality of our beans." },
+      { title: "Transparency", text: "We believe in direct trade." },
+      { title: "Education", text: "We don't just sell; we teach." }
     ]
   },
   contact: {
@@ -117,7 +108,7 @@ const defaultSiteContent: SiteContent = {
     faqs: FAQS
   },
   footer: {
-    description: "Purveyors of the finest coffee gear and sustainably sourced beans. Crafting excellence, one cup at a time."
+    description: "Purveyors of the finest coffee gear and sustainably sourced beans."
   },
   socials: {
     instagram: "https://instagram.com",
@@ -155,7 +146,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
   });
 
-  // 1. Fetch Public Data (Always Active)
   useEffect(() => {
     const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
       setProductsState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
@@ -163,12 +153,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
     const unsubCats = onSnapshot(doc(db, 'content', 'navigation'), (docSnap) => {
       if (docSnap.exists()) {
-        const rawCats = docSnap.data().categories || [];
-        setCategoriesState(rawCats);
-      } else {
-         // Initialize if empty
-         const initialCategories = NAVIGATION_LINKS.find(l => l.label === 'SHOP')?.subItems || [];
-         setDoc(doc(db, 'content', 'navigation'), { categories: initialCategories }).catch(console.error);
+        setCategoriesState(docSnap.data().categories || []);
       }
     });
 
@@ -186,12 +171,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
             snapshot.docs.forEach(doc => {
                 if (doc.id !== 'navigation') { 
                     const sectionKey = doc.id as keyof SiteContent;
-                    const defaultSection = defaultSiteContent[sectionKey];
-                    if (defaultSection && typeof defaultSection === 'object' && !Array.isArray(defaultSection)) {
-                        next[sectionKey] = { ...defaultSection, ...doc.data() };
-                    } else {
-                        next[sectionKey] = doc.data() as any;
-                    }
+                    next[sectionKey] = { ...(defaultSiteContent[sectionKey] || {}), ...doc.data() };
                 }
             });
             return next;
@@ -203,7 +183,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     };
   }, []);
 
-  // 2. Auth & User Profile (Critical)
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -212,38 +191,14 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
             const snapshot = await getDoc(userDocRef);
             
             if (snapshot.exists()) {
-                const userData = snapshot.data();
-                const safeUser: User = {
-                    id: user.uid,
-                    name: userData.name || user.displayName || 'Customer',
-                    email: userData.email || user.email || '',
-                    role: userData.role || 'customer',
-                    wishlist: Array.isArray(userData.wishlist) ? userData.wishlist : [],
-                    cart: Array.isArray(userData.cart) ? userData.cart : [],
-                    phone: userData.phone || '',
-                    address: userData.address || '',
-                    city: userData.city || ''
-                };
-                setCurrentUser(safeUser);
-                // Merge DB cart with local cart if DB cart is not empty
-                if (safeUser.cart && safeUser.cart.length > 0) {
-                    setCartState(safeUser.cart);
+                const userData = snapshot.data() as User;
+                setCurrentUser({ ...userData, id: user.uid });
+                if (userData.cart && userData.cart.length > 0 && cart.length === 0) {
+                  setCartState(userData.cart);
                 }
-            } else {
-                const newUser: User = {
-                    id: user.uid,
-                    name: user.displayName || 'Customer',
-                    email: user.email || '',
-                    role: 'customer',
-                    wishlist: [],
-                    cart: []
-                };
-                await setDoc(userDocRef, newUser);
-                setCurrentUser(newUser);
             }
         } catch (error) {
             console.error("Profile Error:", error);
-            showToast("Failed to load user profile", "error");
         } finally {
             setLoading(false);
         }
@@ -255,144 +210,74 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     return () => unsubAuth();
   }, []);
 
-  // 3. Conditional Data Subscription (Security)
   useEffect(() => {
-      let unsubOrders: () => void = () => {};
-      let unsubMessages: () => void = () => {};
-
-      if (currentUser) {
-          if (currentUser.role === 'admin') {
-              // Admin: Fetch ALL orders and messages
-              unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
-                  setOrdersState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)));
-              });
-              unsubMessages = onSnapshot(collection(db, 'messages'), (snapshot) => {
-                  setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message)));
-              });
-          } else {
-              // Customer: Fetch ONLY their orders
-              const q = query(collection(db, 'orders'), where('email', '==', currentUser.email));
-              unsubOrders = onSnapshot(q, (snapshot) => {
-                  setOrdersState(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)));
-              });
-              setMessages([]); // Clear sensitive admin data
-          }
-      } else {
-          setOrdersState([]);
-          setMessages([]);
-      }
-
-      return () => {
-          unsubOrders();
-          unsubMessages();
-      };
-  }, [currentUser]);
-
-  // Sync Cart to LocalStorage for non-logged in users
-  useEffect(() => {
-    if (!currentUser) {
-      localStorage.setItem('cmh_cart', JSON.stringify(cart));
-    } else {
+    if (currentUser) {
       updateDoc(doc(db, 'users', currentUser.id), { cart }).catch(console.error);
+    } else {
+      localStorage.setItem('cmh_cart', JSON.stringify(cart));
     }
   }, [cart, currentUser]);
 
   const uploadFile = async (file: File, path: string): Promise<string> => {
-    try {
-      const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
-      const timeout = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Upload timed out. Check network or storage rules.")), 30000)
-      );
-      const snapshot = await Promise.race([
-        uploadBytes(storageRef, file),
-        timeout
-      ]) as any;
-      const url = await getDownloadURL(snapshot.ref);
-      return url;
-    } catch (error: any) {
-      console.error("Storage upload error:", error);
-      throw error;
-    }
+    const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
+    const snapshot = await uploadBytes(storageRef, file);
+    return await getDownloadURL(snapshot.ref);
   };
 
   const login = async (email: string, password: string) => {
-    try {
-      await setPersistence(auth, browserSessionPersistence);
-      await signInWithEmailAndPassword(auth, email, password);
-      showToast("Signed in successfully");
-    } catch (error: any) {
-      showToast(error.message, "error");
-      throw error;
-    }
+    await signInWithEmailAndPassword(auth, email, password);
+    showToast("Welcome back!");
   };
 
   const register = async (email: string, password: string, name: string) => {
-    try {
-      await setPersistence(auth, browserSessionPersistence);
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      const userDocRef = doc(db, 'users', result.user.uid);
-      const userData: User = {
-        id: result.user.uid,
-        name,
-        email,
-        role: 'customer',
-        wishlist: [],
-        cart: []
-      };
-      await setDoc(userDocRef, userData);
-      showToast("Account created successfully");
-    } catch (error: any) {
-      showToast(error.message, "error");
-      throw error;
-    }
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    const userData: User = {
+      id: result.user.uid,
+      name,
+      email,
+      role: 'customer',
+      wishlist: [],
+      cart: []
+    };
+    await setDoc(doc(db, 'users', result.user.uid), userData);
   };
 
   const logout = async () => {
     await signOut(auth);
-    setCartState([]); // Clear cart state on logout
-    showToast("Signed out");
+    setCartState([]);
+    showToast("See you soon!");
   };
 
   const addProduct = async (product: Product) => {
     await setDoc(doc(db, 'products', product.id), product);
-    showToast("Product added");
+    showToast("Product saved");
   };
 
   const updateProduct = async (product: Product) => {
     await updateDoc(doc(db, 'products', product.id), { ...product });
-    showToast("Product updated");
   };
 
   const removeProduct = async (id: string) => {
     await deleteDoc(doc(db, 'products', id));
-    showToast("Product removed");
   };
 
   const setCategories = async (cats: NavCategory[]) => {
     await setDoc(doc(db, 'content', 'navigation'), { categories: cats });
-    showToast("Navigation updated");
   };
 
   const createOrder = async (orderData: Omit<Order, 'id' | 'date' | 'status'>) => {
     const orderId = `ORD-${Date.now().toString().slice(-6)}`;
-    const newOrder: Order = {
-      ...orderData,
-      id: orderId,
-      date: new Date().toLocaleDateString(),
-      status: 'Processing'
-    };
+    const newOrder: Order = { ...orderData, id: orderId, date: new Date().toLocaleDateString(), status: 'Processing' };
     await setDoc(doc(db, 'orders', orderId), newOrder);
     return orderId;
   };
 
   const updateOrderStatus = async (orderId: string, status: Order['status']) => {
     await updateDoc(doc(db, 'orders', orderId), { status });
-    showToast(`Order updated to ${status}`);
   };
 
   const addBlogPost = async (post: BlogPost) => {
     await setDoc(doc(db, 'blogs', post.id), post);
-    showToast("Post published");
   };
 
   const updateBlogPost = async (post: BlogPost) => {
@@ -405,17 +290,14 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   const addTestimonial = async (t: Testimonial) => {
     await addDoc(collection(db, 'testimonials'), t);
-    showToast("Testimonial added");
   };
 
   const updateTestimonial = async (t: Testimonial) => {
     await updateDoc(doc(db, 'testimonials', t.id), { ...t });
-    showToast("Testimonial updated");
   };
 
   const removeTestimonial = async (id: string) => {
     await deleteDoc(doc(db, 'testimonials', id));
-    showToast("Testimonial removed");
   };
 
   const addMessage = async (msg: Omit<Message, 'id' | 'date' | 'read'>) => {
@@ -424,12 +306,11 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   const updateSiteContent = async (section: keyof SiteContent, data: any) => {
     await setDoc(doc(db, 'content', section), data, { merge: true });
-    showToast("Content updated");
   };
 
   const toggleWishlist = async (productId: string) => {
     if (!currentUser) {
-      showToast("Please log in to save items", "info");
+      showToast("Log in to save items", "info");
       return;
     }
     const isIn = currentUser.wishlist.includes(productId);
@@ -439,14 +320,12 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     
     await updateDoc(doc(db, 'users', currentUser.id), { wishlist: newWishlist });
     setCurrentUser({ ...currentUser, wishlist: newWishlist });
-    if (!isIn) showToast("Added to wishlist");
   };
 
   const updateUserProfile = async (data: Partial<User>) => {
     if (!currentUser) return;
     await updateDoc(doc(db, 'users', currentUser.id), data);
     setCurrentUser({ ...currentUser, ...data });
-    showToast("Profile updated");
   };
 
   const addToCart = (product: Product) => {
@@ -457,7 +336,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       }
       return [...prev, { ...product, quantity: 1 }];
     });
-    showToast(`Added ${product.title} to inquiry`);
   };
 
   const removeFromCart = (productId: string) => {
@@ -467,8 +345,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const updateCartQuantity = (productId: string, delta: number) => {
     setCartState(prev => prev.map(p => {
       if (p.id === productId) {
-        const newQty = Math.max(1, p.quantity + delta);
-        return { ...p, quantity: newQty };
+        return { ...p, quantity: Math.max(1, p.quantity + delta) };
       }
       return p;
     }));

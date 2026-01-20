@@ -1,4 +1,3 @@
-
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { auth } from '../firebase';
 
@@ -11,8 +10,11 @@ interface State {
   error: Error | null;
 }
 
-// Inherit from Component to ensure 'this.props' is correctly recognized by the TypeScript compiler.
-class ErrorBoundary extends Component<Props, State> {
+/**
+ * ErrorBoundary class component to catch rendering errors in its child component tree.
+ * Explicitly extends React.Component to ensure proper 'props' and 'state' typing.
+ */
+class ErrorBoundary extends React.Component<Props, State> {
   public state: State = {
     hasError: false,
     error: null
@@ -38,8 +40,11 @@ class ErrorBoundary extends Component<Props, State> {
     }
   };
 
-  // Add explicit return type to assist TypeScript with inference
+  // Explicit return type added to render method for clarity and to assist TypeScript inference.
   public render(): ReactNode {
+    // Fix: Inheritance from React.Component ensures 'props' is defined on the class instance.
+    const { children } = this.props;
+
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-nomad-black flex items-center justify-center p-6">
@@ -72,8 +77,7 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    // Return children from props; inheritance from Component ensures this.props is correctly typed.
-    return this.props.children;
+    return children;
   }
 }
 

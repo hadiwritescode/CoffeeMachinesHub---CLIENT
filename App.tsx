@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+
+import React, { useEffect, Suspense } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { StoreProvider, useStore } from './context/StoreContext';
 import Header from './components/Header';
@@ -6,83 +7,88 @@ import Footer from './components/Footer';
 import WhatsAppWidget from './components/WhatsAppWidget';
 import FeaturesBanner from './components/FeaturesBanner';
 import ScrollToTop from './components/ScrollToTop';
-import Home from './pages/Home';
-import Cart from './pages/Cart';
-import Shop from './pages/Shop';
-import ProductDetail from './pages/ProductDetail';
-import Services from './pages/Services';
-import About from './pages/About';
-import Blogs from './pages/Blogs';
-import BlogPost from './pages/BlogPost';
-import Contact from './pages/Contact';
-import Login from './pages/Login';
-import Profile from './pages/Profile';
-import NotFound from './pages/NotFound';
+import { Loader2 } from 'lucide-react';
+
+// Production lazy loading strategy
+const Home = React.lazy(() => import('./pages/Home'));
+const Shop = React.lazy(() => import('./pages/Shop'));
+const ProductDetail = React.lazy(() => import('./pages/ProductDetail'));
+const Services = React.lazy(() => import('./pages/Services'));
+const About = React.lazy(() => import('./pages/About'));
+const Blogs = React.lazy(() => import('./pages/Blogs'));
+const BlogPost = React.lazy(() => import('./pages/BlogPost'));
+const Contact = React.lazy(() => import('./pages/Contact'));
+const Cart = React.lazy(() => import('./pages/Cart'));
+const Login = React.lazy(() => import('./pages/Login'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 // Admin Pages
-import AdminLogin from './pages/admin/AdminLogin';
-import Dashboard from './pages/admin/Dashboard';
-import ProductManager from './pages/admin/ProductManager';
-import OrderManager from './pages/admin/OrderManager';
-import ContentManager from './pages/admin/ContentManager';
-import BlogManager from './pages/admin/BlogManager';
-import CategoryManager from './pages/admin/CategoryManager';
-import MessageManager from './pages/admin/MessageManager';
-import { Loader2 } from 'lucide-react';
+const AdminLogin = React.lazy(() => import('./pages/admin/AdminLogin'));
+const Dashboard = React.lazy(() => import('./pages/admin/Dashboard'));
+const ProductManager = React.lazy(() => import('./pages/admin/ProductManager'));
+const OrderManager = React.lazy(() => import('./pages/admin/OrderManager'));
+const ContentManager = React.lazy(() => import('./pages/admin/ContentManager'));
+const BlogManager = React.lazy(() => import('./pages/admin/BlogManager'));
+const CategoryManager = React.lazy(() => import('./pages/admin/CategoryManager'));
+const MessageManager = React.lazy(() => import('./pages/admin/MessageManager'));
 
 const { BrowserRouter: Router, Routes, Route, useLocation } = ReactRouterDOM;
 
-// Wrapper component to handle ScrollToTop and Animations
 const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    };
-
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    
+    // Performance optimized observer - only targets elements currently on page
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-          observer.unobserve(entry.target); 
+          observer.unobserve(entry.target); // Efficiency: stop watching once visible
         }
       });
-    }, observerOptions);
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-    const timeoutId = setTimeout(() => {
-      const elements = document.querySelectorAll('.fade-up, .fade-right');
-      elements.forEach(el => observer.observe(el));
+    // Use a small delay to ensure React has finished rendering the DOM
+    const timer = setTimeout(() => {
+      document.querySelectorAll('.fade-up-init').forEach(el => observer.observe(el));
     }, 100);
 
     return () => {
-      clearTimeout(timeoutId);
-      observer.disconnect();
+        clearTimeout(timer);
+        observer.disconnect();
     };
   }, [pathname]);
 
   return (
     <>
-      {children}
+      <Suspense fallback={<PageLoader />}>
+        {children}
+      </Suspense>
       <ScrollToTop />
     </>
   );
 };
 
-const LayoutWithHeaderFooter = ({ children }: { children?: React.ReactNode }) => (
-  <div className="flex flex-col min-h-screen font-sans text-nomad-black bg-nomad-black selection:bg-nomad-gold selection:text-white">
-    <Header />
-    <div className="relative z-10 bg-nomad-paper shadow-2xl flex flex-col transition-all duration-300 w-full min-h-screen">
-      <main className="flex-grow">
-        {children}
-      </main>
-      <FeaturesBanner />
-      <Footer />
+const PageLoader = () => (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-nomad-paper">
+        <div className="flex flex-col items-center gap-4">
+            <Loader2 className="animate-spin text-nomad-gold" size={40} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-nomad-black/40">Loading Hub</span>
+        </div>
     </div>
+);
+
+const LayoutWithHeaderFooter = ({ children }: { children?: React.ReactNode }) => (
+  <div className="flex flex-col min-h-screen">
+    <Header />
+    <main className="flex-grow">
+      {children}
+    </main>
+    <FeaturesBanner />
+    <Footer />
     <WhatsAppWidget />
   </div>
 );
@@ -90,20 +96,13 @@ const LayoutWithHeaderFooter = ({ children }: { children?: React.ReactNode }) =>
 const AppContent = () => {
   const { loading } = useStore();
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-nomad-paper flex flex-col items-center justify-center z-50">
-         <Loader2 size={48} className="animate-spin text-nomad-gold mb-4" />
-         <p className="text-nomad-black font-serif font-bold tracking-widest text-sm uppercase">Coffee Machines Hub</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   return (
     <Router>
       <PageWrapper>
         <Routes>
-          {/* Admin Routes (No Header/Footer) */}
+          {/* Admin Routes (No Layout) */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/admin/products" element={<ProductManager />} />
@@ -113,14 +112,13 @@ const AppContent = () => {
           <Route path="/admin/blogs" element={<BlogManager />} />
           <Route path="/admin/content" element={<ContentManager />} />
           
-          {/* Public Routes */}
+          {/* Main App Routes */}
           <Route path="*" element={
             <LayoutWithHeaderFooter>
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/collections/:collectionId" element={<Shop />} />
                   <Route path="/services" element={<Services />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/blogs" element={<Blogs />} />
@@ -129,7 +127,6 @@ const AppContent = () => {
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/profile" element={<Profile />} />
-                  {/* 404 Route */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
             </LayoutWithHeaderFooter>
@@ -140,12 +137,10 @@ const AppContent = () => {
   );
 };
 
-const App = () => {
-  return (
-    <StoreProvider>
-        <AppContent />
-    </StoreProvider>
-  );
-};
+const App = () => (
+  <StoreProvider>
+      <AppContent />
+  </StoreProvider>
+);
 
 export default App;

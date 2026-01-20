@@ -1,4 +1,4 @@
-import firebase from "firebase/compat/app";
+import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -12,12 +12,10 @@ const firebaseConfig = {
   appId: (import.meta as any).env.VITE_FIREBASE_APP_ID
 };
 
-// Use compat initialization to ensure app is created correctly even if strict module types fail
-const app = firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-// Cast app to any to ensure compatibility with modular getters which expect a Modular App instance
-export const auth = getAuth(app as any);
-export const db = getFirestore(app as any);
-export const storage = getStorage(app as any);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 export default app;
