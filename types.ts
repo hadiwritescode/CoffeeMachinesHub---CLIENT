@@ -37,6 +37,8 @@ export interface NavLink {
 export interface NavCategory {
   title: string;
   items: string[];
+  image?: string;
+  video?: string;
 }
 
 export interface BlogPost {

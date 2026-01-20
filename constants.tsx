@@ -1,3 +1,4 @@
+
 import { NavLink, Product, BlogPost, FAQItem } from './types';
 
 export const NAVIGATION_LINKS: NavLink[] = [
@@ -8,19 +9,27 @@ export const NAVIGATION_LINKS: NavLink[] = [
     subItems: [
       {
         title: 'Machines',
-        items: ['Espresso Machines', 'Commercial Systems', 'Automatic', 'Manual Lever']
+        items: ['Espresso Machines', 'Commercial Systems', 'Automatic', 'Manual Lever'],
+        image: 'https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=800',
+        video: 'https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4'
       },
       {
         title: 'Grinders',
-        items: ['Domestic Grinders', 'Commercial Grinders', 'Burr Sets', 'Accessories']
+        items: ['Domestic Grinders', 'Commercial Grinders', 'Burr Sets', 'Accessories'],
+        image: 'https://images.unsplash.com/photo-1618116523910-1840b2f69830?auto=format&fit=crop&q=80&w=800',
+        video: 'https://videos.pexels.com/video-files/4443026/4443026-uhd_2560_1440_25fps.mp4'
       },
       {
         title: 'Blenders',
-        items: ['High-Performance', 'Commercial Blenders', 'Personal Blenders']
+        items: ['High-Performance', 'Commercial Blenders', 'Personal Blenders'],
+        image: 'https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&q=80&w=800',
+        video: 'https://videos.pexels.com/video-files/3195979/3195979-uhd_2560_1440_25fps.mp4'
       },
       {
         title: 'Accessories',
-        items: ['Barista Tools', 'Cleaning Supplies', 'Parts & Spares', 'Drinkware']
+        items: ['Barista Tools', 'Cleaning Supplies', 'Parts & Spares', 'Drinkware'],
+        image: 'https://images.unsplash.com/photo-1544655615-5654316d2e61?auto=format&fit=crop&q=80&w=800',
+        video: 'https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4'
       }
     ]
   },
@@ -60,7 +69,7 @@ const STOCK_VIDEOS = {
   slow: 'https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4'
 };
 
-// COFFEE PRODUCTS (Legacy data - kept for content but hidden from strict filters)
+// COFFEE PRODUCTS
 export const BLENDS_PRODUCTS: Product[] = [
   {
     id: 'atlas',
@@ -272,7 +281,6 @@ export const BEST_COFFEES: Product[] = [
   }
 ];
 
-// GEAR PRODUCTS UPDATED TO STRICT CATEGORIES
 export const GEAR_PRODUCTS: Product[] = [
   {
     id: 'aeropress-clear',
@@ -282,7 +290,7 @@ export const GEAR_PRODUCTS: Product[] = [
     hoverVideo: STOCK_VIDEOS.grind,
     soldOut: false,
     isFeatured: true,
-    category: 'Accessories', // Updated
+    category: 'Accessories',
     tags: ['Barista Tools'],
     description: 'The iconic coffee press, now in crystal clear shatterproof Tritan. Make delicious American, espresso, and cold brew style coffee.'
   },
@@ -316,7 +324,7 @@ export const GEAR_PRODUCTS: Product[] = [
     soldOut: false,
     isFeatured: true,
     category: 'Accessories',
-    tags: ['Barista Tools'], // Kettles map to Tools here
+    tags: ['Barista Tools'],
     description: 'The electric pour-over kettle for coffee lovers. Variable temperature control, 1200 watts for a quick heat time, and a world of features for ultimate control.'
   },
   {
@@ -327,7 +335,7 @@ export const GEAR_PRODUCTS: Product[] = [
     hoverVideo: STOCK_VIDEOS.grind,
     soldOut: false,
     isFeatured: true,
-    category: 'Grinders', // Updated
+    category: 'Grinders',
     tags: ['Domestic Grinders'],
     description: 'Optimized for espresso but capable of brewing anything. The new standard for entry-level home grinding.'
   },

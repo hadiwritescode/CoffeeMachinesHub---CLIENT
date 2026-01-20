@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Product } from '../types';
 import * as ReactRouterDOM from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
 
 const { Link } = ReactRouterDOM;
 
@@ -13,6 +14,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const { siteContent } = useStore();
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -32,10 +34,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const phoneNumber = '923001234567';
+    
+    // Clean phone number: remove non-digits, ensure starts with country code if needed (default to PK 92)
+    let rawPhone = siteContent.contact.phone.replace(/[^0-9]/g, '') || '923104811010';
+    if (rawPhone.startsWith('0')) {
+      rawPhone = '92' + rawPhone.substring(1);
+    } else if (!rawPhone.startsWith('92') && rawPhone.length === 10) {
+      rawPhone = '92' + rawPhone;
+    }
+    
     const productUrl = `${window.location.origin}/product/${product.id}`;
     const message = `Hi, I'm interested in ${product.title}. What is the price? ${productUrl}`;
-    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/${rawPhone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   return (

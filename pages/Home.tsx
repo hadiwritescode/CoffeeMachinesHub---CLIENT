@@ -67,6 +67,14 @@ const Home: React.FC = () => {
   };
   const brands = homeText.brands || [];
 
+  // Reliable stock fallback visuals for categories that don't have them yet
+  const fallbackVisuals = [
+    { img: "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=800", vid: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4" },
+    { img: "https://images.unsplash.com/photo-1618116523910-1840b2f69830?auto=format&fit=crop&q=80&w=800", vid: "https://videos.pexels.com/video-files/4443026/4443026-uhd_2560_1440_25fps.mp4" },
+    { img: "https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&q=80&w=800", vid: "https://videos.pexels.com/video-files/3195979/3195979-uhd_2560_1440_25fps.mp4" },
+    { img: "https://images.unsplash.com/photo-1544655615-5654316d2e61?auto=format&fit=crop&q=80&w=800", vid: "https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4" }
+  ];
+
   return (
     <div className="bg-nomad-paper overflow-hidden">
       
@@ -193,19 +201,8 @@ const Home: React.FC = () => {
                 <div key={idx} className="fade-right h-full" style={{ transitionDelay: `${300 + idx * 100}ms` }}>
                     <CategoryCard 
                         title={cat.title} 
-                        // Use placeholders or future DB images. For now using reliable stock.
-                        image={[
-                            "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?auto=format&fit=crop&q=80&w=800",
-                            "https://images.unsplash.com/photo-1618116523910-1840b2f69830?auto=format&fit=crop&q=80&w=800",
-                            "https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&q=80&w=800",
-                            "https://images.unsplash.com/photo-1544655615-5654316d2e61?auto=format&fit=crop&q=80&w=800"
-                        ][idx % 4]}
-                        video={[
-                            "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4",
-                            "https://videos.pexels.com/video-files/4443026/4443026-uhd_2560_1440_25fps.mp4",
-                            "https://videos.pexels.com/video-files/3195979/3195979-uhd_2560_1440_25fps.mp4",
-                            "https://videos.pexels.com/video-files/6803738/6803738-uhd_2560_1440_25fps.mp4"
-                        ][idx % 4]}
+                        image={cat.image || fallbackVisuals[idx % 4].img}
+                        video={cat.video || fallbackVisuals[idx % 4].vid}
                     />
                 </div>
              ))}

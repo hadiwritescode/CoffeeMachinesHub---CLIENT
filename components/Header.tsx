@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { Phone, Search, User, ShoppingBag, Menu, X, ArrowRight, ChevronRight, ChevronDown } from 'lucide-react';
@@ -9,7 +10,7 @@ import { Product } from '../types';
 const { Link, useLocation, useNavigate } = ReactRouterDOM;
 
 const Header: React.FC = () => {
-  const { cart, products, categories } = useStore();
+  const { cart, products, categories, siteContent } = useStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,16 +24,13 @@ const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Pages where header should be transparent at top
   const isTransparentRoute = location.pathname === '/' || 
                              location.pathname === '/shop' ||
                              (location.pathname.startsWith('/blogs/') && location.pathname !== '/blogs');
   
   const isHomePage = location.pathname === '/';
-
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-  // Dynamic Navigation Links
   const dynamicNavLinks = NAVIGATION_LINKS.map(link => {
     if (link.label === 'SHOP') {
       return { ...link, subItems: categories };
@@ -69,7 +67,6 @@ const Header: React.FC = () => {
     return () => { document.body.style.overflow = 'unset'; };
   }, [searchOpen, mobileMenuOpen]);
 
-  // Update suggestions when query changes
   useEffect(() => {
       if (searchQuery.trim().length > 1) {
           const lowerQuery = searchQuery.toLowerCase();
@@ -133,7 +130,6 @@ const Header: React.FC = () => {
       >
         <div className="container mx-auto px-6 md:px-12 flex items-center justify-between relative">
           
-          {/* Mobile Toggle & Logo Group */}
           <div className="flex items-center gap-4 md:hidden z-[60]">
             <button 
                 className="focus:outline-none transition-colors p-1"
@@ -144,7 +140,6 @@ const Header: React.FC = () => {
             </button>
           </div>
 
-          {/* Logo - Centered on mobile, Left on Desktop */}
           <Link 
             to="/" 
             className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:transform-none md:translate-x-0 md:translate-y-0 z-50"
@@ -155,7 +150,6 @@ const Header: React.FC = () => {
             />
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6 lg:space-x-10 items-center h-full mx-auto">
             {dynamicNavLinks.map((link) => (
               <div 
@@ -176,7 +170,6 @@ const Header: React.FC = () => {
                   {link.subItems && link.subItems.length > 0 && <ChevronDown size={10} className="mt-0.5 opacity-50" />}
                 </Link>
                 
-                {/* Mega Menu Dropdown */}
                 {link.subItems && link.subItems.length > 0 && activeDropdown === link.label && (
                   <div 
                     className="fixed left-0 w-full bg-nomad-paper shadow-2xl z-40 border-t border-nomad-gray animate-in fade-in slide-in-from-top-1 duration-200 cursor-default text-nomad-black"
@@ -206,7 +199,6 @@ const Header: React.FC = () => {
                               </div>
                             ))}
                         </div>
-                        {/* Featured Item */}
                         <div className="hidden lg:flex w-72 flex-col flex-shrink-0 bg-white p-6 rounded-2xl shadow-sm border border-nomad-gray group/card">
                            <h4 className="text-[10px] font-bold tracking-widest uppercase mb-4 text-gray-400">Featured</h4>
                            <div className="overflow-hidden rounded-xl mb-4 aspect-square relative">
@@ -224,7 +216,6 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* Icons */}
           <div className="flex items-center space-x-4 md:space-x-6 z-50">
             <button 
               onClick={() => setSearchOpen(true)}
@@ -243,7 +234,6 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Search Overlay */}
         <div 
             className={`fixed inset-0 bg-nomad-paper/98 backdrop-blur-xl z-[60] flex items-center justify-center transition-all duration-500 ${
                 searchOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -271,7 +261,6 @@ const Header: React.FC = () => {
                     </button>
                 </form>
 
-                {/* Search Suggestions */}
                 {suggestions.length > 0 && (
                     <div className="absolute left-0 right-0 top-full mt-4 bg-white rounded-2xl shadow-xl overflow-hidden z-50">
                         {suggestions.map(product => (
@@ -312,14 +301,11 @@ const Header: React.FC = () => {
             </div>
         </div>
 
-        {/* Mobile Menu Overlay */}
         <div className={`fixed inset-0 bg-nomad-black/60 backdrop-blur-sm z-[55] transition-opacity duration-300 md:hidden ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setMobileMenuOpen(false)}></div>
         
-        {/* Mobile Menu Content */}
         <div className={`fixed inset-y-0 left-0 w-[85%] max-w-sm h-[100dvh] bg-nomad-paper z-[60] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="p-6 flex justify-between items-center border-b border-gray-200 bg-nomad-paper shrink-0">
              <Logo className="h-10 w-auto" fill="#3B261B" />
-             {/* Close button handled by header toggle */}
           </div>
           <div className="flex-grow overflow-y-auto p-6 space-y-1">
              {dynamicNavLinks.map((link) => (
@@ -344,7 +330,6 @@ const Header: React.FC = () => {
                     )}
                  </div>
                  
-                 {/* Mobile Submenu */}
                  {link.subItems && link.subItems.length > 0 && (
                    <div className={`pl-4 space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${mobileSubmenuOpen === link.label ? 'max-h-[800px] mb-4 mt-2 opacity-100' : 'max-h-0 opacity-0'}`}>
                       {link.subItems.map(sub => (
@@ -377,8 +362,8 @@ const Header: React.FC = () => {
              <Link to="/login" className="flex items-center space-x-3 text-sm font-bold uppercase tracking-wider text-gray-600 mb-4 hover:text-nomad-black" onClick={() => setMobileMenuOpen(false)}>
                <User size={18} /> <span>Sign In / Register</span>
              </Link>
-             <a href="tel:+923104811011" className="flex items-center space-x-3 text-sm font-medium text-gray-500 hover:text-nomad-black">
-               <Phone size={18} /> <span>+92 310 481 1011</span>
+             <a href={`tel:${siteContent.contact.phone.replace(/[^0-9+]/g, '')}`} className="flex items-center space-x-3 text-sm font-medium text-gray-500 hover:text-nomad-black">
+               <Phone size={18} /> <span>{siteContent.contact.phone}</span>
              </a>
           </div>
         </div>

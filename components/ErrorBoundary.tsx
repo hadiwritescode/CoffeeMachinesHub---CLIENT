@@ -1,3 +1,4 @@
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { auth } from '../firebase';
 
@@ -10,6 +11,7 @@ interface State {
   error: Error | null;
 }
 
+// Inherit from Component from 'react' to ensure 'this.props' is correctly recognized by the TypeScript compiler.
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
@@ -24,6 +26,7 @@ class ErrorBoundary extends Component<Props, State> {
     console.error('Uncaught error:', error, errorInfo);
   }
 
+  // Handle logout and local storage reset to clear potentially corrupted state
   private handleReset = async () => {
     try {
         await auth.signOut();
@@ -35,7 +38,8 @@ class ErrorBoundary extends Component<Props, State> {
     }
   };
 
-  public render() {
+  // Add explicit return type to assist TypeScript with inference
+  public render(): ReactNode {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-nomad-black flex items-center justify-center p-6">
@@ -68,6 +72,7 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
+    // Explicitly return children from props; inheritance from Component provides access to this.props
     return this.props.children;
   }
 }

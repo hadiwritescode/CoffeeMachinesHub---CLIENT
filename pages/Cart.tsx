@@ -49,7 +49,13 @@ const Cart: React.FC = () => {
       });
 
       // Send WhatsApp - Dynamic Phone Number
-      const contactPhone = siteContent.contact.phone.replace(/[^0-9]/g, '') || '923104811011';
+      let contactPhone = siteContent.contact.phone.replace(/[^0-9]/g, '') || '923104811010';
+      if (contactPhone.startsWith('0')) {
+        contactPhone = '92' + contactPhone.substring(1);
+      } else if (!contactPhone.startsWith('92') && contactPhone.length === 10) {
+        contactPhone = '92' + contactPhone;
+      }
+
       const itemsList = cart.map(i => `${i.quantity}x ${i.title}`).join('%0A');
       const waMsg = `Hi, I would like to inquire about an order:%0AOrder ID: ${orderId}%0A%0AItems:%0A${itemsList}%0A%0ACustomer: ${formData.name}%0AAddress: ${formData.address}`;
       

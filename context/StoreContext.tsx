@@ -113,7 +113,7 @@ const defaultSiteContent: SiteContent = {
   contact: {
     address: "G-22, City Star Mall, Model Town Link Road, Lahore, Pakistan",
     email: "Coffeemachineshub@gmail.com",
-    phone: "+92 310 481 1011",
+    phone: "03104811010",
     faqs: FAQS
   },
   footer: {

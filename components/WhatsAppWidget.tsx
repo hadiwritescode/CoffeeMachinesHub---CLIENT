@@ -8,7 +8,12 @@ const WhatsAppWidget: React.FC = () => {
   const { siteContent } = useStore();
 
   // Dynamic Phone Number
-  const PHONE_NUMBER = siteContent.contact.phone.replace(/[^0-9]/g, '') || '923104811011';
+  let rawPhone = siteContent.contact.phone.replace(/[^0-9]/g, '') || '923104811010';
+  if (rawPhone.startsWith('0')) {
+    rawPhone = '92' + rawPhone.substring(1);
+  } else if (!rawPhone.startsWith('92') && rawPhone.length === 10) {
+    rawPhone = '92' + rawPhone;
+  }
   
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +21,7 @@ const WhatsAppWidget: React.FC = () => {
 
     // Encode message for URL
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${rawPhone}?text=${encodedMessage}`;
     
     // Open WhatsApp in new tab
     window.open(whatsappUrl, '_blank');

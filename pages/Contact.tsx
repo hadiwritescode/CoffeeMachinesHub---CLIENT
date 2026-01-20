@@ -27,9 +27,16 @@ const Contact: React.FC = () => {
         message: formData.message
     });
     
-    // 2. Open WhatsApp
+    // 2. Open WhatsApp - Clean number
+    let rawPhone = siteContent.contact.phone.replace(/[^0-9]/g, '') || '923104811010';
+    if (rawPhone.startsWith('0')) {
+      rawPhone = '92' + rawPhone.substring(1);
+    } else if (!rawPhone.startsWith('92') && rawPhone.length === 10) {
+      rawPhone = '92' + rawPhone;
+    }
+
     const whatsappMessage = `Name: ${formData.name}%0AEmail: ${formData.email}%0AMessage: ${formData.message}`;
-    window.open(`https://wa.me/923104811011?text=${whatsappMessage}`, '_blank');
+    window.open(`https://wa.me/${rawPhone}?text=${whatsappMessage}`, '_blank');
     
     // Reset
     setFormData({ name: '', email: '', message: '' });
