@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Loader2, Mail, Lock, User as UserIcon, ArrowRight } from 'lucide-react';
-
-const { Link, useNavigate } = ReactRouterDOM;
 
 const Login: React.FC = () => {
   const [isRegister, setIsRegister] = useState(false);

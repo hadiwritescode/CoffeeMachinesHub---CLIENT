@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee, List, BookOpen, Menu, X, Loader2, MessageSquare } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import Logo from '../components/Logo';
-
-const { Link, useLocation, useNavigate } = ReactRouterDOM;
 
 interface AdminLayoutProps {
   children: React.ReactNode;

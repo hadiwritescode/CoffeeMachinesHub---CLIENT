@@ -1,9 +1,7 @@
 import React, { useRef, useState } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Coffee } from 'lucide-react';
 import { DEFAULT_PRODUCT_IMAGE } from '../constants';
-
-const { Link } = ReactRouterDOM;
 
 interface CategoryCardProps {
   title?: string;

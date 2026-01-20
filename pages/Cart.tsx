@@ -1,10 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { ShoppingBag, ArrowRight, Trash, Plus, Minus, CheckCircle, MessageCircle } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
-
-const { Link } = ReactRouterDOM;
 
 const Cart: React.FC = () => {
   const { cart, removeFromCart, updateCartQuantity, clearCart, createOrder, currentUser, products, siteContent } = useStore();
@@ -28,7 +27,11 @@ const Cart: React.FC = () => {
       }
   }, [currentUser]);
 
-  const recommendations = products.filter(p => p.isFeatured).slice(0, 3);
+  // Recommendations Logic: Prioritize explicitly recommended items, fallback to featured
+  const recommendedItems = products.filter(p => p.isRecommended && !cart.some(c => c.id === p.id));
+  const featuredFallback = products.filter(p => p.isFeatured && !cart.some(c => c.id === p.id) && !recommendedItems.some(r => r.id === p.id));
+  
+  const recommendations = [...recommendedItems, ...featuredFallback].slice(0, 3);
 
   const handleCheckout = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -206,19 +209,21 @@ const Cart: React.FC = () => {
         )}
 
         {/* Recommendations */}
-        <div className="border-t border-gray-200 pt-16 md:pt-20 mt-16 md:mt-20 fade-up">
-            <div className="flex justify-between items-end mb-8 md:mb-12">
-            <h2 className="text-xl md:text-2xl font-serif font-bold">You Might Also Like</h2>
-            <Link to="/shop" className="hidden md:flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors pb-1">
-                View All <ArrowRight size={14} className="ml-2" />
-            </Link>
+        {recommendations.length > 0 && (
+            <div className="border-t border-gray-200 pt-16 md:pt-20 mt-16 md:mt-20 fade-up">
+                <div className="flex justify-between items-end mb-8 md:mb-12">
+                <h2 className="text-xl md:text-2xl font-serif font-bold">You Might Also Like</h2>
+                <Link to="/shop" className="hidden md:flex items-center text-xs font-bold uppercase tracking-widest hover:text-nomad-gold transition-colors pb-1">
+                    View All <ArrowRight size={14} className="ml-2" />
+                </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                    {recommendations.map(product => (
+                        <ProductCard key={product.id} product={product} />
+                    ))}
+                </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {recommendations.map(product => (
-                    <ProductCard key={product.id} product={product} />
-                ))}
-            </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, useRef } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { StoreProvider, useStore } from './context/StoreContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -30,8 +30,6 @@ const ContentManager = React.lazy(() => import('./pages/admin/ContentManager'));
 const BlogManager = React.lazy(() => import('./pages/admin/BlogManager'));
 const CategoryManager = React.lazy(() => import('./pages/admin/CategoryManager'));
 const MessageManager = React.lazy(() => import('./pages/admin/MessageManager'));
-
-const { BrowserRouter: Router, Routes, Route, useLocation } = ReactRouterDOM;
 
 const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
   const { pathname } = useLocation();

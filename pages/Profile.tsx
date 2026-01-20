@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { User, Package, Heart, Settings, MapPin, Phone, LogOut } from 'lucide-react';
-
-const { Navigate } = ReactRouterDOM;
 
 const Profile: React.FC = () => {
   const { currentUser, orders, products, logout, updateUserProfile } = useStore();

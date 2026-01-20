@@ -1,9 +1,7 @@
 import React from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { ArrowLeft, Loader2, Link as LinkIcon } from 'lucide-react';
-
-const { useParams, Link } = ReactRouterDOM;
 
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();

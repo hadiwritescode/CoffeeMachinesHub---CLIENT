@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
 import { useStore } from '../context/StoreContext';
-import * as ReactRouterDOM from 'react-router-dom';
+import { useSearchParams, Link, useParams } from 'react-router-dom';
 import { ChevronDown, SlidersHorizontal, X, Search, Check } from 'lucide-react';
 
 type SortOption = 'featured' | 'newest' | 'price-low' | 'price-high';
-
-const { useSearchParams, Link, useParams } = ReactRouterDOM;
 
 const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();

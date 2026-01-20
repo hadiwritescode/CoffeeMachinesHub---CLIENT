@@ -1,9 +1,7 @@
 import React from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Loader2, ArrowRight } from 'lucide-react';
-
-const { Link } = ReactRouterDOM;
 
 const Blogs: React.FC = () => {
   const { blogPosts, loading } = useStore();

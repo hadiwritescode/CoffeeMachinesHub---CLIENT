@@ -1,13 +1,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Phone, Search, User, ShoppingBag, Menu, X, ArrowRight, ChevronDown } from 'lucide-react';
 import { NAVIGATION_LINKS } from '../constants';
 import Logo from './Logo';
 import { useStore } from '../context/StoreContext';
 import { Product } from '../types';
-
-const { Link, useLocation, useNavigate } = ReactRouterDOM;
 
 const Header: React.FC = () => {
   const { cart, products, categories, siteContent } = useStore();
@@ -17,7 +15,6 @@ const Header: React.FC = () => {
   const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<Product[]>([]);
   
   const searchInputRef = useRef<HTMLInputElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -41,6 +38,8 @@ const Header: React.FC = () => {
     }
     return link;
   });
+
+  const trendingTerms = siteContent.home.trendingTags || ['Espresso', 'Hario V60', 'Ethiopia', 'Decaf', 'Scale'];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,19 +79,6 @@ const Header: React.FC = () => {
           setTimeout(() => searchInputRef.current?.focus(), 100);
       }
   }, [searchOpen]);
-
-  useEffect(() => {
-      if (searchQuery.trim().length > 1) {
-          const lowerQuery = searchQuery.toLowerCase();
-          const filtered = products.filter(p => 
-              p.title.toLowerCase().includes(lowerQuery) || 
-              p.category?.toLowerCase().includes(lowerQuery)
-          ).slice(0, 5);
-          setSuggestions(filtered);
-      } else {
-          setSuggestions([]);
-      }
-  }, [searchQuery, products]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,20 +167,20 @@ const Header: React.FC = () => {
                 
                 {/* MEGA MENU */}
                 {link.subItems && link.subItems.length > 0 && activeDropdown === link.label && (
-                  <div className="fixed left-0 top-[64px] md:top-[74px] w-full bg-[#FAF9F6] shadow-[0_20px_40px_rgba(0,0,0,0.05)] z-40 border-t border-nomad-black/5 animate-in fade-in slide-in-from-top-2 text-nomad-black h-auto min-h-[400px]">
-                    <div className="container mx-auto px-12 py-16">
-                      <div className="flex justify-between items-start">
+                  <div className="fixed left-0 top-[64px] md:top-[74px] w-full bg-nomad-paper shadow-xl z-40 border-t border-nomad-black/5 animate-in fade-in slide-in-from-top-2 text-nomad-black h-auto">
+                    <div className="container mx-auto px-6 md:px-12 py-16">
+                      <div className="flex flex-col lg:flex-row gap-12 xl:gap-24">
                           {/* Categories Grid */}
-                          <div className="flex gap-16 lg:gap-24">
+                          <div className="flex-grow grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
                               {link.subItems.map((category) => (
-                                <div key={category.title} className="flex flex-col space-y-6">
-                                  <h3 className="font-serif font-bold text-2xl text-nomad-black whitespace-nowrap">{category.title}</h3>
-                                  <ul className="space-y-4">
+                                <div key={category.title} className="flex flex-col">
+                                  <h3 className="font-serif font-bold text-3xl text-nomad-black mb-6">{category.title}</h3>
+                                  <ul className="space-y-3">
                                     {category.items.map((item) => (
                                       <li key={item}>
                                         <Link 
                                           to={`/shop?category=${encodeURIComponent(category.title)}&subcategory=${encodeURIComponent(item)}`} 
-                                          className="text-gray-500 hover:text-nomad-gold text-sm font-medium block transition-colors whitespace-nowrap"
+                                          className="text-nomad-black/60 hover:text-nomad-gold font-medium text-base transition-colors block"
                                         >
                                           {item}
                                         </Link>
@@ -206,21 +192,23 @@ const Header: React.FC = () => {
                           </div>
 
                           {/* Featured Card */}
-                          <div className="w-72 bg-white rounded-2xl p-4 shadow-lg shrink-0 hidden xl:block border border-gray-50">
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4 block">Featured</span>
-                              <div className="aspect-[4/5] rounded-xl overflow-hidden mb-4 relative group cursor-pointer" onClick={() => navigate('/shop')}>
-                                  <img 
-                                    src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&q=80&w=600" 
-                                    alt="Professional Setup" 
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                  />
-                                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+                          <div className="hidden xl:block w-80 shrink-0">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-nomad-black/40 mb-6 block">Featured</span>
+                              <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 group cursor-pointer hover:shadow-md transition-all duration-300" onClick={() => navigate('/shop')}>
+                                  <div className="aspect-[4/3] rounded-xl overflow-hidden mb-4 relative">
+                                      <img 
+                                        src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&q=80&w=600" 
+                                        alt="Professional Setup" 
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                      />
+                                      <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div>
+                                  </div>
+                                  <h4 className="font-serif font-bold text-xl text-nomad-black mb-2">Professional Setup</h4>
+                                  <p className="text-xs text-gray-500 mb-4 leading-relaxed line-clamp-2">Everything you need for a café-quality espresso bar at home.</p>
+                                  <span className="text-[10px] font-bold uppercase tracking-widest text-nomad-gold border-b border-nomad-gold/30 pb-1 group-hover:text-nomad-black group-hover:border-nomad-black transition-colors">
+                                      Explore Now
+                                  </span>
                               </div>
-                              <h4 className="font-serif font-bold text-lg text-nomad-black mb-1">Professional Setup</h4>
-                              <p className="text-xs text-gray-500 mb-4 leading-relaxed">Everything you need for a café-quality espresso bar at home.</p>
-                              <Link to="/shop" className="text-[10px] font-bold uppercase tracking-widest text-nomad-gold hover:text-nomad-black transition-colors border-b border-nomad-gold/30 pb-1">
-                                  Explore Now
-                              </Link>
                           </div>
                       </div>
                     </div>
@@ -245,52 +233,54 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Search Overlay */}
-        <div className={`fixed inset-0 bg-nomad-paper/98 backdrop-blur-xl z-[200] flex items-center justify-center transition-all duration-500 ${searchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        {/* Full Screen Search Overlay */}
+        <div 
+            className={`fixed inset-0 bg-[#3B261B]/98 backdrop-blur-3xl z-[200] flex flex-col items-center justify-center transition-all duration-500 ${searchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
             <button 
                 onClick={() => setSearchOpen(false)} 
-                className="absolute top-8 right-8 text-nomad-black hover:text-nomad-gold p-2 transition-transform hover:rotate-90 duration-300"
+                className="absolute top-10 right-10 text-white/50 hover:text-white p-2 transition-transform hover:rotate-90 duration-300"
                 aria-label="Close Search"
             >
                 <X size={40} strokeWidth={1} />
             </button>
             
-            <div className="w-full max-w-4xl px-6 relative">
-                <form onSubmit={handleSearchSubmit} className="relative">
+            <div className="w-full max-w-5xl px-6 relative animate-slide-up">
+                <form onSubmit={handleSearchSubmit} className="relative w-full flex items-center justify-center">
                     <input 
                         ref={searchInputRef}
                         type="text" 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search our hub..." 
-                        className="w-full bg-transparent border-b border-gray-300 py-6 text-2xl md:text-5xl font-serif font-medium text-center focus:outline-none focus:border-nomad-black transition-colors text-nomad-black placeholder:text-gray-300 pr-16"
+                        placeholder="Type to search..." 
+                        className="w-full bg-transparent border-none py-6 text-4xl md:text-7xl font-serif font-medium text-center focus:outline-none text-[#EAE4D6] placeholder:text-[#EAE4D6]/30"
                     />
-                    
-                    {/* Clear/Exit Button inside Bar */}
-                    {searchQuery && (
-                        <button 
-                            type="button" 
-                            onClick={() => setSearchQuery('')}
-                            className="absolute right-16 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-red-500 transition-colors"
-                        >
-                            <X size={24} />
-                        </button>
-                    )}
-
-                    <button type="submit" className="absolute right-0 top-1/2 -translate-y-1/2 p-4 text-gray-400 hover:text-nomad-gold transition-colors">
-                        <ArrowRight size={32} strokeWidth={1} />
+                    <button 
+                        type="submit" 
+                        className="absolute right-0 top-1/2 -translate-y-1/2 p-4 text-white/30 hover:text-nomad-gold transition-colors hidden md:block"
+                    >
+                        <ArrowRight size={40} strokeWidth={1} />
                     </button>
                 </form>
-                {suggestions.length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-6 bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[50vh] overflow-y-auto">
-                        {suggestions.map(p => (
-                            <Link key={p.id} to={`/product/${p.id}`} className="flex items-center gap-4 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-0" onClick={() => setSearchOpen(false)}>
-                                <img src={p.image} className="w-12 h-12 rounded-lg object-cover" alt="" />
-                                <div><h4 className="font-bold text-sm text-nomad-black">{p.title}</h4><p className="text-xs text-gray-500">{p.category}</p></div>
-                            </Link>
+
+                <div className="mt-16 text-center">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 block mb-6">Trending Now</span>
+                    <div className="flex flex-wrap justify-center gap-4">
+                        {trendingTerms.map(term => (
+                            <button 
+                                key={term}
+                                onClick={() => {
+                                    setSearchQuery(term);
+                                    navigate(`/shop?search=${encodeURIComponent(term)}`);
+                                    setSearchOpen(false);
+                                }}
+                                className="bg-white/10 hover:bg-white text-white hover:text-[#3B261B] px-6 py-3 rounded-full text-sm font-medium transition-all duration-300"
+                            >
+                                {term}
+                            </button>
                         ))}
                     </div>
-                )}
+                </div>
             </div>
         </div>
 

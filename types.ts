@@ -17,6 +17,7 @@ export interface Product {
   tags?: string[];
   soldOut?: boolean;
   isFeatured?: boolean; 
+  isRecommended?: boolean;
   subtitle?: string; 
   roastLevel?: string;
   origin?: string;

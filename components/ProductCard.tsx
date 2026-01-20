@@ -1,11 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { Product } from '../types';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { DEFAULT_PRODUCT_IMAGE } from '../constants';
-
-const { Link } = ReactRouterDOM;
 
 interface ProductCardProps {
   product: Product;

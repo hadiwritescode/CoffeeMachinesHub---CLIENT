@@ -1,11 +1,8 @@
-
 import React, { useState } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 import { Loader2, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
 import Logo from '../../components/Logo';
-
-const { useNavigate } = ReactRouterDOM;
 
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { 
   Heart, ShieldCheck, Coffee, CheckCircle, Star, 
@@ -7,8 +7,6 @@ import {
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { Product, Feature } from '../types';
-
-const { useParams, Link } = ReactRouterDOM;
 
 // Icon mapping for features
 const IconMap = {

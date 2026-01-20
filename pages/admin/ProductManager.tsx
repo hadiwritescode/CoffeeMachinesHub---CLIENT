@@ -1,8 +1,15 @@
+
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Edit, Trash, Plus, Search, Star, X, Upload, Loader2, Minus, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
+import { Edit, Trash, Plus, Search, Star, X, Upload, Loader2, Minus, Link as LinkIcon, Image as ImageIcon, Heart, Check } from 'lucide-react';
 import { Product, Feature } from '../../types';
+
+const ChevronIcon = () => (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+);
 
 const ProductManager: React.FC = () => {
   const { products, addProduct, updateProduct, removeProduct, categories, uploadFile } = useStore();
@@ -42,6 +49,7 @@ const ProductManager: React.FC = () => {
     description: '',
     soldOut: false,
     isFeatured: false,
+    isRecommended: false,
     features: []
   };
 
@@ -426,14 +434,14 @@ const ProductManager: React.FC = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Sub-Category</label>
+                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Sub-Type</label>
                                     <div className="relative">
                                         <select 
                                             className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none bg-white appearance-none" 
                                             value={selectedSubcategory} 
                                             onChange={e => setSelectedSubcategory(e.target.value)}
                                         >
-                                            <option value="">-- Select Type --</option>
+                                            <option value="">None</option>
                                             {formSubOptions.map(item => (
                                                 <option key={item} value={item}>{item}</option>
                                             ))}
@@ -446,171 +454,184 @@ const ProductManager: React.FC = () => {
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Main Image</label>
-                            <div className="flex flex-col gap-3">
-                                <div className="flex items-center gap-4">
-                                    {editingProduct.image && (
-                                        <img src={editingProduct.image} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-gray-200" />
-                                    )}
-                                    <label className={`cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-2 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                                        {isUploading ? <Loader2 size={16} className="animate-spin text-nomad-gold" /> : <Upload size={16} className="text-gray-500" />}
-                                        <span className="text-sm font-medium text-gray-600">Upload Image</span>
-                                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, false)} />
-                                    </label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div 
+                                className="flex items-center gap-3 border border-gray-200 p-3 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors"
+                                onClick={() => setEditingProduct({...editingProduct, soldOut: !editingProduct.soldOut})}
+                            >
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${editingProduct.soldOut ? 'bg-red-500 border-red-500' : 'border-gray-300'}`}>
+                                    {editingProduct.soldOut && <Check size={12} className="text-white" />}
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold text-gray-400">OR</span>
-                                    <div className="relative flex-grow">
-                                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                                        <input
-                                            type="text"
-                                            placeholder="Paste image URL here..."
-                                            className="w-full border border-gray-200 p-2 pl-9 rounded-lg text-sm focus:ring-2 focus:ring-nomad-gold/20 outline-none"
-                                            value={editingProduct.image}
-                                            onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                                        />
-                                    </div>
+                                <span className="text-sm font-medium text-gray-600">Mark as Sold Out</span>
+                            </div>
+                            
+                            <div 
+                                className="flex items-center gap-3 border border-gray-200 p-3 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors"
+                                onClick={() => setEditingProduct({...editingProduct, isFeatured: !editingProduct.isFeatured})}
+                            >
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${editingProduct.isFeatured ? 'bg-nomad-gold border-nomad-gold' : 'border-gray-300'}`}>
+                                    {editingProduct.isFeatured && <Check size={12} className="text-white" />}
                                 </div>
+                                <span className="text-sm font-medium text-gray-600">Featured (Home)</span>
+                            </div>
+
+                            <div 
+                                className="flex items-center gap-3 border border-gray-200 p-3 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors col-span-2 md:col-span-2"
+                                onClick={() => setEditingProduct({...editingProduct, isRecommended: !editingProduct.isRecommended})}
+                            >
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${editingProduct.isRecommended ? 'bg-green-600 border-green-600' : 'border-gray-300'}`}>
+                                    {editingProduct.isRecommended && <Check size={12} className="text-white" />}
+                                </div>
+                                <span className="text-sm font-medium text-gray-600">Recommended (Show in Cart Suggestions)</span>
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Gallery Images</label>
-                            <div className="flex flex-wrap gap-4 mb-3">
-                                {editingProduct.images?.map((img, idx) => (
-                                    <div key={idx} className={`relative group w-20 h-20 rounded-xl overflow-hidden border-2 cursor-pointer ${editingProduct.image === img ? 'border-nomad-gold ring-2 ring-nomad-gold/30' : 'border-gray-200'}`} onClick={() => setMainImageFromGallery(img)}>
-                                        <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
-                                        <button type="button" onClick={(e) => { e.stopPropagation(); removeGalleryImage(idx); }} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
-                                            <X size={10} />
-                                        </button>
-                                        {editingProduct.image === img && <div className="absolute bottom-0 w-full bg-nomad-gold text-white text-[8px] font-bold text-center uppercase py-0.5">Main</div>}
-                                    </div>
-                                ))}
-                                <label className={`cursor-pointer w-20 h-20 bg-gray-50 border border-dashed border-gray-300 rounded-xl hover:bg-gray-100 transition-colors flex flex-col items-center justify-center gap-1 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                                    {isUploading ? <Loader2 size={20} className="animate-spin text-nomad-gold" /> : <Plus size={20} className="text-gray-400" />}
-                                    <span className="text-[10px] font-bold uppercase text-gray-400">Upload</span>
-                                    <input type="file" className="hidden" accept="image/*" multiple onChange={(e) => handleImageUpload(e, true)} />
-                                </label>
-                            </div>
-                            <div className="flex gap-2 items-center">
-                                <div className="relative flex-grow">
-                                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                                    <input
-                                        type="text"
-                                        placeholder="Add gallery image via URL..."
-                                        className="w-full border border-gray-200 p-2 pl-9 rounded-lg text-sm focus:ring-2 focus:ring-nomad-gold/20 outline-none"
-                                        value={galleryUrlInput}
-                                        onChange={(e) => setGalleryUrlInput(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addGalleryUrl())}
-                                    />
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={addGalleryUrl}
-                                    className="bg-gray-100 p-2.5 rounded-lg hover:bg-gray-200 text-gray-600"
-                                    title="Add URL"
-                                >
-                                    <Plus size={18} />
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Description</label>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Short Description</label>
                             <textarea 
-                                className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none" 
-                                rows={4} 
+                                className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none transition-all" 
+                                rows={3}
                                 value={editingProduct.description} 
                                 onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} 
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Internal Ref. Price</label>
-                                <input 
-                                    type="number" 
-                                    className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none" 
-                                    value={editingProduct.price} 
-                                    onChange={e => setEditingProduct({...editingProduct, price: parseInt(e.target.value) || 0})} 
-                                    placeholder="Not shown on site"
-                                />
-                                <span className="text-[10px] text-gray-400 mt-1 block">Prices are discussed via WhatsApp. This is for your records.</span>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Status</label>
-                                <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-xl bg-white">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={editingProduct.soldOut} 
-                                        onChange={e => setEditingProduct({...editingProduct, soldOut: e.target.checked})} 
-                                        className="w-5 h-5 text-nomad-gold focus:ring-nomad-gold border-gray-300 rounded"
-                                    />
-                                    <span className="text-sm font-medium">Mark as Sold Out</span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-3 bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Subtitle / Flavor Notes</label>
                             <input 
-                                type="checkbox" 
-                                checked={editingProduct.isFeatured} 
-                                onChange={e => setEditingProduct({...editingProduct, isFeatured: e.target.checked})} 
-                                className="w-5 h-5 text-nomad-gold focus:ring-nomad-gold border-gray-300 rounded"
+                                className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none transition-all" 
+                                value={editingProduct.subtitle || ''} 
+                                onChange={e => setEditingProduct({...editingProduct, subtitle: e.target.value})} 
+                                placeholder="e.g. Dual Boiler Technology"
                             />
-                            <div>
-                                <label className="text-sm font-bold text-nomad-black block">Feature on Home Page</label>
-                                <span className="text-xs text-yellow-700">This item will appear in the "Favorites" section.</span>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Price (PKR)</label>
+                            <input 
+                                type="number"
+                                className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none transition-all" 
+                                value={editingProduct.price} 
+                                onChange={e => setEditingProduct({...editingProduct, price: Number(e.target.value)})} 
+                            />
+                        </div>
+
+                        {/* Image Upload Section */}
+                        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-4">Media Gallery</h3>
+                            
+                            {/* Main Image Preview */}
+                            <div className="mb-6 flex gap-6 items-start">
+                                <div className="shrink-0">
+                                    <label className="block text-xs font-bold text-gray-400 mb-2">Main Image</label>
+                                    <div className="w-24 h-24 bg-white rounded-xl border border-gray-200 overflow-hidden flex items-center justify-center relative group">
+                                        {editingProduct.image ? (
+                                            <img src={editingProduct.image} className="w-full h-full object-cover" alt="Main" />
+                                        ) : (
+                                            <ImageIcon className="text-gray-300" />
+                                        )}
+                                        <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+                                            <Upload className="text-white w-6 h-6" />
+                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, false)} />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="flex-grow">
+                                    <label className="block text-xs font-bold text-gray-400 mb-2">Add to Gallery</label>
+                                    <div className="flex gap-2 mb-2">
+                                        <label className={`flex-1 flex items-center justify-center gap-2 border border-dashed border-gray-300 rounded-xl p-3 cursor-pointer hover:bg-gray-100 transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                            {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                                            <span className="text-sm text-gray-500">Upload Images</span>
+                                            <input type="file" multiple className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, true)} />
+                                        </label>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-grow">
+                                            <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                            <input 
+                                                className="w-full border border-gray-200 p-2 pl-9 rounded-xl text-sm"
+                                                placeholder="Paste image URL..."
+                                                value={galleryUrlInput}
+                                                onChange={(e) => setGalleryUrlInput(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addGalleryUrl())}
+                                            />
+                                        </div>
+                                        <button type="button" onClick={addGalleryUrl} className="bg-gray-200 text-gray-700 px-4 rounded-xl font-bold text-xs hover:bg-gray-300">Add</button>
+                                    </div>
+                                </div>
                             </div>
+
+                            {/* Gallery Grid */}
+                            {editingProduct.images && editingProduct.images.length > 0 && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 mb-2">Gallery ({editingProduct.images.length})</label>
+                                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                                        {editingProduct.images.map((img, idx) => (
+                                            <div key={idx} className="aspect-square bg-white rounded-lg border border-gray-200 overflow-hidden relative group">
+                                                <img src={img} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
+                                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                                                    <button type="button" onClick={() => setMainImageFromGallery(img)} className="text-[10px] bg-white text-black px-2 py-1 rounded shadow hover:bg-nomad-gold hover:text-white uppercase font-bold">Set Main</button>
+                                                    <button type="button" onClick={() => removeGalleryImage(idx)} className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600"><Trash size={12} /></button>
+                                                </div>
+                                                {img === editingProduct.image && (
+                                                    <div className="absolute top-1 right-1 bg-nomad-gold text-white text-[9px] font-bold px-1.5 rounded-sm shadow-sm">MAIN</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                       </>
                   )}
 
                   {activeTab === 'features' && (
                       <div className="space-y-4">
-                          <p className="text-sm text-gray-500 mb-4">Add detailed features/specs that appear in the dropdowns on the product page.</p>
                           {(editingProduct.features || []).map((feature, idx) => (
-                              <div key={idx} className="border p-4 rounded-xl bg-gray-50 space-y-3 relative group">
-                                  <div className="flex gap-3">
-                                      <div className="w-1/3">
-                                          <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Title</label>
-                                          <input className="w-full border p-2 rounded-lg" value={feature.title} onChange={e => updateFeature(idx, 'title', e.target.value)} placeholder="e.g. Dimensions" />
-                                      </div>
-                                      <div className="w-1/3">
-                                         <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Icon</label>
-                                         <select className="w-full border p-2 rounded-lg" value={feature.icon} onChange={e => updateFeature(idx, 'icon', e.target.value as any)}>
-                                             <option value="settings">Settings (Default)</option>
-                                             <option value="flame">Flame</option>
-                                             <option value="map">Map</option>
-                                             <option value="droplet">Droplet</option>
-                                             <option value="coffee">Coffee</option>
-                                             <option value="shield">Shield</option>
-                                             <option value="award">Award</option>
-                                             <option value="cpu">Chip/CPU</option>
-                                             <option value="wifi">Wifi</option>
-                                             <option value="layers">Layers</option>
-                                             <option value="thermometer">Thermometer</option>
-                                             <option value="box">Box</option>
-                                         </select>
-                                      </div>
+                              <div key={idx} className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex gap-4 items-start group">
+                                  <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                      <input 
+                                        placeholder="Feature Title" 
+                                        className="border border-gray-200 p-2 rounded-lg text-sm font-bold"
+                                        value={feature.title}
+                                        onChange={e => updateFeature(idx, 'title', e.target.value)}
+                                      />
+                                      <select 
+                                        className="border border-gray-200 p-2 rounded-lg text-sm bg-white"
+                                        value={feature.icon}
+                                        onChange={e => updateFeature(idx, 'icon', e.target.value)}
+                                      >
+                                          <option value="settings">Settings (Gear)</option>
+                                          <option value="flame">Flame (Roast)</option>
+                                          <option value="droplet">Droplet (Taste)</option>
+                                          <option value="map">Map (Origin)</option>
+                                          <option value="shield">Shield (Quality)</option>
+                                          <option value="coffee">Coffee Cup</option>
+                                          <option value="award">Award</option>
+                                          <option value="box">Box (Warranty)</option>
+                                      </select>
+                                      <textarea 
+                                        placeholder="Feature Description" 
+                                        className="border border-gray-200 p-2 rounded-lg text-sm sm:col-span-2"
+                                        rows={2}
+                                        value={feature.content}
+                                        onChange={e => updateFeature(idx, 'content', e.target.value)}
+                                      />
                                   </div>
-                                  <div>
-                                      <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Content</label>
-                                      <textarea className="w-full border p-2 rounded-lg" rows={2} value={feature.content} onChange={e => updateFeature(idx, 'content', e.target.value)} placeholder="Details..." />
-                                  </div>
-                                  <button type="button" onClick={() => removeFeature(idx)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1"><X size={16} /></button>
+                                  <button type="button" onClick={() => removeFeature(idx)} className="text-gray-400 hover:text-red-500 self-center p-2"><Trash size={18} /></button>
                               </div>
                           ))}
-                          <button type="button" onClick={addFeature} className="flex items-center gap-2 text-nomad-gold font-bold uppercase text-xs hover:bg-nomad-gold/10 p-2 rounded-lg transition-colors"><Plus size={16} /> Add Feature Block</button>
+                          <button type="button" onClick={addFeature} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-nomad-gold hover:text-nomad-gold transition-colors font-bold uppercase text-xs flex items-center justify-center gap-2">
+                              <Plus size={16} /> Add Feature
+                          </button>
                       </div>
                   )}
 
-                  <div className="flex gap-4 pt-4 border-t border-gray-100">
-                     <button type="submit" disabled={isUploading} className="flex-1 bg-nomad-black text-white py-4 rounded-xl font-bold uppercase tracking-wider hover:bg-nomad-gold transition-colors shadow-lg disabled:opacity-70">
-                        {isUploading ? 'Uploading...' : 'Save Product'}
-                     </button>
-                     <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-xl font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors">Cancel</button>
+                  <div className="pt-6 border-t border-gray-100 flex gap-4 sticky bottom-0 bg-white pb-2">
+                      <button type="submit" className="flex-1 bg-nomad-black text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-nomad-gold transition-colors shadow-lg">
+                          {editingProduct.id ? 'Update Product' : 'Create Product'}
+                      </button>
                   </div>
                </form>
             </div>
@@ -619,11 +640,5 @@ const ProductManager: React.FC = () => {
     </AdminLayout>
   );
 };
-
-const ChevronIcon = () => (
-    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-);
 
 export default ProductManager;

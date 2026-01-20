@@ -1,13 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import CategoryCard from '../components/CategoryCard';
 import { useStore } from '../context/StoreContext';
 import { ArrowRight, Search, Quote } from 'lucide-react';
 import { Product } from '../types';
-
-const { Link, useNavigate } = ReactRouterDOM;
 
 const Home: React.FC = () => {
   const [heroSearch, setHeroSearch] = useState('');
