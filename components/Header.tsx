@@ -44,8 +44,9 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      // For Home page, header stays transparent longer (until content scrolls up)
-      const threshold = isHome ? (window.innerHeight - 100) : 10;
+      // Calculate threshold based on Hero height (100vh) minus Header height (~80px)
+      // This ensures the header turns solid exactly when it hits the paper/white content
+      const threshold = isHome ? (window.innerHeight - 80) : 10;
       setIsScrolled(window.scrollY > threshold);
     };
     
@@ -180,20 +181,20 @@ const Header: React.FC = () => {
                 
                 {/* MEGA MENU */}
                 {link.subItems && link.subItems.length > 0 && activeDropdown === link.label && (
-                  <div className="fixed left-0 top-[64px] md:top-[74px] w-full bg-nomad-paper shadow-2xl z-40 border-t border-nomad-black/5 animate-in fade-in slide-in-from-top-1 text-nomad-black">
-                    <div className="container mx-auto px-12 py-12">
-                      <div className="flex justify-between">
+                  <div className="fixed left-0 top-[64px] md:top-[74px] w-full bg-[#FAF9F6] shadow-[0_20px_40px_rgba(0,0,0,0.05)] z-40 border-t border-nomad-black/5 animate-in fade-in slide-in-from-top-2 text-nomad-black h-auto min-h-[400px]">
+                    <div className="container mx-auto px-12 py-16">
+                      <div className="flex justify-between items-start">
                           {/* Categories Grid */}
-                          <div className="flex gap-12 lg:gap-20">
+                          <div className="flex gap-16 lg:gap-24">
                               {link.subItems.map((category) => (
                                 <div key={category.title} className="flex flex-col space-y-6">
-                                  <h3 className="font-serif font-bold text-2xl text-nomad-black">{category.title}</h3>
-                                  <ul className="space-y-3">
+                                  <h3 className="font-serif font-bold text-2xl text-nomad-black whitespace-nowrap">{category.title}</h3>
+                                  <ul className="space-y-4">
                                     {category.items.map((item) => (
                                       <li key={item}>
                                         <Link 
                                           to={`/shop?category=${encodeURIComponent(category.title)}&subcategory=${encodeURIComponent(item)}`} 
-                                          className="text-gray-500 hover:text-nomad-gold text-sm font-medium block transition-colors"
+                                          className="text-gray-500 hover:text-nomad-gold text-sm font-medium block transition-colors whitespace-nowrap"
                                         >
                                           {item}
                                         </Link>
@@ -204,18 +205,18 @@ const Header: React.FC = () => {
                               ))}
                           </div>
 
-                          {/* Featured Card (Hardcoded for aesthetics as per screenshot reference) */}
-                          <div className="w-80 bg-white rounded-3xl p-4 shadow-lg shrink-0 hidden xl:block">
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3 block">Featured</span>
-                              <div className="aspect-square rounded-2xl overflow-hidden mb-4 relative group cursor-pointer" onClick={() => navigate('/shop')}>
+                          {/* Featured Card */}
+                          <div className="w-72 bg-white rounded-2xl p-4 shadow-lg shrink-0 hidden xl:block border border-gray-50">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4 block">Featured</span>
+                              <div className="aspect-[4/5] rounded-xl overflow-hidden mb-4 relative group cursor-pointer" onClick={() => navigate('/shop')}>
                                   <img 
                                     src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&q=80&w=600" 
                                     alt="Professional Setup" 
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                                   />
-                                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
                               </div>
-                              <h4 className="font-serif font-bold text-xl text-nomad-black mb-1">Professional Setup</h4>
+                              <h4 className="font-serif font-bold text-lg text-nomad-black mb-1">Professional Setup</h4>
                               <p className="text-xs text-gray-500 mb-4 leading-relaxed">Everything you need for a café-quality espresso bar at home.</p>
                               <Link to="/shop" className="text-[10px] font-bold uppercase tracking-widest text-nomad-gold hover:text-nomad-black transition-colors border-b border-nomad-gold/30 pb-1">
                                   Explore Now
@@ -246,9 +247,14 @@ const Header: React.FC = () => {
 
         {/* Search Overlay */}
         <div className={`fixed inset-0 bg-nomad-paper/98 backdrop-blur-xl z-[200] flex items-center justify-center transition-all duration-500 ${searchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <button onClick={() => setSearchOpen(false)} className="absolute top-8 right-8 text-nomad-black hover:text-nomad-gold p-2">
-                <X size={32} strokeWidth={1} />
+            <button 
+                onClick={() => setSearchOpen(false)} 
+                className="absolute top-8 right-8 text-nomad-black hover:text-nomad-gold p-2 transition-transform hover:rotate-90 duration-300"
+                aria-label="Close Search"
+            >
+                <X size={40} strokeWidth={1} />
             </button>
+            
             <div className="w-full max-w-4xl px-6 relative">
                 <form onSubmit={handleSearchSubmit} className="relative">
                     <input 
@@ -257,8 +263,20 @@ const Header: React.FC = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search our hub..." 
-                        className="w-full bg-transparent border-b border-gray-300 py-6 text-2xl md:text-5xl font-serif font-medium text-center focus:outline-none focus:border-nomad-black transition-colors text-nomad-black placeholder:text-gray-300"
+                        className="w-full bg-transparent border-b border-gray-300 py-6 text-2xl md:text-5xl font-serif font-medium text-center focus:outline-none focus:border-nomad-black transition-colors text-nomad-black placeholder:text-gray-300 pr-16"
                     />
+                    
+                    {/* Clear/Exit Button inside Bar */}
+                    {searchQuery && (
+                        <button 
+                            type="button" 
+                            onClick={() => setSearchQuery('')}
+                            className="absolute right-16 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                    )}
+
                     <button type="submit" className="absolute right-0 top-1/2 -translate-y-1/2 p-4 text-gray-400 hover:text-nomad-gold transition-colors">
                         <ArrowRight size={32} strokeWidth={1} />
                     </button>
