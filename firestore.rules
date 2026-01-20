@@ -3,54 +3,81 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // ---------------- HELPER FUNCTIONS ----------------
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
     function isAdmin() {
-      return request.auth != null && 
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+      return isAuthenticated() && request.auth.uid == userId;
     }
     
-    // ---------------- PUBLIC DATA ----------------
-    match /products/{productId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /categories/{catId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /blogs/{blogId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
+    // ---------------- CONTENT & CONFIGURATION ----------------
+    
+    // Site Content (Hero, Home, Shop, Services, About, Contact, Footer, Team, Navigation)
+    // All stored as documents within the 'content' collection
     match /content/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
+
+    // Products Catalog
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Blogs / Journal
+    match /blogs/{blogId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Testimonials
     match /testimonials/{tId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ---------------- SENSITIVE DATA ----------------
+    // ---------------- USER INTERACTION ----------------
+
+    // Orders: 
+    // - Public creation (guest checkout)
+    // - Admins can read/write all
+    // - Users can read their own orders (matched by email)
     match /orders/{orderId} {
       allow create: if true;
-      allow read: if isAdmin() || (request.auth != null && resource.data.email == request.auth.token.email);
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
       allow update, delete: if isAdmin();
     }
 
+    // Messages (Contact Form):
+    // - Public creation
+    // - Admin only read/manage
     match /messages/{msgId} {
       allow create: if true;
       allow read, update, delete: if isAdmin();
     }
 
+    // ---------------- USER ACCOUNTS ----------------
+
     match /users/{userId} {
+      // Profiles are visible to the owner and admins
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && request.resource.data.role == 'customer';
-      // Restrict role escalation: Non-admins cannot change their own role.
-      allow update: if (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])) || isAdmin();
+      
+      // Registration
+      allow create: if isOwner(userId);
+      
+      // Update: 
+      // - Admins can update everything (roles, etc.)
+      // - Owners can update details but CANNOT change their 'role'
+      allow update: if isAdmin() || (isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])));
+      
       allow delete: if isAdmin(); 
     }
   }

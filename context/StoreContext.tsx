@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, BlogPost, Order, User, SiteContent, NavCategory, Testimonial, Message, CartItem } from '../types';
 import { BRAND_LOGOS, INITIAL_CATEGORIES, FAQS } from '../constants';
 import { 
-  collection, onSnapshot, doc, setDoc, getDoc, updateDoc, addDoc, deleteDoc
+  collection, onSnapshot, doc, setDoc, getDoc, updateDoc, addDoc, deleteDoc,
+  QuerySnapshot, DocumentData, DocumentSnapshot
 } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -47,14 +48,77 @@ interface StoreContextType {
 }
 
 const defaultSiteContent: SiteContent = {
-  hero: { title: "Coffee Machines Hub", subtitle: "Premium Coffee Gear & Beans.", videoUrl: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4", buttonText: "Shop Now" },
-  home: { brands: BRAND_LOGOS, collectionTitle: "Collections", collectionSubtitle: "Curated Excellence", featuredTitle: "Top Rated Machines", favoritesTitle: "Essentials", favoritesSubtitle: "Curated Favorites", partnersText: "Trusted Partners & Global Brands" },
-  shop: { heroTitle: "All Products", heroSubtitle: "Explore our complete collection." },
-  services: { heroTitle: "Elevate Your \n Coffee Business", heroSubtitle: "Comprehensive consulting...", heroImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1600", section1Title: "Wholesale Partner", section1Text: "Consistency is key...", section1Image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=800", section2Title: "Barista Training", section2Text: "Empower staff...", section2Image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&q=80&w=800", section3Title: "Tech Support", section3Text: "Minimizing downtime...", section3Image: "https://images.unsplash.com/photo-1522923985141-860e65383563?auto=format&fit=crop&q=80&w=800" },
-  about: { heroTitle: "The Pursuit of \n Excellence", heroSubtitle: "Every cup tells a story...", heroImage: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&q=80&w=1600", storyTitle: "Our Origins", storyText: "Started as a passion...", values: [{ title: "Quality", text: "No compromise." }] },
-  contact: { address: "Lahore, Pakistan", email: "info@coffeemachineshub.com", phone: "03104811010", faqs: FAQS },
-  footer: { description: "Purveyors of fine coffee gear." },
-  socials: { instagram: "#", facebook: "#", youtube: "#", twitter: "#" },
+  hero: { 
+    title: "Coffee Machines Hub", 
+    subtitle: "Premium Coffee Gear & Beans.", 
+    videoUrl: "https://videos.pexels.com/video-files/3053787/3053787-uhd_2560_1440_25fps.mp4", 
+    buttonText: "Shop Now" 
+  },
+  home: { 
+    brands: BRAND_LOGOS, 
+    collectionTitle: "Collections", 
+    collectionSubtitle: "Curated Excellence", 
+    featuredTitle: "Top Rated Machines", 
+    favoritesTitle: "Essentials", 
+    favoritesSubtitle: "Curated Favorites", 
+    partnersText: "Trusted Partners & Global Brands",
+    marqueeText: "Free Shipping on Orders Over Rs. 5000 • Direct Import from Italy",
+    trendingTags: ['Espresso', 'Grinder', 'Roast', 'Accessories']
+  },
+  shop: { 
+    heroTitle: "All Products", 
+    heroSubtitle: "Explore our complete collection." 
+  },
+  services: { 
+    heroTitle: "Elevate Your \n Coffee Business", 
+    heroSubtitle: "Comprehensive consulting and equipment solutions for cafes and homes.", 
+    heroImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1600", 
+    section1Title: "Wholesale Partner", 
+    section1Text: "Consistency is key to keeping your customers coming back. We offer tailored wholesale programs.", 
+    section1Image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=800",
+    section1List: ["Custom Roasting Profiles", "Volume Discounts", "Reliable Logistics"],
+    section2Title: "Barista Training", 
+    section2Text: "Empower your staff with the knowledge and skills to pull the perfect shot every time.", 
+    section2Image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&q=80&w=800", 
+    section3Title: "Tech Support", 
+    section3Text: "Minimizing downtime is crucial. Our certified technicians are just a call away.", 
+    section3Image: "https://images.unsplash.com/photo-1522923985141-860e65383563?auto=format&fit=crop&q=80&w=800" 
+  },
+  about: { 
+    heroTitle: "The Pursuit of \n Excellence", 
+    heroSubtitle: "Every cup tells a story. Ours began with a simple love for the craft.", 
+    heroImage: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&q=80&w=1600", 
+    storyTitle: "Our Origins", 
+    storyText: "Started as a passion project, Coffee Machines Hub has grown into a premier destination for coffee enthusiasts.", 
+    values: [{ title: "Quality", text: "We never compromise on the quality of our machines or beans." }] 
+  },
+  contact: { 
+    address: "Lahore, Pakistan", 
+    email: "info@coffeemachineshub.com", 
+    phone: "03104811010", 
+    faqs: FAQS 
+  },
+  footer: { 
+    description: "Purveyors of the finest coffee gear and sustainably sourced beans.",
+    companyLinks: [
+      { label: "Our Story", href: "/about" },
+      { label: "Services", href: "/services" },
+      { label: "Journal", href: "/blogs" },
+      { label: "Contact", href: "/contact" }
+    ],
+    legalLinks: [
+      { label: "Shipping Policy", href: "/contact" },
+      { label: "Returns & Exchange", href: "/contact" },
+      { label: "Privacy Policy", href: "/contact" },
+      { label: "Terms of Service", href: "/contact" }
+    ]
+  },
+  socials: { 
+    instagram: "https://instagram.com", 
+    facebook: "https://facebook.com", 
+    youtube: "https://youtube.com", 
+    twitter: "https://twitter.com" 
+  },
   team: []
 };
 
@@ -71,7 +135,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   
-  // Loading state primarily for Auth check to prevent redirect loops. Data loads in background.
   const [loading, setLoading] = useState(true);
   
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -84,19 +147,27 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   });
 
   useEffect(() => {
-    // Data Listeners - Non-blocking for UI
     const unsubs = [
-      onSnapshot(collection(db, 'products'), s => setProducts(s.docs.map(d => ({ id: d.id, ...d.data() } as Product)))),
-      onSnapshot(collection(db, 'blogs'), s => setBlogPosts(s.docs.map(d => ({ id: d.id, ...d.data() } as BlogPost)))),
-      onSnapshot(collection(db, 'testimonials'), s => setTestimonials(s.docs.map(d => ({ id: d.id, ...d.data() } as Testimonial)))),
-      onSnapshot(collection(db, 'messages'), s => setMessages(s.docs.map(d => ({ id: d.id, ...d.data() } as Message)))),
-      onSnapshot(collection(db, 'orders'), s => setOrders(s.docs.map(d => ({ id: d.id, ...d.data() } as Order)))),
-      onSnapshot(doc(db, 'content', 'navigation'), d => d.exists() && setCategoriesState(d.data().categories)),
-      onSnapshot(collection(db, 'content'), s => {
+      onSnapshot(collection(db, 'products'), (s: QuerySnapshot<DocumentData>) => setProducts(s.docs.map(d => ({ id: d.id, ...d.data() } as Product)))),
+      onSnapshot(collection(db, 'blogs'), (s: QuerySnapshot<DocumentData>) => setBlogPosts(s.docs.map(d => ({ id: d.id, ...d.data() } as BlogPost)))),
+      onSnapshot(collection(db, 'testimonials'), (s: QuerySnapshot<DocumentData>) => setTestimonials(s.docs.map(d => ({ id: d.id, ...d.data() } as Testimonial)))),
+      onSnapshot(collection(db, 'messages'), (s: QuerySnapshot<DocumentData>) => setMessages(s.docs.map(d => ({ id: d.id, ...d.data() } as Message)))),
+      onSnapshot(collection(db, 'orders'), (s: QuerySnapshot<DocumentData>) => setOrders(s.docs.map(d => ({ id: d.id, ...d.data() } as Order)))),
+      onSnapshot(doc(db, 'content', 'navigation'), (d: DocumentSnapshot<DocumentData>) => {
+         const data = d.data() as any;
+         if (d.exists() && data?.categories) {
+            setCategoriesState(data.categories);
+         }
+      }),
+      onSnapshot(collection(db, 'content'), (s: QuerySnapshot<DocumentData>) => {
         setSiteContent(prev => {
           const next = { ...prev };
           s.docs.forEach(d => {
-            if (d.id !== 'navigation') (next as any)[d.id] = d.data();
+            if (d.id !== 'navigation') {
+                const data = d.data();
+                // Deep merge or overwrite sections safely
+                (next as any)[d.id] = { ...(next as any)[d.id], ...data };
+            }
           });
           return next;
         });
@@ -106,7 +177,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    // Auth Listener - Critical for user context
     const unsub = onAuthStateChanged(auth, async user => {
       if (user) {
         try {
@@ -114,10 +184,21 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
           if (snap.exists()) {
             const uData = snap.data() as User;
             setCurrentUser({ ...uData, id: user.uid });
-            // Sync cart from DB if user has one, else keep local
-            if (uData.cart && uData.cart.length > 0) {
+            if (uData.cart && Array.isArray(uData.cart)) {
                setCart(uData.cart);
             }
+          } else {
+             // Fallback if user exists in Auth but not Firestore (legacy/error case)
+             const newUser: User = { 
+                id: user.uid, 
+                name: user.displayName || 'User', 
+                email: user.email || '', 
+                role: 'customer', 
+                wishlist: [], 
+                cart: [] 
+             };
+             await setDoc(doc(db, 'users', user.uid), newUser);
+             setCurrentUser(newUser);
           }
         } catch (e) {
           console.error("Error fetching user data", e);
@@ -125,13 +206,12 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       } else {
         setCurrentUser(null);
       }
-      setLoading(false); // Auth check done
+      setLoading(false);
     });
     return unsub;
   }, []);
 
   useEffect(() => {
-    // Sync cart to DB or LocalStorage
     if (currentUser) {
        updateDoc(doc(db, 'users', currentUser.id), { cart }).catch(() => {});
     } else {
@@ -160,7 +240,9 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   };
 
   const uploadFile = async (f: File, p: string) => {
-    const sRef = ref(storage, `${p}/${Date.now()}_${f.name}`);
+    // Add timestamp and sanitize filename
+    const safeName = f.name.replace(/[^a-zA-Z0-9.]/g, '_');
+    const sRef = ref(storage, `${p}/${Date.now()}_${safeName}`);
     await uploadBytes(sRef, f);
     return getDownloadURL(sRef);
   };
@@ -172,14 +254,19 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   };
 
   const updateOrderStatus = async (id: string, s: any) => updateDoc(doc(db, 'orders', id), { status: s });
-  const addMessage = async (m: any) => addDoc(collection(db, 'messages'), { ...m, date: new Date().toLocaleDateString(), read: false });
+  const addMessage = async (m: any) => { await addDoc(collection(db, 'messages'), { ...m, date: new Date().toLocaleDateString(), read: false }); };
+  
   const toggleWishlist = async (id: string) => {
-    if (!currentUser) return showToast("Please login first", "info");
+    if (!currentUser) {
+        showToast("Please login to save favorites", "info");
+        return;
+    }
     const isIn = currentUser.wishlist.includes(id);
     const next = isIn ? currentUser.wishlist.filter(x => x !== id) : [...currentUser.wishlist, id];
     await updateDoc(doc(db, 'users', currentUser.id), { wishlist: next });
     setCurrentUser({ ...currentUser, wishlist: next });
   };
+  
   const updateUserProfile = async (d: any) => { if (currentUser) await updateDoc(doc(db, 'users', currentUser.id), d); };
   const updateSiteContent = async (s: keyof SiteContent, d: any) => setDoc(doc(db, 'content', s), d, { merge: true });
   const setCategories = async (c: NavCategory[]) => setDoc(doc(db, 'content', 'navigation'), { categories: c });
@@ -192,7 +279,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       updateSiteContent, setCategories, blogPosts, addBlogPost: async b => setDoc(doc(db, 'blogs', b.id), b),
       updateBlogPost: async b => updateDoc(doc(db, 'blogs', b.id), { ...b }),
       removeBlogPost: async id => deleteDoc(doc(db, 'blogs', id)),
-      testimonials, addTestimonial: async t => addDoc(collection(db, 'testimonials'), t),
+      testimonials, addTestimonial: async (t: Testimonial) => { await addDoc(collection(db, 'testimonials'), t); },
       updateTestimonial: async t => updateDoc(doc(db, 'testimonials', t.id), { ...t }),
       removeTestimonial: async id => deleteDoc(doc(db, 'testimonials', id)),
       messages, orders,

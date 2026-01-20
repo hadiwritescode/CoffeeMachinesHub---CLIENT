@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
@@ -21,24 +21,28 @@
             colors: {
               'nomad-black': '#3B261B',
               'nomad-gold': '#B08B5B',
+              'nomad-dark-gold': '#8C6B42',
               'nomad-paper': '#F5F0E6',
+              'nomad-cream': '#EAE4D6',
               'nomad-gray': '#E0D8CC',
             },
             animation: {
-              'fade-in': 'fadeIn 1s cubic-bezier(0.19, 1, 0.22, 1) forwards',
-              'slide-up': 'slideUp 1s cubic-bezier(0.19, 1, 0.22, 1) forwards',
-              'slide-right': 'slideRight 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards',
+              'fade-in': 'fadeIn 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards',
+              'slide-up': 'slideUp 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards',
+              'slide-right': 'slideRight 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards',
               'toast-in': 'toastIn 0.5s cubic-bezier(0.19, 1, 0.22, 1) forwards',
               'marquee': 'marquee 40s linear infinite',
-              'zoom-in': 'zoomIn 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards',
+              'zoom-in': 'zoomIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'slide-down': 'slideDown 0.3s ease-out forwards',
             },
             keyframes: {
               fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
               slideUp: { '0%': { transform: 'translateY(40px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
               slideRight: { '0%': { transform: 'translateX(30px)', opacity: '0' }, '100%': { transform: 'translateX(0)', opacity: '1' } },
+              slideDown: { '0%': { transform: 'translateY(-10px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
               toastIn: { '0%': { transform: 'translateY(-20px) translateX(-50%)', opacity: '0' }, '100%': { transform: 'translateY(0) translateX(-50%)', opacity: '1' } },
               marquee: { '0%': { transform: 'translateX(0%)' }, '100%': { transform: 'translateX(-50%)' } },
-              zoomIn: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } }
+              zoomIn: { '0%': { opacity: '0', transform: 'scale(0.96)' }, '100%': { opacity: '1', transform: 'scale(1)' } }
             }
           }
         }
@@ -51,8 +55,10 @@
         color: #3B261B;
         overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
-      /* Initial state for observed elements */
+      
+      /* Smooth appearing elements */
       .fade-up-init {
         opacity: 0;
         transform: translateY(30px);
@@ -65,6 +71,8 @@
       }
       
       .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      
       img { content-visibility: auto; }
       
       .hover-underline-animation {
@@ -85,6 +93,14 @@
       .hover-underline-animation:hover:after {
         transform: scaleX(1);
         transform-origin: bottom left;
+      }
+      
+      /* Parallax effect helper */
+      .parallax-wrapper {
+        perspective: 1px;
+        height: 100vh;
+        overflow-x: hidden;
+        overflow-y: auto;
       }
     </style>
     <script type="importmap">

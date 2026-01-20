@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
 import { Plus, Trash, User, Upload, Loader2, Link as LinkIcon, Save } from 'lucide-react';
-import { TeamMember, Testimonial, FAQItem, CoreValue } from '../../types';
+import { TeamMember, Testimonial, FAQItem, CoreValue, LinkItem } from '../../types';
 
 const AutoTextarea = ({ value, onChange, placeholder, className, minRows = 2 }: any) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -41,13 +41,15 @@ const ContentManager: React.FC = () => {
   const [heroForm, setHeroForm] = useState(siteContent.hero);
   const [homeTextForm, setHomeTextForm] = useState(siteContent.home);
   const [brands, setBrands] = useState(siteContent.home?.brands || []);
+  const [trendingTags, setTrendingTags] = useState(siteContent.home?.trendingTags || []);
+  
   const [shopForm, setShopForm] = useState(siteContent.shop || { heroTitle: '', heroSubtitle: '' });
   const [serviceForm, setServiceForm] = useState(siteContent.services);
   const [aboutForm, setAboutForm] = useState(siteContent.about);
   const [contactForm, setContactForm] = useState(siteContent.contact);
   const [socialsForm, setSocialsForm] = useState(siteContent.socials);
   const [teamList, setTeamList] = useState<TeamMember[]>(siteContent.team);
-  const [footerForm, setFooterForm] = useState(siteContent.footer || { description: '' });
+  const [footerForm, setFooterForm] = useState(siteContent.footer || { description: '', companyLinks: [], legalLinks: [] });
   
   // Local state for testimonials to allow editing
   const [localTestimonials, setLocalTestimonials] = useState<Testimonial[]>([]);
@@ -58,7 +60,7 @@ const ContentManager: React.FC = () => {
 
   // Save Handlers
   const saveHomeHero = async () => { await updateSiteContent('hero', heroForm); };
-  const saveHomeText = async () => { await updateSiteContent('home', { ...homeTextForm, brands }); };
+  const saveHomeText = async () => { await updateSiteContent('home', { ...homeTextForm, brands, trendingTags }); };
   const saveShop = async () => { await updateSiteContent('shop', shopForm); };
   const saveServices = async () => { await updateSiteContent('services', serviceForm); };
   const saveAbout = async () => { await updateSiteContent('about', aboutForm); };
@@ -101,6 +103,19 @@ const ContentManager: React.FC = () => {
       } finally {
           setUploadingField(null);
       }
+  };
+
+  // List Helper Generic
+  const updateLinkItem = (setter: any, list: LinkItem[], idx: number, field: keyof LinkItem, val: string) => {
+      const newList = [...list];
+      newList[idx] = { ...newList[idx], [field]: val };
+      setter(newList);
+  };
+  const addLinkItem = (setter: any, list: LinkItem[]) => {
+      setter([...list, { label: 'New Link', href: '/' }]);
+  };
+  const removeLinkItem = (setter: any, list: LinkItem[], idx: number) => {
+      setter(list.filter((_, i) => i !== idx));
   };
 
   // Service List Helpers
@@ -201,10 +216,39 @@ const ContentManager: React.FC = () => {
                     <h3 className="font-bold text-lg mb-4">Footer Settings</h3>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Footer Description (Under Logo)</label>
+                            <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Footer Description</label>
                             <AutoTextarea className="w-full border p-3 rounded-xl" minRows={3} value={footerForm.description} onChange={(e: any) => setFooterForm({...footerForm, description: e.target.value})} />
                         </div>
                     </div>
+                 </div>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div>
+                        <h4 className="font-bold text-sm uppercase text-nomad-gold mb-3">Company Links</h4>
+                        <div className="space-y-3">
+                            {(footerForm.companyLinks || []).map((link, idx) => (
+                                <div key={idx} className="flex gap-2">
+                                    <input className="w-1/3 border p-2 rounded-lg text-sm" placeholder="Label" value={link.label} onChange={e => updateLinkItem(l => setFooterForm({...footerForm, companyLinks: l}), footerForm.companyLinks || [], idx, 'label', e.target.value)} />
+                                    <input className="w-2/3 border p-2 rounded-lg text-sm" placeholder="Link (/path)" value={link.href} onChange={e => updateLinkItem(l => setFooterForm({...footerForm, companyLinks: l}), footerForm.companyLinks || [], idx, 'href', e.target.value)} />
+                                    <button onClick={() => removeLinkItem(l => setFooterForm({...footerForm, companyLinks: l}), footerForm.companyLinks || [], idx)} className="text-red-400"><Trash size={16}/></button>
+                                </div>
+                            ))}
+                            <button onClick={() => addLinkItem(l => setFooterForm({...footerForm, companyLinks: l}), footerForm.companyLinks || [])} className="text-xs font-bold text-nomad-gold flex items-center gap-1"><Plus size={12}/> Add Link</button>
+                        </div>
+                     </div>
+                     <div>
+                        <h4 className="font-bold text-sm uppercase text-nomad-gold mb-3">Legal Links</h4>
+                        <div className="space-y-3">
+                            {(footerForm.legalLinks || []).map((link, idx) => (
+                                <div key={idx} className="flex gap-2">
+                                    <input className="w-1/3 border p-2 rounded-lg text-sm" placeholder="Label" value={link.label} onChange={e => updateLinkItem(l => setFooterForm({...footerForm, legalLinks: l}), footerForm.legalLinks || [], idx, 'label', e.target.value)} />
+                                    <input className="w-2/3 border p-2 rounded-lg text-sm" placeholder="Link (/path)" value={link.href} onChange={e => updateLinkItem(l => setFooterForm({...footerForm, legalLinks: l}), footerForm.legalLinks || [], idx, 'href', e.target.value)} />
+                                    <button onClick={() => removeLinkItem(l => setFooterForm({...footerForm, legalLinks: l}), footerForm.legalLinks || [], idx)} className="text-red-400"><Trash size={16}/></button>
+                                </div>
+                            ))}
+                            <button onClick={() => addLinkItem(l => setFooterForm({...footerForm, legalLinks: l}), footerForm.legalLinks || [])} className="text-xs font-bold text-nomad-gold flex items-center gap-1"><Plus size={12}/> Add Link</button>
+                        </div>
+                     </div>
                  </div>
 
                  <div>
@@ -235,6 +279,30 @@ const ContentManager: React.FC = () => {
                         <InputGroup label="Subtitle" value={heroForm.subtitle} onChange={v => setHeroForm({...heroForm, subtitle: v})} />
                         <InputGroup label="Video URL (Use link for video)" value={heroForm.videoUrl} onChange={v => setHeroForm({...heroForm, videoUrl: v})} />
                         <InputGroup label="Button Text" value={heroForm.buttonText} onChange={v => setHeroForm({...heroForm, buttonText: v})} />
+                        
+                        <div className="pt-4 border-t border-gray-100">
+                             <InputGroup label="Marquee Text (Top Banner)" value={homeTextForm.marqueeText || ''} onChange={v => setHomeTextForm({...homeTextForm, marqueeText: v})} />
+                             <p className="text-[10px] text-gray-400 mt-1">Text that scrolls horizontally. Use '•' to separate points.</p>
+                        </div>
+
+                        <div>
+                             <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Trending Search Tags</label>
+                             <div className="flex flex-wrap gap-2 mb-2">
+                                 {trendingTags.map((tag, idx) => (
+                                     <span key={idx} className="bg-gray-100 border px-3 py-1 rounded-full text-xs flex items-center gap-2">
+                                         {tag} <button onClick={() => setTrendingTags(trendingTags.filter((_, i) => i !== idx))} className="text-gray-400 hover:text-red-500"><Trash size={12}/></button>
+                                     </span>
+                                 ))}
+                             </div>
+                             <div className="flex gap-2">
+                                 <input id="newTagInput" className="border p-2 rounded-lg text-sm" placeholder="New Tag" />
+                                 <button onClick={() => {
+                                     const el = document.getElementById('newTagInput') as HTMLInputElement;
+                                     if(el.value) { setTrendingTags([...trendingTags, el.value]); el.value = ''; }
+                                 }} className="bg-gray-100 px-4 rounded-lg font-bold text-xs hover:bg-gray-200">Add</button>
+                             </div>
+                        </div>
+
                         <SaveButton onClick={saveHomeHero} />
                     </div>
                 )}

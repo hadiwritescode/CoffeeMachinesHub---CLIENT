@@ -169,7 +169,9 @@ const CategoryManager: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Cover Image</label>
+                        <div className="flex justify-between items-center mb-2">
+                             <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400">Cover Image</label>
+                        </div>
                         <div className="flex flex-col gap-3">
                             <div className="aspect-video bg-gray-50 rounded-xl overflow-hidden border border-gray-100 relative group">
                                 {editingCategory.image ? (
@@ -184,19 +186,24 @@ const CategoryManager: React.FC = () => {
                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'image')} />
                                 </label>
                             </div>
-                            <div className="relative">
-                                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                                <input 
-                                    className="w-full border border-gray-200 p-2 pl-9 rounded-lg text-xs"
-                                    placeholder="Or paste URL here..."
-                                    value={editingCategory.image || ''}
-                                    onChange={e => setEditingCategory({...editingCategory, image: e.target.value})}
-                                />
+                            <div>
+                                <label className="block text-[9px] font-bold uppercase text-gray-400 mb-1">Image Link (URL)</label>
+                                <div className="relative">
+                                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                                    <input 
+                                        className="w-full border border-gray-200 p-2 pl-9 rounded-lg text-xs font-mono text-gray-600"
+                                        placeholder="https://..."
+                                        value={editingCategory.image || ''}
+                                        onChange={e => setEditingCategory({...editingCategory, image: e.target.value})}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Hover Video (Optional)</label>
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400">Hover Video (Optional)</label>
+                        </div>
                         <div className="flex flex-col gap-3">
                             <div className="aspect-video bg-gray-50 rounded-xl overflow-hidden border border-gray-100 relative group">
                                 {editingCategory.video ? (
@@ -214,14 +221,17 @@ const CategoryManager: React.FC = () => {
                                     <input type="file" className="hidden" accept="video/*" onChange={(e) => handleFileUpload(e, 'video')} />
                                 </label>
                             </div>
-                            <div className="relative">
-                                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                                <input 
-                                    className="w-full border border-gray-200 p-2 pl-9 rounded-lg text-xs"
-                                    placeholder="Video URL..."
-                                    value={editingCategory.video || ''}
-                                    onChange={e => setEditingCategory({...editingCategory, video: e.target.value})}
-                                />
+                            <div>
+                                <label className="block text-[9px] font-bold uppercase text-gray-400 mb-1">Video Link (URL)</label>
+                                <div className="relative">
+                                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                                    <input 
+                                        className="w-full border border-gray-200 p-2 pl-9 rounded-lg text-xs font-mono text-gray-600"
+                                        placeholder="https://..."
+                                        value={editingCategory.video || ''}
+                                        onChange={e => setEditingCategory({...editingCategory, video: e.target.value})}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -11,6 +11,18 @@ const Footer: React.FC = () => {
   
   // Safe fallback
   const description = siteContent.footer?.description || "Purveyors of the finest coffee gear and sustainably sourced beans.";
+  const companyLinks = siteContent.footer?.companyLinks || [
+    { label: "Our Story", href: "/about" },
+    { label: "Services", href: "/services" },
+    { label: "Journal", href: "/blogs" },
+    { label: "Contact", href: "/contact" }
+  ];
+  const legalLinks = siteContent.footer?.legalLinks || [
+      { label: "Shipping Policy", href: "/contact" },
+      { label: "Returns & Exchange", href: "/contact" },
+      { label: "Privacy Policy", href: "/contact" },
+      { label: "Terms of Service", href: "/contact" }
+  ];
 
   return (
     <footer className="w-full bg-nomad-black text-nomad-paper pt-16 md:pt-20 pb-10">
@@ -41,22 +53,24 @@ const Footer: React.FC = () => {
                ))}
             </div>
 
-            {/* Links Column 2 */}
+            {/* Links Column 2: Company */}
             <div className="md:col-span-2 flex flex-col items-center md:items-start space-y-4">
                <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-2">Company</h3>
-               <Link to="/about" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Our Story</Link>
-               <Link to="/services" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Services</Link>
-               <Link to="/blogs" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Journal</Link>
-               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Contact</Link>
+               {companyLinks.map((link, idx) => (
+                   <Link key={idx} to={link.href} className="text-nomad-paper/70 hover:text-white transition-colors text-sm">
+                       {link.label}
+                   </Link>
+               ))}
             </div>
 
-            {/* Links Column 3 */}
+            {/* Links Column 3: Legal */}
             <div className="md:col-span-2 flex flex-col items-center md:items-start space-y-4">
                <h3 className="text-xs font-bold uppercase tracking-widest text-nomad-gold mb-2">Legal</h3>
-               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Shipping Policy</Link>
-               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Returns & Exchange</Link>
-               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Privacy Policy</Link>
-               <Link to="/contact" className="text-nomad-paper/70 hover:text-white transition-colors text-sm">Terms of Service</Link>
+               {legalLinks.map((link, idx) => (
+                   <Link key={idx} to={link.href} className="text-nomad-paper/70 hover:text-white transition-colors text-sm">
+                       {link.label}
+                   </Link>
+               ))}
             </div>
         </div>
 

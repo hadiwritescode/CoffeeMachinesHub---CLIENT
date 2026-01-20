@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { Edit, Trash, Plus, Search, Star, X, Upload, Loader2, Minus, Link as LinkIcon } from 'lucide-react';
+import { Edit, Trash, Plus, Search, Star, X, Upload, Loader2, Minus, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
 import { Product, Feature } from '../../types';
 
 const ProductManager: React.FC = () => {
@@ -37,7 +37,7 @@ const ProductManager: React.FC = () => {
     price: 0,
     image: '',
     images: [],
-    category: 'Machines',
+    category: '', // Will default to first available category on open if empty
     tags: [],
     description: '',
     soldOut: false,
@@ -85,9 +85,12 @@ const ProductManager: React.FC = () => {
          setSelectedSubcategory('');
       }
     } else {
+      // Set default category to the first one available to avoid blank dropdowns
+      const defaultCategory = allCategories.length > 0 ? allCategories[0].title : 'Machines';
       setEditingProduct({
           ...newProduct,
-          features: getDefaultFeatures('Machines', newProduct)
+          category: defaultCategory,
+          features: getDefaultFeatures(defaultCategory, newProduct)
       });
       setSelectedSubcategory('');
     }
@@ -103,7 +106,11 @@ const ProductManager: React.FC = () => {
         if (isMultiple) {
             const uploadPromises = Array.from(files).map(file => uploadFile(file, 'products'));
             const urls = await Promise.all(uploadPromises);
-            setEditingProduct(prev => prev ? { ...prev, images: [...(prev.images || []), ...urls] } : null);
+            const currentImages = editingProduct.images || [];
+            // If main image is empty, set first uploaded as main
+            const newMain = !editingProduct.image && urls.length > 0 ? urls[0] : editingProduct.image;
+            
+            setEditingProduct(prev => prev ? { ...prev, images: [...currentImages, ...urls], image: newMain } : null);
         } else {
             const url = await uploadFile(files[0], 'products');
             setEditingProduct(prev => prev ? { ...prev, image: url } : null);
@@ -119,9 +126,14 @@ const ProductManager: React.FC = () => {
 
   const addGalleryUrl = () => {
       if (galleryUrlInput && editingProduct) {
+          const newImages = [...(editingProduct.images || []), galleryUrlInput];
+          // If main image is empty, use this one
+          const newMain = !editingProduct.image ? galleryUrlInput : editingProduct.image;
+          
           setEditingProduct({
               ...editingProduct,
-              images: [...(editingProduct.images || []), galleryUrlInput]
+              images: newImages,
+              image: newMain
           });
           setGalleryUrlInput('');
       }
@@ -129,10 +141,22 @@ const ProductManager: React.FC = () => {
 
   const removeGalleryImage = (index: number) => {
       if (!editingProduct) return;
+      const imageToRemove = editingProduct.images![index];
       const newImages = [...(editingProduct.images || [])];
       newImages.splice(index, 1);
-      setEditingProduct({ ...editingProduct, images: newImages });
+      
+      let newMain = editingProduct.image;
+      if (editingProduct.image === imageToRemove) {
+          newMain = newImages.length > 0 ? newImages[0] : '';
+      }
+
+      setEditingProduct({ ...editingProduct, images: newImages, image: newMain });
   };
+
+  const setMainImageFromGallery = (url: string) => {
+    if (!editingProduct) return;
+    setEditingProduct({ ...editingProduct, image: url });
+  }
 
   // Feature Management
   const addFeature = () => {
@@ -174,6 +198,10 @@ const ProductManager: React.FC = () => {
     let finalProduct = { ...editingProduct, tags: updatedTags };
     if (!finalProduct.image && finalProduct.images && finalProduct.images.length > 0) {
         finalProduct.image = finalProduct.images[0];
+    }
+    // Sync main image into gallery if not present
+    if (finalProduct.image && (!finalProduct.images || !finalProduct.images.includes(finalProduct.image))) {
+        finalProduct.images = [finalProduct.image, ...(finalProduct.images || [])];
     }
 
     if (!finalProduct.id) {
@@ -418,32 +446,6 @@ const ProductManager: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Internal Ref. Price</label>
-                                <input 
-                                    type="number" 
-                                    className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none" 
-                                    value={editingProduct.price} 
-                                    onChange={e => setEditingProduct({...editingProduct, price: parseInt(e.target.value) || 0})} 
-                                    placeholder="Not shown on site"
-                                />
-                                <span className="text-[10px] text-gray-400 mt-1 block">Prices are discussed via WhatsApp. This is for your records.</span>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Status</label>
-                                <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-xl bg-white">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={editingProduct.soldOut} 
-                                        onChange={e => setEditingProduct({...editingProduct, soldOut: e.target.checked})} 
-                                        className="w-5 h-5 text-nomad-gold focus:ring-nomad-gold border-gray-300 rounded"
-                                    />
-                                    <span className="text-sm font-medium">Mark as Sold Out</span>
-                                </label>
-                            </div>
-                        </div>
-
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Main Image</label>
                             <div className="flex flex-col gap-3">
@@ -477,11 +479,12 @@ const ProductManager: React.FC = () => {
                             <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Gallery Images</label>
                             <div className="flex flex-wrap gap-4 mb-3">
                                 {editingProduct.images?.map((img, idx) => (
-                                    <div key={idx} className="relative group w-20 h-20">
-                                        <img src={img} alt={`Gallery ${idx}`} className="w-full h-full rounded-xl object-cover border border-gray-200" />
-                                        <button type="button" onClick={() => removeGalleryImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
-                                            <X size={12} />
+                                    <div key={idx} className={`relative group w-20 h-20 rounded-xl overflow-hidden border-2 cursor-pointer ${editingProduct.image === img ? 'border-nomad-gold ring-2 ring-nomad-gold/30' : 'border-gray-200'}`} onClick={() => setMainImageFromGallery(img)}>
+                                        <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                                        <button type="button" onClick={(e) => { e.stopPropagation(); removeGalleryImage(idx); }} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                                            <X size={10} />
                                         </button>
+                                        {editingProduct.image === img && <div className="absolute bottom-0 w-full bg-nomad-gold text-white text-[8px] font-bold text-center uppercase py-0.5">Main</div>}
                                     </div>
                                 ))}
                                 <label className={`cursor-pointer w-20 h-20 bg-gray-50 border border-dashed border-gray-300 rounded-xl hover:bg-gray-100 transition-colors flex flex-col items-center justify-center gap-1 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -522,6 +525,32 @@ const ProductManager: React.FC = () => {
                                 onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} 
                             />
                         </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Internal Ref. Price</label>
+                                <input 
+                                    type="number" 
+                                    className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none" 
+                                    value={editingProduct.price} 
+                                    onChange={e => setEditingProduct({...editingProduct, price: parseInt(e.target.value) || 0})} 
+                                    placeholder="Not shown on site"
+                                />
+                                <span className="text-[10px] text-gray-400 mt-1 block">Prices are discussed via WhatsApp. This is for your records.</span>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Status</label>
+                                <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-xl bg-white">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={editingProduct.soldOut} 
+                                        onChange={e => setEditingProduct({...editingProduct, soldOut: e.target.checked})} 
+                                        className="w-5 h-5 text-nomad-gold focus:ring-nomad-gold border-gray-300 rounded"
+                                    />
+                                    <span className="text-sm font-medium">Mark as Sold Out</span>
+                                </label>
+                            </div>
+                        </div>
                         
                         <div className="flex items-center gap-3 bg-yellow-50 p-4 rounded-xl border border-yellow-100">
                             <input 
@@ -532,7 +561,7 @@ const ProductManager: React.FC = () => {
                             />
                             <div>
                                 <label className="text-sm font-bold text-nomad-black block">Feature on Home Page</label>
-                                <span className="text-xs text-yellow-700">This item will appear in the "Curated Favorites" section.</span>
+                                <span className="text-xs text-yellow-700">This item will appear in the "Favorites" section.</span>
                             </div>
                         </div>
                       </>

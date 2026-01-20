@@ -66,6 +66,13 @@ const Header: React.FC = () => {
     return () => { document.body.style.overflow = 'unset'; };
   }, [searchOpen, mobileMenuOpen]);
 
+  // Focus search input when opened
+  useEffect(() => {
+      if (searchOpen && searchInputRef.current) {
+          setTimeout(() => searchInputRef.current?.focus(), 100);
+      }
+  }, [searchOpen]);
+
   useEffect(() => {
       if (searchQuery.trim().length > 1) {
           const lowerQuery = searchQuery.toLowerCase();
@@ -199,18 +206,18 @@ const Header: React.FC = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search our hub..." 
-                        className="w-full bg-transparent border-b border-gray-300 py-6 text-2xl md:text-5xl font-serif font-medium text-center focus:outline-none focus:border-nomad-black transition-colors text-nomad-black"
+                        className="w-full bg-transparent border-b border-gray-300 py-6 text-2xl md:text-5xl font-serif font-medium text-center focus:outline-none focus:border-nomad-black transition-colors text-nomad-black placeholder:text-gray-300"
                     />
                     <button type="submit" className="absolute right-0 top-1/2 -translate-y-1/2 p-4 text-gray-400 hover:text-nomad-gold transition-colors">
                         <ArrowRight size={32} strokeWidth={1} />
                     </button>
                 </form>
                 {suggestions.length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-6 bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="absolute left-0 right-0 top-full mt-6 bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[50vh] overflow-y-auto">
                         {suggestions.map(p => (
                             <Link key={p.id} to={`/product/${p.id}`} className="flex items-center gap-4 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-0" onClick={() => setSearchOpen(false)}>
                                 <img src={p.image} className="w-12 h-12 rounded-lg object-cover" alt="" />
-                                <div><h4 className="font-bold text-sm">{p.title}</h4><p className="text-xs text-gray-500">{p.category}</p></div>
+                                <div><h4 className="font-bold text-sm text-nomad-black">{p.title}</h4><p className="text-xs text-gray-500">{p.category}</p></div>
                             </Link>
                         ))}
                     </div>
@@ -219,7 +226,9 @@ const Header: React.FC = () => {
         </div>
 
         {/* Mobile Menu */}
-        <div className={`fixed inset-y-0 left-0 w-[85%] max-w-sm h-screen bg-nomad-paper z-[150] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div 
+          className={`fixed inset-y-0 left-0 w-[85%] max-w-sm h-screen bg-nomad-paper z-[150] transform transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] md:hidden flex flex-col shadow-2xl ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        >
           <div className="p-8 border-b border-gray-200 mt-10">
              <Logo className="h-10 w-auto" fill="#3B261B" />
           </div>
@@ -234,9 +243,27 @@ const Header: React.FC = () => {
                       </button>
                       <div className={`mt-4 space-y-4 overflow-hidden transition-all duration-300 ${mobileSubmenuOpen === link.label ? 'max-h-96' : 'max-h-0'}`}>
                         {link.subItems.map(sub => (
-                          <Link key={sub.title} to={`/shop?category=${encodeURIComponent(sub.title)}`} className="block text-sm text-gray-600 pl-4 font-medium" onClick={() => setMobileMenuOpen(false)}>
-                            {sub.title}
-                          </Link>
+                          <div key={sub.title} className="pl-4">
+                             <Link 
+                               to={`/shop?category=${encodeURIComponent(sub.title)}`} 
+                               className="block text-sm font-bold text-nomad-black mb-2" 
+                               onClick={() => setMobileMenuOpen(false)}
+                             >
+                               {sub.title}
+                             </Link>
+                             <div className="pl-3 border-l border-gray-200 space-y-2">
+                               {sub.items.map(item => (
+                                   <Link 
+                                     key={item} 
+                                     to={`/shop?category=${encodeURIComponent(sub.title)}&subcategory=${encodeURIComponent(item)}`}
+                                     className="block text-xs text-gray-500 hover:text-nomad-gold"
+                                     onClick={() => setMobileMenuOpen(false)}
+                                   >
+                                     {item}
+                                   </Link>
+                               ))}
+                             </div>
+                          </div>
                         ))}
                       </div>
                     </>
@@ -255,6 +282,11 @@ const Header: React.FC = () => {
              <Link to="/login" className="block text-xs font-bold uppercase tracking-widest text-nomad-black" onClick={() => setMobileMenuOpen(false)}>My Account</Link>
           </div>
         </div>
+        
+        {/* Mobile Menu Backdrop */}
+        {mobileMenuOpen && (
+            <div className="fixed inset-0 bg-black/50 z-[140] md:hidden backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
+        )}
       </header>
     </>
   );

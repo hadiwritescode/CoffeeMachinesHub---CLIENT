@@ -114,6 +114,11 @@ export interface Message {
   read: boolean;
 }
 
+export interface LinkItem {
+  label: string;
+  href: string;
+}
+
 export interface SiteContent {
   hero: {
     title: string;
@@ -129,6 +134,8 @@ export interface SiteContent {
     favoritesTitle: string;
     favoritesSubtitle: string;
     partnersText: string;
+    marqueeText: string;
+    trendingTags: string[];
   };
   shop: {
     heroTitle: string;
@@ -140,7 +147,7 @@ export interface SiteContent {
     heroImage: string;
     section1Title: string;
     section1Text: string;
-    section1List?: string[]; // Added for dynamic bullet points
+    section1List?: string[]; 
     section1Image: string;
     section2Title: string;
     section2Text: string;
@@ -165,6 +172,8 @@ export interface SiteContent {
   };
   footer: {
     description: string;
+    companyLinks: LinkItem[];
+    legalLinks: LinkItem[];
   };
   socials: {
     instagram: string;

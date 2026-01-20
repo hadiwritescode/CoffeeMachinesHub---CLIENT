@@ -60,7 +60,7 @@ const ProductDetail = () => {
 
   const handleWishlistClick = () => {
       toggleWishlist(product.id);
-      if (!isInWishlist) {
+      if (!isInWishlist && currentUser) {
           setToastMessage('Saved to Wishlist');
           setShowToast(true);
           setTimeout(() => setShowToast(false), 3000);
@@ -133,7 +133,7 @@ const ProductDetail = () => {
   const features = getFeatures(product);
 
   return (
-    <div className="pt-24 md:pt-32 pb-20 animate-fade-in bg-nomad-paper min-h-screen">
+    <div className="pt-28 md:pt-32 pb-20 animate-fade-in bg-nomad-paper min-h-screen">
       
       {/* Toast Notification */}
       {showToast && (
@@ -163,7 +163,7 @@ const ProductDetail = () => {
           
           {/* Left Side: Image Gallery */}
           <div className="w-full lg:w-[55%] flex flex-col gap-4 md:gap-6">
-             <div className="bg-[#F9F9F9] rounded-[2rem] overflow-hidden w-full aspect-[4/5] md:aspect-square lg:aspect-[4/5] relative group shadow-sm">
+             <div className="bg-[#F9F9F9] rounded-[2rem] overflow-hidden w-full aspect-square md:aspect-[4/5] lg:aspect-[4/5] relative group shadow-sm">
                 <img src={currentImage} alt={product.title} className="w-full h-full object-cover transition-transform duration-700" />
                 {product.soldOut && (
                   <div className="absolute top-6 left-6 bg-white/90 backdrop-blur px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-gray-100">
@@ -202,8 +202,8 @@ const ProductDetail = () => {
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium mb-4 md:mb-6 text-nomad-black leading-none">{product.title}</h1>
                 
                 <div className="flex flex-wrap items-center gap-4 md:gap-6 mb-6 md:mb-8 border-b border-gray-100 pb-6 md:pb-8">
-                  <div className="flex items-center gap-2 text-lg md:text-xl font-bold text-green-600 uppercase tracking-wider">
-                      <MessageCircle size={24} />
+                  <div className="flex items-center gap-2 text-base md:text-xl font-bold text-green-600 uppercase tracking-wider">
+                      <MessageCircle size={20} className="md:w-6 md:h-6" />
                       WhatsApp for Price
                   </div>
                   {product.soldOut ? (
@@ -238,13 +238,14 @@ const ProductDetail = () => {
                         </button>
                         <button 
                             onClick={handleWishlistClick}
-                            className={`w-full sm:w-14 h-14 flex items-center justify-center border rounded-full transition-colors active:scale-95 ${
+                            className={`w-full sm:w-14 h-14 py-4 sm:py-0 flex items-center justify-center border rounded-full transition-colors active:scale-95 ${
                                 isInWishlist 
                                 ? 'border-red-500 text-red-500 bg-red-50' 
                                 : 'border-gray-200 hover:border-nomad-gold hover:text-nomad-gold'
                             }`}
                         >
                             <Heart size={20} fill={isInWishlist ? "currentColor" : "none"} />
+                            <span className="sm:hidden ml-2 text-xs font-bold uppercase tracking-widest">Add to Wishlist</span>
                         </button>
                     </div>
                   </>
