@@ -23,8 +23,17 @@ const Header: React.FC = () => {
 
   // Dynamic Phone Number Cleaning
   const contactPhone = siteContent.contact?.phone || "03104811010";
-  const displayPhone = contactPhone;
-  const waPhone = contactPhone.replace(/[^0-9]/g, '');
+  
+  // Format visual display (e.g. 0310 481 1010)
+  const displayPhone = contactPhone.replace(/(\d{4})(\d{7})/, '$1 $2').replace(/(\d{4})(\d{3})(\d{4})/, '$1 $2 $3');
+  
+  // Format for WhatsApp (strip non-digits, handle leading 0 for PK)
+  let waPhone = contactPhone.replace(/[^0-9]/g, '');
+  if (waPhone.startsWith('0')) {
+    waPhone = '92' + waPhone.substring(1);
+  } else if (!waPhone.startsWith('92') && waPhone.length === 10) {
+    waPhone = '92' + waPhone;
+  }
 
   // Determine transparent routes (Home and Shop)
   const isHome = location.pathname === '/';

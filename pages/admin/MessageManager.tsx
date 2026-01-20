@@ -1,26 +1,20 @@
+
 import React, { useState } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
 import { Mail, Check, Trash } from 'lucide-react';
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
 
 const MessageManager: React.FC = () => {
-  const { messages } = useStore();
+  const { messages, markMessageRead, deleteMessage } = useStore();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
   const filteredMessages = filter === 'all' 
     ? messages 
     : messages.filter(m => !m.read);
 
-  // Mark as read
-  const toggleRead = async (id: string, currentStatus: boolean) => {
-      await updateDoc(doc(db, 'messages', id), { read: !currentStatus });
-  };
-
-  const deleteMessage = async (id: string) => {
+  const handleDelete = async (id: string) => {
       if (confirm("Delete this message?")) {
-          await deleteDoc(doc(db, 'messages', id));
+          await deleteMessage(id);
       }
   };
 
@@ -62,14 +56,14 @@ const MessageManager: React.FC = () => {
                               </div>
                               <div className="flex gap-2">
                                   <button 
-                                    onClick={() => toggleRead(msg.id, msg.read)}
+                                    onClick={() => markMessageRead(msg.id, msg.read)}
                                     className={`p-2 rounded-full transition-colors ${msg.read ? 'text-gray-400 hover:bg-gray-200' : 'text-blue-500 hover:bg-blue-100'}`}
                                     title={msg.read ? "Mark as unread" : "Mark as read"}
                                   >
                                       <Check size={18} />
                                   </button>
                                   <button 
-                                    onClick={() => deleteMessage(msg.id)}
+                                    onClick={() => handleDelete(msg.id)}
                                     className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                                     title="Delete"
                                   >

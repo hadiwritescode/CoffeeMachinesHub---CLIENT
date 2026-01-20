@@ -1,12 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, BlogPost, Order, User, SiteContent, NavCategory, Testimonial, Message, CartItem } from '../types';
 import { BRAND_LOGOS, INITIAL_CATEGORIES, FAQS } from '../constants';
-import { 
-  collection, onSnapshot, doc, setDoc, getDoc, updateDoc, addDoc, deleteDoc,
-  QuerySnapshot, DocumentData, DocumentSnapshot
-} from 'firebase/firestore';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import 'firebase/auth';
+import 'firebase/storage';
 import { db, auth, storage } from '../firebase';
 import { useToast } from './ToastContext';
 
@@ -27,6 +25,8 @@ interface StoreContextType {
   createOrder: (o: any) => Promise<string>;
   updateOrderStatus: (id: string, s: any) => Promise<void>;
   addMessage: (m: any) => Promise<void>;
+  markMessageRead: (id: string, status: boolean) => Promise<void>;
+  deleteMessage: (id: string) => Promise<void>;
   toggleWishlist: (id: string) => Promise<void>;
   updateUserProfile: (d: any) => Promise<void>;
   uploadFile: (f: File, p: string) => Promise<string>;
@@ -148,24 +148,23 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   useEffect(() => {
     const unsubs = [
-      onSnapshot(collection(db, 'products'), (s: QuerySnapshot<DocumentData>) => setProducts(s.docs.map(d => ({ id: d.id, ...d.data() } as Product)))),
-      onSnapshot(collection(db, 'blogs'), (s: QuerySnapshot<DocumentData>) => setBlogPosts(s.docs.map(d => ({ id: d.id, ...d.data() } as BlogPost)))),
-      onSnapshot(collection(db, 'testimonials'), (s: QuerySnapshot<DocumentData>) => setTestimonials(s.docs.map(d => ({ id: d.id, ...d.data() } as Testimonial)))),
-      onSnapshot(collection(db, 'messages'), (s: QuerySnapshot<DocumentData>) => setMessages(s.docs.map(d => ({ id: d.id, ...d.data() } as Message)))),
-      onSnapshot(collection(db, 'orders'), (s: QuerySnapshot<DocumentData>) => setOrders(s.docs.map(d => ({ id: d.id, ...d.data() } as Order)))),
-      onSnapshot(doc(db, 'content', 'navigation'), (d: DocumentSnapshot<DocumentData>) => {
+      db.collection('products').onSnapshot((s) => setProducts(s.docs.map(d => ({ id: d.id, ...d.data() } as Product)))),
+      db.collection('blogs').onSnapshot((s) => setBlogPosts(s.docs.map(d => ({ id: d.id, ...d.data() } as BlogPost)))),
+      db.collection('testimonials').onSnapshot((s) => setTestimonials(s.docs.map(d => ({ id: d.id, ...d.data() } as Testimonial)))),
+      db.collection('messages').onSnapshot((s) => setMessages(s.docs.map(d => ({ id: d.id, ...d.data() } as Message)))),
+      db.collection('orders').onSnapshot((s) => setOrders(s.docs.map(d => ({ id: d.id, ...d.data() } as Order)))),
+      db.collection('content').doc('navigation').onSnapshot((d) => {
          const data = d.data() as any;
-         if (d.exists() && data?.categories) {
+         if (d.exists && data?.categories) {
             setCategoriesState(data.categories);
          }
       }),
-      onSnapshot(collection(db, 'content'), (s: QuerySnapshot<DocumentData>) => {
+      db.collection('content').onSnapshot((s) => {
         setSiteContent(prev => {
           const next = { ...prev };
           s.docs.forEach(d => {
             if (d.id !== 'navigation') {
                 const data = d.data();
-                // Deep merge or overwrite sections safely
                 (next as any)[d.id] = { ...(next as any)[d.id], ...data };
             }
           });
@@ -177,18 +176,17 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async user => {
+    const unsub = auth.onAuthStateChanged(async user => {
       if (user) {
         try {
-          const snap = await getDoc(doc(db, 'users', user.uid));
-          if (snap.exists()) {
+          const snap = await db.collection('users').doc(user.uid).get();
+          if (snap.exists) {
             const uData = snap.data() as User;
             setCurrentUser({ ...uData, id: user.uid });
             if (uData.cart && Array.isArray(uData.cart)) {
                setCart(uData.cart);
             }
           } else {
-             // Fallback if user exists in Auth but not Firestore (legacy/error case)
              const newUser: User = { 
                 id: user.uid, 
                 name: user.displayName || 'User', 
@@ -197,7 +195,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                 wishlist: [], 
                 cart: [] 
              };
-             await setDoc(doc(db, 'users', user.uid), newUser);
+             await db.collection('users').doc(user.uid).set(newUser);
              setCurrentUser(newUser);
           }
         } catch (e) {
@@ -213,7 +211,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   useEffect(() => {
     if (currentUser) {
-       updateDoc(doc(db, 'users', currentUser.id), { cart }).catch(() => {});
+       db.collection('users').doc(currentUser.id).update({ cart }).catch(() => {});
     } else {
        localStorage.setItem('cmh_cart', JSON.stringify(cart));
     }
@@ -231,30 +229,34 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const updateCartQuantity = (id: string, d: number) => setCart(prev => prev.map(x => x.id === id ? { ...x, quantity: Math.max(1, x.quantity + d) } : x));
   const clearCart = () => setCart([]);
 
-  const login = async (e: string, p: string) => { await signInWithEmailAndPassword(auth, e, p); showToast("Welcome back!"); };
-  const logout = async () => { await signOut(auth); clearCart(); showToast("Logged out"); };
+  const login = async (e: string, p: string) => { await auth.signInWithEmailAndPassword(e, p); showToast("Welcome back!"); };
+  const logout = async () => { await auth.signOut(); clearCart(); showToast("Logged out"); };
   const register = async (e: string, p: string, n: string) => {
-    const res = await createUserWithEmailAndPassword(auth, e, p);
-    const u: User = { id: res.user.uid, name: n, email: e, role: 'customer', wishlist: [], cart: [] };
-    await setDoc(doc(db, 'users', res.user.uid), u);
+    const res = await auth.createUserWithEmailAndPassword(e, p);
+    if (res.user) {
+        const u: User = { id: res.user.uid, name: n, email: e, role: 'customer', wishlist: [], cart: [] };
+        await db.collection('users').doc(res.user.uid).set(u);
+    }
   };
 
   const uploadFile = async (f: File, p: string) => {
-    // Add timestamp and sanitize filename
     const safeName = f.name.replace(/[^a-zA-Z0-9.]/g, '_');
-    const sRef = ref(storage, `${p}/${Date.now()}_${safeName}`);
-    await uploadBytes(sRef, f);
-    return getDownloadURL(sRef);
+    const sRef = storage.ref(`${p}/${Date.now()}_${safeName}`);
+    await sRef.put(f);
+    return sRef.getDownloadURL();
   };
 
   const createOrder = async (o: any) => {
     const id = `ORD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    await setDoc(doc(db, 'orders', id), { ...o, id, date: new Date().toLocaleDateString(), status: 'Processing' });
+    await db.collection('orders').doc(id).set({ ...o, id, date: new Date().toLocaleDateString(), status: 'Processing' });
     return id;
   };
 
-  const updateOrderStatus = async (id: string, s: any) => updateDoc(doc(db, 'orders', id), { status: s });
-  const addMessage = async (m: any) => { await addDoc(collection(db, 'messages'), { ...m, date: new Date().toLocaleDateString(), read: false }); };
+  const updateOrderStatus = async (id: string, s: any) => db.collection('orders').doc(id).update({ status: s });
+  
+  const addMessage = async (m: any) => { await db.collection('messages').add({ ...m, date: new Date().toLocaleDateString(), read: false }); };
+  const markMessageRead = async (id: string, status: boolean) => { await db.collection('messages').doc(id).update({ read: !status }); };
+  const deleteMessage = async (id: string) => { await db.collection('messages').doc(id).delete(); };
   
   const toggleWishlist = async (id: string) => {
     if (!currentUser) {
@@ -263,29 +265,31 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
     const isIn = currentUser.wishlist.includes(id);
     const next = isIn ? currentUser.wishlist.filter(x => x !== id) : [...currentUser.wishlist, id];
-    await updateDoc(doc(db, 'users', currentUser.id), { wishlist: next });
+    await db.collection('users').doc(currentUser.id).update({ wishlist: next });
     setCurrentUser({ ...currentUser, wishlist: next });
   };
   
-  const updateUserProfile = async (d: any) => { if (currentUser) await updateDoc(doc(db, 'users', currentUser.id), d); };
-  const updateSiteContent = async (s: keyof SiteContent, d: any) => setDoc(doc(db, 'content', s), d, { merge: true });
-  const setCategories = async (c: NavCategory[]) => setDoc(doc(db, 'content', 'navigation'), { categories: c });
+  const updateUserProfile = async (d: any) => { if (currentUser) await db.collection('users').doc(currentUser.id).update(d); };
+  const updateSiteContent = async (s: keyof SiteContent, d: any) => db.collection('content').doc(s).set(d, { merge: true });
+  const setCategories = async (c: NavCategory[]) => db.collection('content').doc('navigation').set({ categories: c });
 
   return (
     <StoreContext.Provider value={{
       products, categories, siteContent, currentUser, loading, cart,
       login, register, logout, addToCart, removeFromCart, updateCartQuantity, clearCart,
-      createOrder, updateOrderStatus, addMessage, toggleWishlist, updateUserProfile, uploadFile,
-      updateSiteContent, setCategories, blogPosts, addBlogPost: async b => setDoc(doc(db, 'blogs', b.id), b),
-      updateBlogPost: async b => updateDoc(doc(db, 'blogs', b.id), { ...b }),
-      removeBlogPost: async id => deleteDoc(doc(db, 'blogs', id)),
-      testimonials, addTestimonial: async (t: Testimonial) => { await addDoc(collection(db, 'testimonials'), t); },
-      updateTestimonial: async t => updateDoc(doc(db, 'testimonials', t.id), { ...t }),
-      removeTestimonial: async id => deleteDoc(doc(db, 'testimonials', id)),
+      createOrder, updateOrderStatus, addMessage, markMessageRead, deleteMessage, toggleWishlist, updateUserProfile, uploadFile,
+      updateSiteContent, setCategories, blogPosts, 
+      addBlogPost: async b => { await db.collection('blogs').doc(b.id).set(b); },
+      updateBlogPost: async b => { await db.collection('blogs').doc(b.id).update({ ...b }); },
+      removeBlogPost: async id => { await db.collection('blogs').doc(id).delete(); },
+      testimonials, 
+      addTestimonial: async (t: Testimonial) => { await db.collection('testimonials').add(t); },
+      updateTestimonial: async t => { await db.collection('testimonials').doc(t.id).update({ ...t }); },
+      removeTestimonial: async id => { await db.collection('testimonials').doc(id).delete(); },
       messages, orders,
-      addProduct: async (p: Product) => { await setDoc(doc(db, 'products', p.id), p); },
-      updateProduct: async (p: Product) => { await updateDoc(doc(db, 'products', p.id), { ...p }); },
-      removeProduct: async (id: string) => { await deleteDoc(doc(db, 'products', id)); }
+      addProduct: async (p: Product) => { await db.collection('products').doc(p.id).set(p); },
+      updateProduct: async (p: Product) => { await db.collection('products').doc(p.id).update({ ...p }); },
+      removeProduct: async (id: string) => { await db.collection('products').doc(id).delete(); }
     }}>
       {children}
     </StoreContext.Provider>

@@ -451,6 +451,25 @@ const ProductManager: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
+                                {/* New Fields for Coffee Specific Data */}
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Origin (Coffee Only)</label>
+                                    <input 
+                                        className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none transition-all" 
+                                        value={editingProduct.origin || ''} 
+                                        onChange={e => setEditingProduct({...editingProduct, origin: e.target.value})} 
+                                        placeholder="e.g. Ethiopia Yirgacheffe"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Roast Level (Coffee Only)</label>
+                                    <input 
+                                        className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-nomad-gold/20 outline-none transition-all" 
+                                        value={editingProduct.roastLevel || ''} 
+                                        onChange={e => setEditingProduct({...editingProduct, roastLevel: e.target.value})} 
+                                        placeholder="e.g. Medium-Dark"
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -600,7 +619,7 @@ const ProductManager: React.FC = () => {
                                       <select 
                                         className="border border-gray-200 p-2 rounded-lg text-sm bg-white"
                                         value={feature.icon}
-                                        onChange={e => updateFeature(idx, 'icon', e.target.value)}
+                                        onChange={e => updateFeature(idx, 'icon', e.target.value as any)}
                                       >
                                           <option value="settings">Settings (Gear)</option>
                                           <option value="flame">Flame (Roast)</option>

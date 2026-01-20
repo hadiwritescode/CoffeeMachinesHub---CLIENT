@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
@@ -54,9 +55,21 @@ const ContentManager: React.FC = () => {
   // Local state for testimonials to allow editing
   const [localTestimonials, setLocalTestimonials] = useState<Testimonial[]>([]);
 
+  // Sync state with store data when it loads
   useEffect(() => {
-      setLocalTestimonials(testimonials);
-  }, [testimonials]);
+    setHeroForm(siteContent.hero);
+    setHomeTextForm(siteContent.home);
+    setBrands(siteContent.home?.brands || []);
+    setTrendingTags(siteContent.home?.trendingTags || []);
+    setShopForm(siteContent.shop || { heroTitle: '', heroSubtitle: '' });
+    setServiceForm(siteContent.services);
+    setAboutForm(siteContent.about);
+    setContactForm(siteContent.contact);
+    setSocialsForm(siteContent.socials);
+    setTeamList(siteContent.team || []);
+    setFooterForm(siteContent.footer || { description: '', companyLinks: [], legalLinks: [] });
+    setLocalTestimonials(testimonials); // Also sync testimonials
+  }, [siteContent, testimonials]);
 
   // Save Handlers
   const saveHomeHero = async () => { await updateSiteContent('hero', heroForm); };
