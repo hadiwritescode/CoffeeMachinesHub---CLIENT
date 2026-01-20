@@ -48,7 +48,7 @@ const Home: React.FC = () => {
     <div className="bg-nomad-paper w-full overflow-hidden">
       
       {/* 1. HERO SECTION */}
-      <section className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
+      <section className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden rounded-b-[2.5rem] md:rounded-b-[4rem] shadow-xl">
         <div className="absolute inset-0 z-0">
             <video 
                 autoPlay muted loop playsInline
@@ -63,7 +63,8 @@ const Home: React.FC = () => {
         {/* Content Container - Centered Vertically */}
         <div className="relative z-10 container mx-auto px-6 text-center text-white h-full flex flex-col justify-center items-center pt-16">
             <div className="max-w-5xl mx-auto space-y-8 animate-slide-up w-full">
-                <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-serif font-bold leading-[1.1] md:leading-[1.05] tracking-tight drop-shadow-2xl">
+                {/* Text Size Reduced to fit one line: lg:text-9xl -> lg:text-8xl */}
+                <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-serif font-bold leading-[1.1] tracking-tight drop-shadow-2xl">
                     {hero.title}
                 </h1>
                 
@@ -116,10 +117,9 @@ const Home: React.FC = () => {
          </div>
       </div>
 
-      {/* 3. BRANDS MARQUEE (The "Rotating Brand Rows") */}
+      {/* 3. BRANDS MARQUEE */}
       <div className="bg-nomad-paper py-10 md:py-16 border-b border-nomad-black/5 overflow-hidden">
           <div className="flex animate-marquee whitespace-nowrap items-center">
-              {/* Duplicate list 4 times for smooth infinite loop on wide screens */}
               {[...Array(4)].map((_, setIndex) => (
                   <div key={setIndex} className="flex items-center">
                       {brands.map((brand, i) => (
