@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { Phone, Search, User, ShoppingBag, Menu, X, ArrowRight, ChevronDown } from 'lucide-react';
@@ -29,7 +30,8 @@ const Header: React.FC = () => {
   const waPhone = contactPhone.replace(/[^0-9]/g, '');
 
   // Determine transparent routes (Home and Shop)
-  const isTransparentRoute = location.pathname === '/' || location.pathname === '/shop';
+  const isHome = location.pathname === '/';
+  const isTransparentRoute = isHome || location.pathname === '/shop';
   
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -42,11 +44,17 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      // For Home page, header stays transparent longer (until content scrolls up)
+      const threshold = isHome ? (window.innerHeight - 100) : 10;
+      setIsScrolled(window.scrollY > threshold);
     };
+    
+    // Initial check
+    handleScroll();
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isHome]);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -95,11 +103,12 @@ const Header: React.FC = () => {
 
   const getHeaderClasses = () => {
     if (isScrolled) {
-      return 'bg-nomad-paper/95 backdrop-blur-md shadow-sm py-3 text-nomad-black';
+      return 'bg-nomad-paper shadow-sm py-3 text-nomad-black border-b border-nomad-black/5';
     }
     if (isTransparentRoute && !mobileMenuOpen) {
       return 'bg-transparent py-4 md:py-6 text-white';
     }
+    // Default fallback for other pages when not scrolled (should be paper/solid)
     return 'bg-nomad-paper py-4 md:py-6 text-nomad-black shadow-sm border-b border-nomad-black/5';
   };
 
@@ -107,6 +116,12 @@ const Header: React.FC = () => {
     if (isScrolled) return '#3B261B';
     if (isTransparentRoute && !mobileMenuOpen) return 'white';
     return '#3B261B';
+  };
+
+  const getNavLinkClass = () => {
+     if (isScrolled) return 'text-nomad-black hover:text-nomad-gold';
+     if (isTransparentRoute && !mobileMenuOpen) return 'text-white hover:text-nomad-paper';
+     return 'text-nomad-black hover:text-nomad-gold';
   };
 
   return (
@@ -123,7 +138,7 @@ const Header: React.FC = () => {
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     aria-label="Toggle Menu"
                 >
-                    {mobileMenuOpen ? <X size={24} className="text-nomad-black" /> : <Menu size={24} />}
+                    {mobileMenuOpen ? <X size={24} className="text-nomad-black" /> : <Menu size={24} className={isTransparentRoute && !isScrolled ? "text-white" : "text-nomad-black"} />}
                 </button>
               </div>
 
@@ -157,35 +172,55 @@ const Header: React.FC = () => {
               >
                 <Link 
                   to={link.href} 
-                  className={`text-[10px] lg:text-[11px] font-bold tracking-[0.2em] uppercase transition-colors duration-300 hover-underline-animation flex items-center gap-1 ${
-                    location.pathname === link.href ? 'opacity-100' : 'opacity-80 hover:opacity-100'
-                  }`}
+                  className={`text-[10px] lg:text-[11px] font-bold tracking-[0.2em] uppercase transition-colors duration-300 flex items-center gap-1 ${getNavLinkClass()} ${location.pathname === link.href ? 'opacity-100 underline decoration-2 underline-offset-4' : 'opacity-90 hover:opacity-100'}`}
                 >
                   {link.label}
                   {link.subItems && link.subItems.length > 0 && <ChevronDown size={10} className="mt-0.5" />}
                 </Link>
                 
+                {/* MEGA MENU */}
                 {link.subItems && link.subItems.length > 0 && activeDropdown === link.label && (
-                  <div className="fixed left-0 top-[64px] md:top-[74px] w-full bg-nomad-paper shadow-2xl z-40 border-t border-nomad-gray animate-in fade-in slide-in-from-top-1 text-nomad-black">
-                    <div className="container mx-auto px-12 py-10">
-                      <div className="grid grid-cols-4 gap-8">
-                          {link.subItems.map((category) => (
-                            <div key={category.title} className="flex flex-col space-y-4">
-                              <h3 className="font-serif font-bold text-lg text-nomad-black border-b border-gray-200 pb-2">{category.title}</h3>
-                              <ul className="space-y-2">
-                                {category.items.map((item) => (
-                                  <li key={item}>
-                                    <Link 
-                                      to={`/shop?category=${encodeURIComponent(category.title)}&subcategory=${encodeURIComponent(item)}`} 
-                                      className="text-gray-500 hover:text-nomad-gold text-sm font-medium block transition-transform hover:translate-x-1"
-                                    >
-                                      {item}
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
+                  <div className="fixed left-0 top-[64px] md:top-[74px] w-full bg-nomad-paper shadow-2xl z-40 border-t border-nomad-black/5 animate-in fade-in slide-in-from-top-1 text-nomad-black">
+                    <div className="container mx-auto px-12 py-12">
+                      <div className="flex justify-between">
+                          {/* Categories Grid */}
+                          <div className="flex gap-12 lg:gap-20">
+                              {link.subItems.map((category) => (
+                                <div key={category.title} className="flex flex-col space-y-6">
+                                  <h3 className="font-serif font-bold text-2xl text-nomad-black">{category.title}</h3>
+                                  <ul className="space-y-3">
+                                    {category.items.map((item) => (
+                                      <li key={item}>
+                                        <Link 
+                                          to={`/shop?category=${encodeURIComponent(category.title)}&subcategory=${encodeURIComponent(item)}`} 
+                                          className="text-gray-500 hover:text-nomad-gold text-sm font-medium block transition-colors"
+                                        >
+                                          {item}
+                                        </Link>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                          </div>
+
+                          {/* Featured Card (Hardcoded for aesthetics as per screenshot reference) */}
+                          <div className="w-80 bg-white rounded-3xl p-4 shadow-lg shrink-0 hidden xl:block">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3 block">Featured</span>
+                              <div className="aspect-square rounded-2xl overflow-hidden mb-4 relative group cursor-pointer" onClick={() => navigate('/shop')}>
+                                  <img 
+                                    src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&q=80&w=600" 
+                                    alt="Professional Setup" 
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                  />
+                                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                              </div>
+                              <h4 className="font-serif font-bold text-xl text-nomad-black mb-1">Professional Setup</h4>
+                              <p className="text-xs text-gray-500 mb-4 leading-relaxed">Everything you need for a café-quality espresso bar at home.</p>
+                              <Link to="/shop" className="text-[10px] font-bold uppercase tracking-widest text-nomad-gold hover:text-nomad-black transition-colors border-b border-nomad-gold/30 pb-1">
+                                  Explore Now
+                              </Link>
+                          </div>
                       </div>
                     </div>
                   </div>
@@ -196,13 +231,13 @@ const Header: React.FC = () => {
 
           {/* Right Side: Icons */}
           <div className="flex items-center space-x-4 md:space-x-6 z-[110]">
-            <button onClick={() => setSearchOpen(true)} className="hover:text-nomad-gold transition-colors p-1" aria-label="Search">
+            <button onClick={() => setSearchOpen(true)} className={`transition-colors p-1 ${getNavLinkClass()}`} aria-label="Search">
               <Search strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />
             </button>
-            <Link to="/login" className="hover:text-nomad-gold transition-colors p-1 hidden sm:block" aria-label="Account">
+            <Link to="/login" className={`transition-colors p-1 hidden sm:block ${getNavLinkClass()}`} aria-label="Account">
               <User strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />
             </Link>
-            <Link to="/cart" className="hover:text-nomad-gold transition-colors p-1 relative" aria-label="Cart">
+            <Link to="/cart" className={`transition-colors p-1 relative ${getNavLinkClass()}`} aria-label="Cart">
               <ShoppingBag strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />
               <span className={`absolute -top-1 -right-1 w-3.5 h-3.5 bg-nomad-gold rounded-full flex items-center justify-center text-[8px] font-bold text-white transition-transform ${cartCount > 0 ? 'scale-100' : 'scale-0'}`}>{cartCount}</span>
             </Link>
