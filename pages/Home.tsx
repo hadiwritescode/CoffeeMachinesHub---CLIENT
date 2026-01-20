@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
@@ -59,8 +60,8 @@ const Home: React.FC = () => {
   return (
     <div className="w-full">
       
-      {/* 1. HERO SECTION (Fixed Background) */}
-      <section className="fixed inset-0 w-full h-screen z-0 flex items-center justify-center overflow-hidden">
+      {/* 1. HERO SECTION (Relative Scrolling) */}
+      <section className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-nomad-black">
         <div className="absolute inset-0 z-0">
             <video 
                 autoPlay muted loop playsInline
@@ -143,8 +144,8 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. MAIN SCROLLING CONTENT (Overlays Hero) */}
-      <div className="relative z-10 mt-[100vh] bg-nomad-paper rounded-t-[3rem] md:rounded-t-[5rem] overflow-hidden shadow-[0_-20px_60px_rgba(0,0,0,0.3)]">
+      {/* 2. MAIN CONTENT AREA */}
+      <div className="relative z-10 bg-nomad-paper rounded-t-[3rem] md:rounded-t-[5rem] overflow-hidden -mt-16 shadow-[0_-20px_60px_rgba(0,0,0,0.3)]">
           {/* TEXT MARQUEE BANNER */}
           <div className="bg-nomad-gold text-white py-4 shadow-md overflow-hidden pt-10 pb-4">
              <div className="flex animate-marquee whitespace-nowrap">

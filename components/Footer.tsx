@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Logo from './Logo';
 import { Link } from 'react-router-dom';
@@ -23,7 +24,7 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="fixed bottom-0 left-0 w-full bg-nomad-black text-nomad-paper pt-24 pb-12 z-0">
+    <footer className="w-full bg-nomad-black text-nomad-paper pt-24 pb-12 relative z-0">
       <div className="container mx-auto px-6 md:px-12">
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 mb-12 items-start">

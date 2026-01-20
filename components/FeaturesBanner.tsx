@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useStore } from '../context/StoreContext';
 
@@ -9,7 +10,7 @@ const FeaturesBanner: React.FC = () => {
     : ['La Marzocco', 'Nuova Simonelli', 'Mahlkönig', 'Hario', 'Fellow', 'AeroPress', 'Comandante', 'Baratza'];
 
   return (
-    <div className="w-full bg-nomad-paper rounded-b-[3rem] md:rounded-b-[5rem] relative z-10 pt-24 pb-32 mb-[500px] md:mb-[450px] shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
+    <div className="w-full bg-nomad-paper rounded-b-[3rem] md:rounded-b-[5rem] relative z-10 pt-24 pb-32 shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
       
       {/* Brands Marquee - Moved Here */}
       <div className="mb-20 overflow-hidden opacity-50 hover:opacity-100 transition-opacity">

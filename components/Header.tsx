@@ -179,22 +179,24 @@ const Header: React.FC = () => {
                   {link.subItems && link.subItems.length > 0 && <ChevronDown size={10} className="mt-0.5" />}
                 </Link>
                 
-                {/* MEGA MENU */}
+                {/* MEGA MENU - FULL WIDTH */}
                 {link.subItems && link.subItems.length > 0 && activeDropdown === link.label && (
-                  <div className="fixed left-0 top-[64px] md:top-[74px] w-full bg-nomad-paper shadow-xl z-40 border-t border-nomad-black/5 animate-in fade-in slide-in-from-top-2 text-nomad-black h-auto">
-                    <div className="container mx-auto px-6 md:px-12 py-16">
-                      <div className="flex flex-col lg:flex-row gap-12 xl:gap-24">
-                          {/* Categories Grid */}
-                          <div className="flex-grow grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+                  <div className="fixed left-0 top-[64px] md:top-[74px] w-screen bg-nomad-paper shadow-xl z-40 border-t border-nomad-black/5 animate-in fade-in slide-in-from-top-2 text-nomad-black h-auto max-h-[85vh] overflow-y-auto">
+                    <div className="w-full px-8 md:px-12 py-12">
+                      <div className="flex flex-col lg:flex-row gap-12 xl:gap-16">
+                          {/* Categories Grid - Expanded */}
+                          <div className="flex-grow grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 xl:gap-12">
                               {link.subItems.map((category) => (
                                 <div key={category.title} className="flex flex-col">
-                                  <h3 className="font-serif font-bold text-3xl text-nomad-black mb-6">{category.title}</h3>
+                                  <Link to={`/shop?category=${encodeURIComponent(category.title)}`} className="font-serif font-bold text-2xl lg:text-3xl text-nomad-black mb-6 hover:text-nomad-gold transition-colors block">
+                                    {category.title}
+                                  </Link>
                                   <ul className="space-y-3">
                                     {category.items.map((item) => (
                                       <li key={item}>
                                         <Link 
                                           to={`/shop?category=${encodeURIComponent(category.title)}&subcategory=${encodeURIComponent(item)}`} 
-                                          className="text-nomad-black/60 hover:text-nomad-gold font-medium text-base transition-colors block"
+                                          className="text-nomad-black/60 hover:text-nomad-gold font-medium text-sm lg:text-base transition-colors block"
                                         >
                                           {item}
                                         </Link>
@@ -205,9 +207,9 @@ const Header: React.FC = () => {
                               ))}
                           </div>
 
-                          {/* Featured Card */}
-                          <div className="hidden xl:block w-80 shrink-0">
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-nomad-black/40 mb-6 block">Featured</span>
+                          {/* Featured Card - Right Side */}
+                          <div className="hidden 2xl:block w-96 shrink-0 border-l border-nomad-black/10 pl-12">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-nomad-black/40 mb-6 block">Featured Collection</span>
                               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 group cursor-pointer hover:shadow-md transition-all duration-300" onClick={() => navigate('/shop')}>
                                   <div className="aspect-[4/3] rounded-xl overflow-hidden mb-4 relative">
                                       <img 

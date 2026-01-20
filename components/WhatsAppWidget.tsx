@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MessageCircle, Send, X, Phone } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
@@ -30,7 +31,7 @@ const WhatsAppWidget: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end pointer-events-none">
+    <div className="fixed bottom-6 right-6 z-[90] flex flex-col items-end pointer-events-none">
       
       {/* Chat Window */}
       <div 
