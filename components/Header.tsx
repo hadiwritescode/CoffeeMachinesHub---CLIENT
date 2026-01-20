@@ -113,26 +113,42 @@ const Header: React.FC = () => {
   return (
     <>
       <header className={`fixed top-0 w-full z-[100] transition-all duration-300 ease-in-out ${getHeaderClasses()}`}>
-        <div className="container mx-auto px-6 md:px-12 flex items-center justify-between relative">
+        <div className="container mx-auto px-6 md:px-12 flex items-center justify-between relative h-full">
           
-          <div className="flex items-center md:hidden z-[110]">
-            <button 
-                className="focus:outline-none p-1"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle Menu"
-            >
-                {mobileMenuOpen ? <X size={24} className="text-nomad-black" /> : <Menu size={24} />}
-            </button>
+          {/* Left Side: Mobile Menu Toggle & Desktop Logo */}
+          <div className="flex items-center z-[110]">
+              {/* Mobile Toggle */}
+              <div className="md:hidden">
+                <button 
+                    className="focus:outline-none p-1"
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    aria-label="Toggle Menu"
+                >
+                    {mobileMenuOpen ? <X size={24} className="text-nomad-black" /> : <Menu size={24} />}
+                </button>
+              </div>
+
+              {/* Desktop Logo - Aligned Left */}
+              <Link to="/" className="hidden md:block transition-transform hover:scale-105">
+                <Logo 
+                    className={`transition-all duration-300 ${isScrolled ? 'h-10 md:h-12' : 'h-12 md:h-14'}`} 
+                    fill={getLogoFill()}
+                />
+              </Link>
           </div>
 
-          <Link to="/" className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:transform-none z-[110]">
+          {/* Center: Mobile Logo & Desktop Nav (Absolutely Centered) */}
+          
+          {/* Mobile Logo (Absolute Center) */}
+          <Link to="/" className="md:hidden absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[110]">
             <Logo 
-                className={`transition-all duration-300 ${isScrolled ? 'h-10 md:h-14' : 'h-12 md:h-16'}`} 
+                className={`transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12'}`} 
                 fill={mobileMenuOpen ? '#3B261B' : getLogoFill()}
             />
           </Link>
 
-          <nav className="hidden md:flex space-x-8 lg:space-x-10 items-center h-full mx-auto">
+          {/* Desktop Nav (Absolute Center) */}
+          <nav className="hidden md:flex space-x-8 lg:space-x-10 items-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
             {dynamicNavLinks.map((link) => (
               <div 
                 key={link.label}
@@ -179,6 +195,7 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
+          {/* Right Side: Icons */}
           <div className="flex items-center space-x-4 md:space-x-6 z-[110]">
             <button onClick={() => setSearchOpen(true)} className="hover:text-nomad-gold transition-colors p-1" aria-label="Search">
               <Search strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />

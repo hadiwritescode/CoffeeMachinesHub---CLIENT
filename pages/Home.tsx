@@ -3,7 +3,7 @@ import * as ReactRouterDOM from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import CategoryCard from '../components/CategoryCard';
 import { useStore } from '../context/StoreContext';
-import { ArrowRight, Search, Quote, ArrowDown } from 'lucide-react';
+import { ArrowRight, Search, Quote } from 'lucide-react';
 
 const { Link, useNavigate } = ReactRouterDOM;
 
@@ -31,6 +31,9 @@ const Home: React.FC = () => {
 
   const trendingTerms = siteContent.home.trendingTags || ['Espresso', 'Grinder', 'Roast', 'Accessories'];
   const marqueeText = siteContent.home.marqueeText || "Free Shipping on Orders Over Rs. 5000 • Direct Import from Italy";
+  const brands = siteContent.home.brands && siteContent.home.brands.length > 0 
+    ? siteContent.home.brands 
+    : ['La Marzocco', 'Nuova Simonelli', 'Mahlkönig', 'Hario', 'Fellow', 'AeroPress', 'Comandante', 'Baratza'];
   
   // Categorization
   const mainCategory = categories.find(c => c.title.toLowerCase().includes('machine')) || categories[0] || { title: 'Machines' };
@@ -57,9 +60,10 @@ const Home: React.FC = () => {
             <div className="absolute inset-0 bg-black/20"></div>
         </div>
 
-        <div className="relative z-10 container mx-auto px-6 text-center text-white pt-24 pb-12">
-            <div className="max-w-5xl mx-auto space-y-8 md:space-y-10 animate-slide-up">
-                <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-9xl font-serif font-bold leading-[1.1] md:leading-[1.05] tracking-tight drop-shadow-2xl">
+        {/* Content Container - Centered Vertically */}
+        <div className="relative z-10 container mx-auto px-6 text-center text-white h-full flex flex-col justify-center items-center pt-16">
+            <div className="max-w-5xl mx-auto space-y-8 animate-slide-up w-full">
+                <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-serif font-bold leading-[1.1] md:leading-[1.05] tracking-tight drop-shadow-2xl">
                     {hero.title}
                 </h1>
                 
@@ -67,26 +71,30 @@ const Home: React.FC = () => {
                     {hero.subtitle}
                 </p>
 
-                <form onSubmit={handleHeroSearch} className="relative max-w-xl mx-auto group mt-8">
+                <form onSubmit={handleHeroSearch} className="relative max-w-xl mx-auto group mt-8 z-20">
                     <input 
                         type="text"
                         value={heroSearch}
                         onChange={(e) => setHeroSearch(e.target.value)}
                         placeholder="Search machines, beans..."
-                        className="w-full bg-white/10 backdrop-blur-xl border border-white/30 rounded-full py-4 px-6 md:py-6 md:px-12 text-white placeholder:text-white/60 focus:outline-none focus:bg-white/20 focus:border-white transition-all text-base md:text-lg shadow-2xl"
+                        className="w-full bg-white/10 backdrop-blur-xl border border-white/30 rounded-full py-4 px-6 md:py-5 md:px-12 text-white placeholder:text-white/70 focus:outline-none focus:bg-white/20 focus:border-white transition-all text-base md:text-lg shadow-2xl relative z-20"
                     />
-                    <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-nomad-gold text-white w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center hover:scale-105 transition-transform active:scale-95 shadow-lg">
-                        <Search size={20} className="md:w-6 md:h-6" />
+                    <button 
+                        type="submit" 
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-nomad-gold text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center hover:scale-105 transition-transform active:scale-95 shadow-lg z-30 cursor-pointer"
+                        aria-label="Search"
+                    >
+                        <Search size={20} className="md:w-5 md:h-5" />
                     </button>
                 </form>
                 
-                <div className="flex flex-wrap justify-center gap-3 pt-4">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 w-full mb-2 block">Trending</span>
+                <div className="flex flex-wrap justify-center gap-3 pt-6 relative z-20">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 w-full mb-2 block">Trending</span>
                     {trendingTerms.map(term => (
                         <button 
                             key={term}
                             onClick={() => navigate(`/shop?search=${encodeURIComponent(term)}`)}
-                            className="px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-nomad-black transition-all"
+                            className="px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-nomad-black transition-all cursor-pointer"
                         >
                             {term}
                         </button>
@@ -94,27 +102,40 @@ const Home: React.FC = () => {
                 </div>
             </div>
         </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/80 animate-bounce hidden md:flex flex-col items-center gap-2 z-20 pointer-events-none">
-            <span className="text-[10px] uppercase tracking-widest font-bold">Scroll</span>
-            <ArrowDown size={20} />
-        </div>
       </section>
 
-      {/* 2. MARQUEE BANNER */}
-      <div className="bg-nomad-gold text-white py-4 md:py-5 relative z-20 shadow-lg">
+      {/* 2. TEXT MARQUEE BANNER */}
+      <div className="bg-nomad-gold text-white py-3 relative z-20 shadow-md overflow-hidden">
          <div className="flex animate-marquee whitespace-nowrap">
             {[...Array(6)].map((_, i) => (
-                <div key={i} className="flex items-center px-12">
-                    <span className="text-[10px] md:text-sm font-bold uppercase tracking-[0.2em] md:tracking-[0.3em]">{marqueeText}</span>
-                    <span className="mx-12 opacity-40 text-lg">•</span>
+                <div key={i} className="flex items-center px-8">
+                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em]">{marqueeText}</span>
+                    <span className="mx-8 opacity-50 text-xs">•</span>
                 </div>
             ))}
          </div>
       </div>
 
-      {/* 3. COLLECTIONS GRID (Paper BG) */}
+      {/* 3. BRANDS MARQUEE (The "Rotating Brand Rows") */}
+      <div className="bg-nomad-paper py-10 md:py-16 border-b border-nomad-black/5 overflow-hidden">
+          <div className="flex animate-marquee whitespace-nowrap items-center">
+              {/* Duplicate list 4 times for smooth infinite loop on wide screens */}
+              {[...Array(4)].map((_, setIndex) => (
+                  <div key={setIndex} className="flex items-center">
+                      {brands.map((brand, i) => (
+                          <span 
+                            key={`${setIndex}-${i}`} 
+                            className="mx-8 md:mx-12 text-2xl md:text-4xl font-serif font-bold text-nomad-black/20 uppercase tracking-wider hover:text-nomad-black/40 transition-colors cursor-default select-none"
+                          >
+                              {brand}
+                          </span>
+                      ))}
+                  </div>
+              ))}
+          </div>
+      </div>
+
+      {/* 4. COLLECTIONS GRID (Paper BG) */}
       <section className="py-20 md:py-32 container mx-auto px-6 md:px-12 relative">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 md:mb-16 gap-8">
             <div className="max-w-2xl text-center md:text-left fade-up-init w-full md:w-auto">
@@ -149,7 +170,7 @@ const Home: React.FC = () => {
           </div>
       </section>
 
-      {/* 4. FEATURED MACHINES (White BG, Rounded Cut) */}
+      {/* 5. FEATURED MACHINES (White BG, Rounded Cut) */}
       <section className="bg-white rounded-t-[3rem] md:rounded-t-[5rem] relative z-10 -mt-10 pt-20 pb-32 md:pt-32 md:pb-40 shadow-[0_-20px_40px_rgba(0,0,0,0.05)]">
         <div className="container mx-auto px-6 md:px-12">
            <div className="flex items-center justify-between mb-12 md:mb-16 fade-up-init">
@@ -173,7 +194,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. CURATED FAVORITES (Black BG, Rounded Cut) */}
+      {/* 6. CURATED FAVORITES (Black BG, Rounded Cut) */}
       <section className="bg-nomad-black text-nomad-paper rounded-t-[3rem] md:rounded-t-[5rem] relative z-20 -mt-20 pt-20 pb-32 md:pt-32 md:pb-48 shadow-[0_-20px_40px_rgba(0,0,0,0.1)]">
         <div className="container mx-auto px-6 md:px-12">
             <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20 fade-up-init">
@@ -211,7 +232,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 6. TESTIMONIALS (Paper BG, Rounded Cut) */}
+      {/* 7. TESTIMONIALS (Paper BG, Rounded Cut) */}
       <section className="bg-nomad-paper rounded-t-[3rem] md:rounded-t-[5rem] relative z-30 -mt-20 pt-20 pb-24 md:pt-32 md:pb-40 shadow-[0_-20px_40px_rgba(0,0,0,0.1)]">
         <div className="container mx-auto px-6 text-center max-w-5xl fade-up-init">
             <div className="mb-12">
