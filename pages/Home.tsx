@@ -48,9 +48,6 @@ const Home: React.FC = () => {
 
   const trendingTerms = siteContent.home.trendingTags || ['Espresso', 'Grinder', 'Roast', 'Accessories'];
   const marqueeText = siteContent.home.marqueeText || "Free Shipping on Orders Over Rs. 5000 • Direct Import from Italy";
-  const brands = siteContent.home.brands && siteContent.home.brands.length > 0 
-    ? siteContent.home.brands 
-    : ['La Marzocco', 'Nuova Simonelli', 'Mahlkönig', 'Hario', 'Fellow', 'AeroPress', 'Comandante', 'Baratza'];
   
   // Categorization
   const mainCategory = categories.find(c => c.title.toLowerCase().includes('machine')) || categories[0] || { title: 'Machines' };
@@ -64,8 +61,8 @@ const Home: React.FC = () => {
   return (
     <div className="bg-nomad-paper w-full overflow-hidden">
       
-      {/* 1. HERO SECTION (Rectangular Bottom now) */}
-      <section className="relative w-full h-screen min-h-[700px] flex items-center justify-center overflow-hidden z-10 pb-20">
+      {/* 1. HERO SECTION */}
+      <section className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden rounded-b-[3rem] md:rounded-b-[5rem] shadow-xl z-30">
         <div className="absolute inset-0 z-0">
             <video 
                 autoPlay muted loop playsInline
@@ -78,7 +75,7 @@ const Home: React.FC = () => {
         </div>
 
         {/* Content Container - Centered Vertically */}
-        <div className="relative z-10 container mx-auto px-4 md:px-6 text-center text-white h-full flex flex-col justify-center items-center pt-10">
+        <div className="relative z-10 container mx-auto px-4 md:px-6 text-center text-white h-full flex flex-col justify-center items-center pt-20">
             <div className="w-full max-w-7xl mx-auto space-y-8 animate-slide-up">
                 <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] font-serif font-bold leading-[1.1] tracking-tight drop-shadow-2xl whitespace-nowrap">
                     {hero.title}
@@ -148,39 +145,16 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. MARQUEE & BRANDS (Overlapping Hero) */}
-      {/* This section has the rounded top and negative margin to 'cut' the hero */}
-      <div className="bg-nomad-paper relative z-20 -mt-16 md:-mt-24 rounded-t-[3rem] md:rounded-t-[5rem] overflow-hidden shadow-[0_-20px_60px_rgba(0,0,0,0.3)]">
-          
-          {/* Gold Banner Inside Rounded Container */}
-          <div className="bg-nomad-gold text-white py-4 pt-8 md:pt-10">
-             <div className="flex animate-marquee whitespace-nowrap">
-                {[...Array(6)].map((_, i) => (
-                    <div key={i} className="flex items-center px-8">
-                        <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em]">{marqueeText}</span>
-                        <span className="mx-8 opacity-50 text-xs">•</span>
-                    </div>
-                ))}
-             </div>
-          </div>
-
-          {/* Brands */}
-          <div className="py-10 md:py-16 border-b border-nomad-black/5">
-              <div className="flex animate-marquee whitespace-nowrap items-center">
-                  {[...Array(4)].map((_, setIndex) => (
-                      <div key={setIndex} className="flex items-center">
-                          {brands.map((brand, i) => (
-                              <span 
-                                key={`${setIndex}-${i}`} 
-                                className="mx-8 md:mx-12 text-2xl md:text-4xl font-serif font-bold text-nomad-black/20 uppercase tracking-wider hover:text-nomad-black/40 transition-colors cursor-default select-none"
-                              >
-                                  {brand}
-                              </span>
-                          ))}
-                      </div>
-                  ))}
-              </div>
-          </div>
+      {/* 2. TEXT MARQUEE BANNER */}
+      <div className="bg-nomad-gold text-white py-4 relative z-20 shadow-md overflow-hidden -mt-6 pt-10 pb-4">
+         <div className="flex animate-marquee whitespace-nowrap">
+            {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex items-center px-8">
+                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em]">{marqueeText}</span>
+                    <span className="mx-8 opacity-50 text-xs">•</span>
+                </div>
+            ))}
+         </div>
       </div>
 
       {/* 4. COLLECTIONS GRID (Paper BG) */}

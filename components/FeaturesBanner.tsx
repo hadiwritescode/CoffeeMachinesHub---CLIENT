@@ -1,8 +1,34 @@
 import React from 'react';
+import { useStore } from '../context/StoreContext';
 
 const FeaturesBanner: React.FC = () => {
+  const { siteContent } = useStore();
+  
+  const brands = siteContent.home?.brands && siteContent.home.brands.length > 0 
+    ? siteContent.home.brands 
+    : ['La Marzocco', 'Nuova Simonelli', 'Mahlkönig', 'Hario', 'Fellow', 'AeroPress', 'Comandante', 'Baratza'];
+
   return (
-    <div className="w-full bg-[#F0EBE0] rounded-t-[3rem] md:rounded-t-[5rem] -mt-16 md:-mt-24 relative z-10 pt-24 pb-32 shadow-[0_-20px_60px_rgba(0,0,0,0.05)]">
+    <div className="w-full bg-nomad-paper rounded-b-[3rem] md:rounded-b-[5rem] relative z-10 pt-24 pb-32 mb-[500px] md:mb-[450px] shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
+      
+      {/* Brands Marquee - Moved Here */}
+      <div className="mb-20 overflow-hidden opacity-50 hover:opacity-100 transition-opacity">
+          <div className="flex animate-marquee whitespace-nowrap items-center">
+              {[...Array(4)].map((_, setIndex) => (
+                  <div key={setIndex} className="flex items-center">
+                      {brands.map((brand, i) => (
+                          <span 
+                            key={`${setIndex}-${i}`} 
+                            className="mx-8 md:mx-12 text-2xl md:text-4xl font-serif font-bold text-nomad-black/20 uppercase tracking-wider cursor-default select-none"
+                          >
+                              {brand}
+                          </span>
+                      ))}
+                  </div>
+              ))}
+          </div>
+      </div>
+
       <div className="container mx-auto px-6 max-w-6xl">
         <div className="flex flex-col md:flex-row justify-center items-center text-center divide-y md:divide-y-0 md:divide-x divide-nomad-black/10 gap-8 md:gap-0">
           
