@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, BlogPost, Order, User, SiteContent, NavCategory, Testimonial, Message, CartItem } from '../types';
-import { BRAND_LOGOS, NAVIGATION_LINKS, FAQS, INITIAL_CATEGORIES } from '../constants';
+import { BRAND_LOGOS, INITIAL_CATEGORIES, FAQS } from '../constants';
 import { 
-  collection, onSnapshot, doc, setDoc, getDoc, updateDoc, addDoc, query, where, deleteDoc
+  collection, onSnapshot, doc, setDoc, getDoc, updateDoc, addDoc, deleteDoc
 } from 'firebase/firestore';
 import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -41,6 +41,9 @@ interface StoreContextType {
   removeTestimonial: (id: string) => Promise<void>;
   messages: Message[];
   orders: Order[];
+  addProduct: (p: Product) => Promise<void>;
+  updateProduct: (p: Product) => Promise<void>;
+  removeProduct: (id: string) => Promise<void>;
 }
 
 const defaultSiteContent: SiteContent = {
@@ -67,13 +70,21 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  
+  // Loading state primarily for Auth check to prevent redirect loops. Data loads in background.
   const [loading, setLoading] = useState(true);
+  
   const [cart, setCart] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('cmh_cart');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('cmh_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
+    // Data Listeners - Non-blocking for UI
     const unsubs = [
       onSnapshot(collection(db, 'products'), s => setProducts(s.docs.map(d => ({ id: d.id, ...d.data() } as Product)))),
       onSnapshot(collection(db, 'blogs'), s => setBlogPosts(s.docs.map(d => ({ id: d.id, ...d.data() } as BlogPost)))),
@@ -91,32 +102,41 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
         });
       })
     ];
-
-    // Safety timeout for loading state
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => { unsubs.forEach(u => u()); clearTimeout(timer); };
+    return () => unsubs.forEach(u => u());
   }, []);
 
   useEffect(() => {
+    // Auth Listener - Critical for user context
     const unsub = onAuthStateChanged(auth, async user => {
       if (user) {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        if (snap.exists()) {
-          const uData = snap.data() as User;
-          setCurrentUser({ ...uData, id: user.uid });
-          if (uData.cart?.length) setCart(uData.cart);
+        try {
+          const snap = await getDoc(doc(db, 'users', user.uid));
+          if (snap.exists()) {
+            const uData = snap.data() as User;
+            setCurrentUser({ ...uData, id: user.uid });
+            // Sync cart from DB if user has one, else keep local
+            if (uData.cart && uData.cart.length > 0) {
+               setCart(uData.cart);
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching user data", e);
         }
       } else {
         setCurrentUser(null);
       }
-      setLoading(false);
+      setLoading(false); // Auth check done
     });
     return unsub;
   }, []);
 
   useEffect(() => {
-    if (currentUser) updateDoc(doc(db, 'users', currentUser.id), { cart }).catch(() => {});
-    else localStorage.setItem('cmh_cart', JSON.stringify(cart));
+    // Sync cart to DB or LocalStorage
+    if (currentUser) {
+       updateDoc(doc(db, 'users', currentUser.id), { cart }).catch(() => {});
+    } else {
+       localStorage.setItem('cmh_cart', JSON.stringify(cart));
+    }
   }, [cart, currentUser]);
 
   const addToCart = (p: Product) => {
@@ -175,7 +195,10 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       testimonials, addTestimonial: async t => addDoc(collection(db, 'testimonials'), t),
       updateTestimonial: async t => updateDoc(doc(db, 'testimonials', t.id), { ...t }),
       removeTestimonial: async id => deleteDoc(doc(db, 'testimonials', id)),
-      messages, orders
+      messages, orders,
+      addProduct: async (p: Product) => { await setDoc(doc(db, 'products', p.id), p); },
+      updateProduct: async (p: Product) => { await updateDoc(doc(db, 'products', p.id), { ...p }); },
+      removeProduct: async (id: string) => { await deleteDoc(doc(db, 'products', id)); }
     }}>
       {children}
     </StoreContext.Provider>

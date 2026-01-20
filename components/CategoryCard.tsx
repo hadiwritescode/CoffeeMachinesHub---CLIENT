@@ -1,7 +1,7 @@
-
 import React, { useRef, useState } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { Coffee } from 'lucide-react';
+import { DEFAULT_PRODUCT_IMAGE } from '../constants';
 
 const { Link } = ReactRouterDOM;
 
@@ -14,6 +14,7 @@ interface CategoryCardProps {
 const CategoryCard: React.FC<CategoryCardProps> = ({ title, image, video }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imgSrc, setImgSrc] = useState(image || DEFAULT_PRODUCT_IMAGE);
 
   return (
     <Link 
@@ -28,19 +29,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ title, image, video }) => {
       }}
     >
       <div className="absolute inset-0 z-0 transition-transform duration-[1.5s] ease-out group-hover:scale-110">
-         {image ? (
-           <img 
-              src={image} 
-              alt={title} 
-              onLoad={() => setImageLoaded(true)}
-              className={`w-full h-full object-cover transition-opacity duration-1000 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-              loading="lazy"
-           />
-         ) : (
-           <div className="w-full h-full flex items-center justify-center text-nomad-black/10">
-              <Coffee size={80} strokeWidth={1} />
-           </div>
-         )}
+         <img 
+            src={imgSrc} 
+            alt={title} 
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImgSrc(DEFAULT_PRODUCT_IMAGE)}
+            className={`w-full h-full object-cover transition-opacity duration-1000 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            loading="lazy"
+         />
          <div className="absolute inset-0 bg-gradient-to-t from-nomad-black/95 via-nomad-black/30 to-transparent opacity-90 group-hover:opacity-60 transition-opacity duration-700"></div>
       </div>
 

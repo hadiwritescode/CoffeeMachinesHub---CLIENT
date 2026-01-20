@@ -3,6 +3,8 @@ import { NavLink, Product, BlogPost, FAQItem } from './types';
 // Appending optimization parameters for production performance
 const OPT = "&w=800&q=75&auto=format";
 
+export const DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1587491439243-7f722a84d4ae?auto=format&fit=crop&q=80&w=800";
+
 export const NAVIGATION_LINKS: NavLink[] = [
   { label: 'HOME', href: '/' },
   { 

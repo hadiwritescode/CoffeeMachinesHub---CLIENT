@@ -3,6 +3,7 @@ import { Product } from '../types';
 import * as ReactRouterDOM from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+import { DEFAULT_PRODUCT_IMAGE } from '../constants';
 
 const { Link } = ReactRouterDOM;
 
@@ -15,6 +16,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const { siteContent } = useStore();
+  const [imgSrc, setImgSrc] = useState(product.image || DEFAULT_PRODUCT_IMAGE);
+  const [hoverImgSrc, setHoverImgSrc] = useState(product.hoverImage || product.image || DEFAULT_PRODUCT_IMAGE);
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -50,7 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }
 
   return (
     <div 
-      className="group flex flex-col h-full w-full cursor-pointer"
+      className="group flex flex-col h-full w-full cursor-pointer fade-up-init"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -65,8 +68,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }
         {/* Main Image */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
             <img 
-              src={product.image} 
+              src={imgSrc} 
               alt={product.title}
+              onError={() => setImgSrc(DEFAULT_PRODUCT_IMAGE)}
               loading="lazy"
               className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isHovered && (product.hoverImage || product.hoverVideo) ? 'opacity-0' : 'scale-100 group-hover:scale-110'}`}
             />
@@ -86,8 +90,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'simple' }
             {/* Hover Image (Fallback if no video, or if video fails to load) */}
             {!product.hoverVideo && product.hoverImage && (
               <img 
-                  src={product.hoverImage} 
+                  src={hoverImgSrc} 
                   alt={`${product.title} alternate`}
+                  onError={() => setHoverImgSrc(DEFAULT_PRODUCT_IMAGE)}
                   loading="lazy"
                   className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isHovered ? 'opacity-100' : 'opacity-0'}`}
               />

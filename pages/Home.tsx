@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
@@ -34,8 +33,7 @@ const Home: React.FC = () => {
   const mainCategory = categories.find(c => c.title.toLowerCase().includes('machine')) || categories[0] || { title: 'Machines' };
   const machineProducts = products.filter(p => p.category === mainCategory.title).slice(0, 6);
   const featuredProducts = products.filter(p => p.isFeatured);
-  const displayFavorites = featuredProducts.length > 0 ? featuredProducts : products.slice(0, 6);
-
+  
   const hero = siteContent?.hero;
   const homeText = siteContent?.home;
 
@@ -107,7 +105,7 @@ const Home: React.FC = () => {
       {/* Collections Grid */}
       <section className="py-24 md:py-40 container mx-auto px-6 md:px-12 relative">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 md:mb-24 gap-8">
-            <div className="max-w-2xl text-center md:text-left">
+            <div className="max-w-2xl text-center md:text-left animate-slide-up">
                 <span className="text-nomad-gold text-xs font-bold tracking-[0.3em] uppercase mb-5 block">
                     {homeText.collectionTitle}
                 </span>
@@ -122,7 +120,7 @@ const Home: React.FC = () => {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
              {categories.slice(0, 4).map((cat, idx) => (
-                <div key={idx} className="fade-up-init">
+                <div key={idx} className="animate-slide-up" style={{ animationDelay: `${idx * 0.1}s` }}>
                     <CategoryCard 
                         title={cat.title} 
                         image={cat.image} 
@@ -148,18 +146,21 @@ const Home: React.FC = () => {
            </div>
            
            <div className="flex overflow-x-auto gap-6 md:gap-12 pb-12 no-scrollbar snap-x scroll-pl-6 -mx-6 px-6 md:mx-0 md:px-0">
-              {machineProducts.map(product => (
-                <div key={product.id} className="min-w-[280px] md:min-w-[420px] snap-start">
+              {machineProducts.map((product, idx) => (
+                <div key={product.id} className="min-w-[280px] md:min-w-[420px] snap-start animate-slide-up" style={{ animationDelay: `${idx * 0.1}s` }}>
                   <ProductCard product={product} variant="poster" />
                 </div>
               ))}
+              {machineProducts.length === 0 && (
+                  <p className="text-gray-400 italic">No products currently featured.</p>
+              )}
            </div>
         </div>
       </section>
 
       {/* Testimonials */}
       <section className="py-32 md:py-48 bg-nomad-paper border-t border-nomad-gray/20">
-        <div className="container mx-auto px-6 text-center max-w-5xl">
+        <div className="container mx-auto px-6 text-center max-w-5xl fade-up-init">
             <Quote size={64} className="text-nomad-gold/15 mx-auto mb-16" />
             <div className="relative min-h-[300px] md:min-h-[250px] flex items-center justify-center">
                 {testimonials.map((t, idx) => (
@@ -178,6 +179,14 @@ const Home: React.FC = () => {
                         </div>
                     </div>
                 ))}
+                {testimonials.length === 0 && (
+                     <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <p className="text-2xl md:text-5xl font-serif italic text-gray-400 mb-12 leading-[1.3] md:px-10">
+                            "Excellence in every cup."
+                        </p>
+                        <h4 className="text-sm md:text-base font-bold uppercase tracking-[0.3em] text-nomad-black">Coffee Machines Hub</h4>
+                     </div>
+                )}
             </div>
             
             <div className="flex justify-center gap-3 mt-12">

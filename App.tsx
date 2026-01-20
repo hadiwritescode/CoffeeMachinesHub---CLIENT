@@ -1,5 +1,4 @@
-
-import React, { useEffect, Suspense } from 'react';
+import React, { useEffect, Suspense, useRef } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
 import { StoreProvider, useStore } from './context/StoreContext';
 import Header from './components/Header';
@@ -7,7 +6,6 @@ import Footer from './components/Footer';
 import WhatsAppWidget from './components/WhatsAppWidget';
 import FeaturesBanner from './components/FeaturesBanner';
 import ScrollToTop from './components/ScrollToTop';
-import { Loader2 } from 'lucide-react';
 
 // Production lazy loading strategy
 const Home = React.lazy(() => import('./pages/Home'));
@@ -37,49 +35,67 @@ const { BrowserRouter: Router, Routes, Route, useLocation } = ReactRouterDOM;
 
 const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
   const { pathname } = useLocation();
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-    
-    // Performance optimized observer - only targets elements currently on page
+  }, [pathname]);
+
+  // Dynamic Observer for async content
+  useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-          observer.unobserve(entry.target); // Efficiency: stop watching once visible
+          observer.unobserve(entry.target);
         }
       });
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-    // Use a small delay to ensure React has finished rendering the DOM
-    const timer = setTimeout(() => {
-      document.querySelectorAll('.fade-up-init').forEach(el => observer.observe(el));
-    }, 100);
+    const handleMutations = (mutations: MutationRecord[]) => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(node => {
+            if (node instanceof HTMLElement) {
+               if (node.classList.contains('fade-up-init')) {
+                 observer.observe(node);
+               }
+               // Also check descendants
+               const descendants = node.querySelectorAll('.fade-up-init');
+               descendants.forEach(d => observer.observe(d));
+            }
+          });
+        }
+      });
+    };
+
+    const mutationObserver = new MutationObserver(handleMutations);
+    
+    if (document.getElementById('root')) {
+      mutationObserver.observe(document.getElementById('root')!, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    // Initial scan
+    document.querySelectorAll('.fade-up-init').forEach(el => observer.observe(el));
 
     return () => {
-        clearTimeout(timer);
-        observer.disconnect();
+      observer.disconnect();
+      mutationObserver.disconnect();
     };
   }, [pathname]);
 
   return (
-    <>
-      <Suspense fallback={<PageLoader />}>
+    <div ref={wrapperRef} className="animate-zoom-in min-h-screen">
+      <Suspense fallback={null}>
         {children}
       </Suspense>
       <ScrollToTop />
-    </>
+    </div>
   );
 };
-
-const PageLoader = () => (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-nomad-paper">
-        <div className="flex flex-col items-center gap-4">
-            <Loader2 className="animate-spin text-nomad-gold" size={40} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-nomad-black/40">Loading Hub</span>
-        </div>
-    </div>
-);
 
 const LayoutWithHeaderFooter = ({ children }: { children?: React.ReactNode }) => (
   <div className="flex flex-col min-h-screen">
@@ -94,10 +110,9 @@ const LayoutWithHeaderFooter = ({ children }: { children?: React.ReactNode }) =>
 );
 
 const AppContent = () => {
-  const { loading } = useStore();
-
-  if (loading) return <PageLoader />;
-
+  // We no longer block on loading state for the main app to ensure fast LCP
+  // Auth state is handled inside protected routes or components if needed
+  
   return (
     <Router>
       <PageWrapper>
