@@ -25,7 +25,7 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="w-full bg-nomad-black text-nomad-paper pt-16 md:pt-20 pb-10">
+    <footer className="w-full bg-nomad-black text-nomad-paper pt-24 md:pt-32 pb-10 rounded-t-[3rem] md:rounded-t-[5rem] -mt-16 md:-mt-24 relative z-20 shadow-[0_-20px_60px_rgba(0,0,0,0.3)]">
       <div className="container mx-auto px-6 md:px-12">
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 mb-12 md:mb-16 items-start">

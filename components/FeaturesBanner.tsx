@@ -2,7 +2,7 @@ import React from 'react';
 
 const FeaturesBanner: React.FC = () => {
   return (
-    <div className="w-full bg-[#F0EBE0] border-t border-nomad-black/5 py-16 md:py-20">
+    <div className="w-full bg-[#F0EBE0] rounded-t-[3rem] md:rounded-t-[5rem] -mt-16 md:-mt-24 relative z-10 pt-24 pb-32 shadow-[0_-20px_60px_rgba(0,0,0,0.05)]">
       <div className="container mx-auto px-6 max-w-6xl">
         <div className="flex flex-col md:flex-row justify-center items-center text-center divide-y md:divide-y-0 md:divide-x divide-nomad-black/10 gap-8 md:gap-0">
           

@@ -27,6 +27,9 @@ const Header: React.FC = () => {
   const contactPhone = siteContent.contact?.phone || "03104811010";
   const displayPhone = contactPhone;
   const waPhone = contactPhone.replace(/[^0-9]/g, '');
+
+  // Determine transparent routes (Home and Shop)
+  const isTransparentRoute = location.pathname === '/' || location.pathname === '/shop';
   
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -91,13 +94,20 @@ const Header: React.FC = () => {
   };
 
   const getHeaderClasses = () => {
-    // Always solid paper background, adjustment on scroll for padding
-    const base = 'bg-nomad-paper text-nomad-black shadow-sm border-b border-nomad-black/5';
-    const padding = isScrolled ? 'py-3' : 'py-4 md:py-6';
-    return `${base} ${padding}`;
+    if (isScrolled) {
+      return 'bg-nomad-paper/95 backdrop-blur-md shadow-sm py-3 text-nomad-black';
+    }
+    if (isTransparentRoute && !mobileMenuOpen) {
+      return 'bg-transparent py-4 md:py-6 text-white';
+    }
+    return 'bg-nomad-paper py-4 md:py-6 text-nomad-black shadow-sm border-b border-nomad-black/5';
   };
 
-  const getLogoFill = () => '#3B261B';
+  const getLogoFill = () => {
+    if (isScrolled) return '#3B261B';
+    if (isTransparentRoute && !mobileMenuOpen) return 'white';
+    return '#3B261B';
+  };
 
   return (
     <>

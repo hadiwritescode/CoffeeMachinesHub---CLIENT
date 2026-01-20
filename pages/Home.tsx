@@ -4,11 +4,13 @@ import ProductCard from '../components/ProductCard';
 import CategoryCard from '../components/CategoryCard';
 import { useStore } from '../context/StoreContext';
 import { ArrowRight, Search, Quote } from 'lucide-react';
+import { Product } from '../types';
 
 const { Link, useNavigate } = ReactRouterDOM;
 
 const Home: React.FC = () => {
   const [heroSearch, setHeroSearch] = useState('');
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const navigate = useNavigate();
   const { products, siteContent, testimonials, categories } = useStore();
@@ -21,6 +23,21 @@ const Home: React.FC = () => {
         return () => clearInterval(interval);
     }
   }, [testimonials]);
+
+  // Search Suggestions Logic
+  useEffect(() => {
+      if (heroSearch.trim().length > 1) {
+          const lower = heroSearch.toLowerCase();
+          const matches = products.filter(p => 
+              p.title.toLowerCase().includes(lower) || 
+              p.category?.toLowerCase().includes(lower) ||
+              p.tags?.some(t => t.toLowerCase().includes(lower))
+          ).slice(0, 5);
+          setSuggestions(matches);
+      } else {
+          setSuggestions([]);
+      }
+  }, [heroSearch, products]);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,8 +64,8 @@ const Home: React.FC = () => {
   return (
     <div className="bg-nomad-paper w-full overflow-hidden">
       
-      {/* 1. HERO SECTION */}
-      <section className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden rounded-b-[2.5rem] md:rounded-b-[4rem] shadow-xl">
+      {/* 1. HERO SECTION (Rectangular Bottom now) */}
+      <section className="relative w-full h-screen min-h-[700px] flex items-center justify-center overflow-hidden z-10 pb-20">
         <div className="absolute inset-0 z-0">
             <video 
                 autoPlay muted loop playsInline
@@ -61,10 +78,9 @@ const Home: React.FC = () => {
         </div>
 
         {/* Content Container - Centered Vertically */}
-        <div className="relative z-10 container mx-auto px-6 text-center text-white h-full flex flex-col justify-center items-center pt-16">
-            <div className="max-w-5xl mx-auto space-y-8 animate-slide-up w-full">
-                {/* Text Size Reduced to fit one line: lg:text-9xl -> lg:text-8xl */}
-                <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-serif font-bold leading-[1.1] tracking-tight drop-shadow-2xl">
+        <div className="relative z-10 container mx-auto px-4 md:px-6 text-center text-white h-full flex flex-col justify-center items-center pt-10">
+            <div className="w-full max-w-7xl mx-auto space-y-8 animate-slide-up">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] font-serif font-bold leading-[1.1] tracking-tight drop-shadow-2xl whitespace-nowrap">
                     {hero.title}
                 </h1>
                 
@@ -72,24 +88,51 @@ const Home: React.FC = () => {
                     {hero.subtitle}
                 </p>
 
-                <form onSubmit={handleHeroSearch} className="relative max-w-xl mx-auto group mt-8 z-20">
-                    <input 
-                        type="text"
-                        value={heroSearch}
-                        onChange={(e) => setHeroSearch(e.target.value)}
-                        placeholder="Search machines, beans..."
-                        className="w-full bg-white/10 backdrop-blur-xl border border-white/30 rounded-full py-4 px-6 md:py-5 md:px-12 text-white placeholder:text-white/70 focus:outline-none focus:bg-white/20 focus:border-white transition-all text-base md:text-lg shadow-2xl relative z-20"
-                    />
-                    <button 
-                        type="submit" 
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-nomad-gold text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center hover:scale-105 transition-transform active:scale-95 shadow-lg z-30 cursor-pointer"
-                        aria-label="Search"
-                    >
-                        <Search size={20} className="md:w-5 md:h-5" />
-                    </button>
-                </form>
+                <div className="relative max-w-xl mx-auto group mt-8 z-50">
+                    <form onSubmit={handleHeroSearch} className="relative z-20">
+                        <input 
+                            type="text"
+                            value={heroSearch}
+                            onChange={(e) => setHeroSearch(e.target.value)}
+                            placeholder="Search machines, beans..."
+                            className="w-full bg-white/10 backdrop-blur-xl border border-white/30 rounded-full py-4 px-6 md:py-5 md:px-12 text-white placeholder:text-white/70 focus:outline-none focus:bg-white/20 focus:border-white transition-all text-base md:text-lg shadow-2xl"
+                        />
+                        <button 
+                            type="submit" 
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-nomad-gold text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center hover:scale-105 transition-transform active:scale-95 shadow-lg cursor-pointer"
+                            aria-label="Search"
+                        >
+                            <Search size={20} className="md:w-5 md:h-5" />
+                        </button>
+                    </form>
+
+                    {/* Search Suggestions Dropdown */}
+                    {suggestions.length > 0 && (
+                        <div className="absolute top-full left-0 right-0 mt-3 bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-down text-left border border-gray-100">
+                            {suggestions.map((p) => (
+                                <Link 
+                                    key={p.id} 
+                                    to={`/product/${p.id}`}
+                                    className="flex items-center gap-4 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors"
+                                >
+                                    <img src={p.image} alt={p.title} className="w-10 h-10 rounded-md object-cover bg-gray-100" />
+                                    <div>
+                                        <h4 className="font-bold text-sm text-nomad-black">{p.title}</h4>
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-wide">{p.category}</p>
+                                    </div>
+                                </Link>
+                            ))}
+                            <Link 
+                                to={`/shop?search=${encodeURIComponent(heroSearch)}`}
+                                className="block p-3 text-center text-xs font-bold uppercase tracking-widest text-nomad-gold hover:bg-gray-50 transition-colors"
+                            >
+                                View All Results
+                            </Link>
+                        </div>
+                    )}
+                </div>
                 
-                <div className="flex flex-wrap justify-center gap-3 pt-6 relative z-20">
+                <div className="flex flex-wrap justify-center gap-3 pt-6 relative z-10">
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 w-full mb-2 block">Trending</span>
                     {trendingTerms.map(term => (
                         <button 
@@ -105,33 +148,38 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. TEXT MARQUEE BANNER */}
-      <div className="bg-nomad-gold text-white py-3 relative z-20 shadow-md overflow-hidden">
-         <div className="flex animate-marquee whitespace-nowrap">
-            {[...Array(6)].map((_, i) => (
-                <div key={i} className="flex items-center px-8">
-                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em]">{marqueeText}</span>
-                    <span className="mx-8 opacity-50 text-xs">•</span>
-                </div>
-            ))}
-         </div>
-      </div>
+      {/* 2. MARQUEE & BRANDS (Overlapping Hero) */}
+      {/* This section has the rounded top and negative margin to 'cut' the hero */}
+      <div className="bg-nomad-paper relative z-20 -mt-16 md:-mt-24 rounded-t-[3rem] md:rounded-t-[5rem] overflow-hidden shadow-[0_-20px_60px_rgba(0,0,0,0.3)]">
+          
+          {/* Gold Banner Inside Rounded Container */}
+          <div className="bg-nomad-gold text-white py-4 pt-8 md:pt-10">
+             <div className="flex animate-marquee whitespace-nowrap">
+                {[...Array(6)].map((_, i) => (
+                    <div key={i} className="flex items-center px-8">
+                        <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em]">{marqueeText}</span>
+                        <span className="mx-8 opacity-50 text-xs">•</span>
+                    </div>
+                ))}
+             </div>
+          </div>
 
-      {/* 3. BRANDS MARQUEE */}
-      <div className="bg-nomad-paper py-10 md:py-16 border-b border-nomad-black/5 overflow-hidden">
-          <div className="flex animate-marquee whitespace-nowrap items-center">
-              {[...Array(4)].map((_, setIndex) => (
-                  <div key={setIndex} className="flex items-center">
-                      {brands.map((brand, i) => (
-                          <span 
-                            key={`${setIndex}-${i}`} 
-                            className="mx-8 md:mx-12 text-2xl md:text-4xl font-serif font-bold text-nomad-black/20 uppercase tracking-wider hover:text-nomad-black/40 transition-colors cursor-default select-none"
-                          >
-                              {brand}
-                          </span>
-                      ))}
-                  </div>
-              ))}
+          {/* Brands */}
+          <div className="py-10 md:py-16 border-b border-nomad-black/5">
+              <div className="flex animate-marquee whitespace-nowrap items-center">
+                  {[...Array(4)].map((_, setIndex) => (
+                      <div key={setIndex} className="flex items-center">
+                          {brands.map((brand, i) => (
+                              <span 
+                                key={`${setIndex}-${i}`} 
+                                className="mx-8 md:mx-12 text-2xl md:text-4xl font-serif font-bold text-nomad-black/20 uppercase tracking-wider hover:text-nomad-black/40 transition-colors cursor-default select-none"
+                              >
+                                  {brand}
+                              </span>
+                          ))}
+                      </div>
+                  ))}
+              </div>
           </div>
       </div>
 
