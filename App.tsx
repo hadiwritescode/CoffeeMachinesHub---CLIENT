@@ -1,5 +1,5 @@
 
-import React, { useEffect, Suspense, useRef } from 'react';
+import React, { useEffect, Suspense, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { StoreProvider, useStore } from './context/StoreContext';
 import Header from './components/Header';
@@ -96,22 +96,52 @@ const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
   );
 };
 
-const LayoutWithHeaderFooter = ({ children }: { children?: React.ReactNode }) => (
-  <div className="flex flex-col min-h-screen">
-    <Header />
-    <main className="flex-grow">
-      {children}
-    </main>
-    <FeaturesBanner />
-    <Footer />
-    <WhatsAppWidget />
-  </div>
-);
+const LayoutWithHeaderFooter = ({ children }: { children?: React.ReactNode }) => {
+  const [footerHeight, setFooterHeight] = useState(0);
+  const footerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!footerRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setFooterHeight(entry.contentRect.height);
+      }
+    });
+
+    observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="flex flex-col min-h-screen relative">
+      <Header />
+      
+      {/* Content Wrapper covers Fixed Footer */}
+      <div 
+        className="relative z-10" 
+        style={{ marginBottom: footerHeight }}
+      >
+        <main className="flex-grow bg-nomad-paper">
+          {children}
+        </main>
+        <FeaturesBanner />
+      </div>
+
+      {/* Fixed Footer (Revealed on Scroll) */}
+      <div 
+        ref={footerRef} 
+        className="fixed bottom-0 left-0 w-full z-0"
+      >
+        <Footer />
+      </div>
+      
+      <WhatsAppWidget />
+    </div>
+  );
+};
 
 const AppContent = () => {
-  // We no longer block on loading state for the main app to ensure fast LCP
-  // Auth state is handled inside protected routes or components if needed
-  
   return (
     <Router>
       <PageWrapper>

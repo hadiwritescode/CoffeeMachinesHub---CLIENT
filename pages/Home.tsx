@@ -60,89 +60,91 @@ const Home: React.FC = () => {
   return (
     <div className="w-full">
       
-      {/* 1. HERO SECTION (Relative Scrolling) */}
-      <section className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-nomad-black">
-        <div className="absolute inset-0 z-0">
-            <video 
-                autoPlay muted loop playsInline
-                className="w-full h-full object-cover brightness-[0.65]"
-                poster="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=60&w=1200"
-            >
-                <source src={hero.videoUrl} type="video/mp4" />
-            </video>
-            <div className="absolute inset-0 bg-black/20"></div>
-        </div>
+      {/* 1. HERO SECTION (Fixed Stagnant Background) */}
+      <div className="relative w-full h-screen min-h-[600px]">
+          <section className="fixed top-0 left-0 w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-nomad-black z-0 pointer-events-none md:pointer-events-auto">
+            <div className="absolute inset-0 z-0">
+                <video 
+                    autoPlay muted loop playsInline
+                    className="w-full h-full object-cover brightness-[0.65]"
+                    poster="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=60&w=1200"
+                >
+                    <source src={hero.videoUrl} type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/20"></div>
+            </div>
 
-        {/* Content Container - Centered Vertically with bottom padding to shift up */}
-        <div className="relative z-10 container mx-auto px-4 md:px-6 text-center text-white h-full flex flex-col justify-center items-center pt-20 pb-32">
-            <div className="w-full max-w-7xl mx-auto space-y-8 animate-slide-up">
-                <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] font-serif font-bold leading-[1.1] tracking-tight drop-shadow-2xl whitespace-nowrap">
-                    {hero.title}
-                </h1>
-                
-                <p className="text-lg md:text-2xl font-light text-white/90 tracking-wide max-w-2xl mx-auto">
-                    {hero.subtitle}
-                </p>
+            {/* Content Container */}
+            <div className="relative z-10 container mx-auto px-4 md:px-6 text-center text-white h-full flex flex-col justify-center items-center pt-20 pb-32">
+                <div className="w-full max-w-7xl mx-auto space-y-8 animate-slide-up">
+                    <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] font-serif font-bold leading-[1.1] tracking-tight drop-shadow-2xl whitespace-nowrap">
+                        {hero.title}
+                    </h1>
+                    
+                    <p className="text-lg md:text-2xl font-light text-white/90 tracking-wide max-w-2xl mx-auto">
+                        {hero.subtitle}
+                    </p>
 
-                <div className="relative max-w-xl mx-auto group mt-8 z-50">
-                    <form onSubmit={handleHeroSearch} className="relative z-20">
-                        <input 
-                            type="text"
-                            value={heroSearch}
-                            onChange={(e) => setHeroSearch(e.target.value)}
-                            placeholder="Search machines, beans..."
-                            className="w-full bg-white/10 backdrop-blur-xl border border-white/30 rounded-full py-4 px-6 md:py-5 md:px-12 text-white placeholder:text-white/70 focus:outline-none focus:bg-white/20 focus:border-white transition-all text-base md:text-lg shadow-2xl"
-                        />
-                        <button 
-                            type="submit" 
-                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-nomad-gold text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center hover:scale-105 transition-transform active:scale-95 shadow-lg cursor-pointer"
-                            aria-label="Search"
-                        >
-                            <Search size={20} className="md:w-5 md:h-5" />
-                        </button>
-                    </form>
-
-                    {/* Search Suggestions Dropdown */}
-                    {suggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-3 bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-down text-left border border-gray-100 text-nomad-black">
-                            {suggestions.map((p) => (
-                                <Link 
-                                    key={p.id} 
-                                    to={`/product/${p.id}`}
-                                    className="flex items-center gap-4 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors"
-                                >
-                                    <img src={p.image} alt={p.title} className="w-10 h-10 rounded-md object-cover bg-gray-100" />
-                                    <div>
-                                        <h4 className="font-bold text-sm text-nomad-black">{p.title}</h4>
-                                        <p className="text-[10px] text-gray-500 uppercase tracking-wide">{p.category}</p>
-                                    </div>
-                                </Link>
-                            ))}
-                            <Link 
-                                to={`/shop?search=${encodeURIComponent(heroSearch)}`}
-                                className="block p-3 text-center text-xs font-bold uppercase tracking-widest text-nomad-gold hover:bg-gray-50 transition-colors"
+                    <div className="relative max-w-xl mx-auto group mt-8 z-50 pointer-events-auto">
+                        <form onSubmit={handleHeroSearch} className="relative z-20">
+                            <input 
+                                type="text"
+                                value={heroSearch}
+                                onChange={(e) => setHeroSearch(e.target.value)}
+                                placeholder="Search machines, beans..."
+                                className="w-full bg-white/10 backdrop-blur-xl border border-white/30 rounded-full py-4 px-6 md:py-5 md:px-12 text-white placeholder:text-white/70 focus:outline-none focus:bg-white/20 focus:border-white transition-all text-base md:text-lg shadow-2xl"
+                            />
+                            <button 
+                                type="submit" 
+                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-nomad-gold text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center hover:scale-105 transition-transform active:scale-95 shadow-lg cursor-pointer"
+                                aria-label="Search"
                             >
-                                View All Results
-                            </Link>
-                        </div>
-                    )}
-                </div>
-                
-                <div className="flex flex-wrap justify-center gap-3 pt-6 relative z-10">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 w-full mb-2 block">Trending</span>
-                    {trendingTerms.map(term => (
-                        <button 
-                            key={term}
-                            onClick={() => navigate(`/shop?search=${encodeURIComponent(term)}`)}
-                            className="px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-nomad-black transition-all cursor-pointer"
-                        >
-                            {term}
-                        </button>
-                    ))}
+                                <Search size={20} className="md:w-5 md:h-5" />
+                            </button>
+                        </form>
+
+                        {/* Search Suggestions Dropdown */}
+                        {suggestions.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-3 bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-down text-left border border-gray-100 text-nomad-black">
+                                {suggestions.map((p) => (
+                                    <Link 
+                                        key={p.id} 
+                                        to={`/product/${p.id}`}
+                                        className="flex items-center gap-4 p-4 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors"
+                                    >
+                                        <img src={p.image} alt={p.title} className="w-10 h-10 rounded-md object-cover bg-gray-100" />
+                                        <div>
+                                            <h4 className="font-bold text-sm text-nomad-black">{p.title}</h4>
+                                            <p className="text-[10px] text-gray-500 uppercase tracking-wide">{p.category}</p>
+                                        </div>
+                                    </Link>
+                                ))}
+                                <Link 
+                                    to={`/shop?search=${encodeURIComponent(heroSearch)}`}
+                                    className="block p-3 text-center text-xs font-bold uppercase tracking-widest text-nomad-gold hover:bg-gray-50 transition-colors"
+                                >
+                                    View All Results
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="flex flex-wrap justify-center gap-3 pt-6 relative z-10 pointer-events-auto">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 w-full mb-2 block">Trending</span>
+                        {trendingTerms.map(term => (
+                            <button 
+                                key={term}
+                                onClick={() => navigate(`/shop?search=${encodeURIComponent(term)}`)}
+                                className="px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-nomad-black transition-all cursor-pointer"
+                            >
+                                {term}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
-        </div>
-      </section>
+          </section>
+      </div>
 
       {/* 2. MAIN CONTENT AREA */}
       <div className="relative z-10 bg-nomad-paper rounded-t-[3rem] md:rounded-t-[5rem] overflow-hidden -mt-16 shadow-[0_-20px_60px_rgba(0,0,0,0.3)]">
