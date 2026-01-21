@@ -73,8 +73,8 @@ const Home: React.FC = () => {
             <div className="absolute inset-0 bg-black/20"></div>
         </div>
 
-        {/* Content Container - Centered Vertically */}
-        <div className="relative z-10 container mx-auto px-4 md:px-6 text-center text-white h-full flex flex-col justify-center items-center pt-20">
+        {/* Content Container - Centered Vertically with bottom padding to shift up */}
+        <div className="relative z-10 container mx-auto px-4 md:px-6 text-center text-white h-full flex flex-col justify-center items-center pt-20 pb-32">
             <div className="w-full max-w-7xl mx-auto space-y-8 animate-slide-up">
                 <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] font-serif font-bold leading-[1.1] tracking-tight drop-shadow-2xl whitespace-nowrap">
                     {hero.title}
