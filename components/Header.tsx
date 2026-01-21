@@ -253,7 +253,7 @@ const Header: React.FC = () => {
 
         {/* Full Screen Search Overlay */}
         <div 
-            className={`fixed inset-0 bg-[#3B261B]/98 backdrop-blur-3xl z-[200] flex flex-col items-center justify-center transition-all duration-500 ${searchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            className={`fixed inset-0 bg-[#3B261B] z-[200] flex flex-col items-center justify-center transition-all duration-500 ${searchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
             <button 
                 onClick={() => setSearchOpen(false)} 
@@ -271,7 +271,7 @@ const Header: React.FC = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Type to search..." 
-                        className="w-full bg-transparent border-none py-6 text-4xl md:text-7xl font-serif font-medium text-center focus:outline-none text-[#EAE4D6] placeholder:text-[#EAE4D6]/30"
+                        className="w-full bg-transparent border-none py-6 text-4xl md:text-7xl font-serif font-medium text-center focus:outline-none text-white placeholder:text-white/60"
                     />
                     <button 
                         type="submit" 

@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import { auth } from '../firebase';
 
 interface Props {
@@ -12,9 +12,9 @@ interface State {
 
 /**
  * ErrorBoundary class component to catch rendering errors in its child component tree.
- * Explicitly extends React.Component to ensure proper 'props' and 'state' typing.
+ * Explicitly extends React.Component to ensure proper 'props' is accessible.
  */
-class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundary extends React.Component<Props, State> {
   public state: State = {
     hasError: false,
     error: null
