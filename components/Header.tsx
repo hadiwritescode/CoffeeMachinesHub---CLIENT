@@ -128,10 +128,11 @@ const Header: React.FC = () => {
   return (
     <>
       <header className={`fixed top-0 w-full z-[100] transition-all duration-300 ease-in-out ${getHeaderClasses()}`}>
-        <div className="container mx-auto px-6 md:px-12 flex items-center justify-between relative h-full">
+        {/* Using a 3-column flex layout to center Nav without transforms */}
+        <div className="container mx-auto px-6 md:px-12 flex items-center h-full relative">
           
-          {/* Left Side: Mobile Menu Toggle & Desktop Logo */}
-          <div className="flex items-center z-[110]">
+          {/* 1. Left Side: Mobile Menu Toggle & Desktop Logo */}
+          <div className="flex-1 flex items-center justify-start z-[110]">
               {/* Mobile Toggle */}
               <div className="md:hidden">
                 <button 
@@ -143,8 +144,8 @@ const Header: React.FC = () => {
                 </button>
               </div>
 
-              {/* Desktop Logo - Aligned Left */}
-              <Link to="/" className="hidden md:block transition-transform hover:scale-105">
+              {/* Desktop Logo */}
+              <Link to="/" className="hidden md:block transition-transform hover:scale-105 origin-left">
                 <Logo 
                     className={`transition-all duration-300 ${isScrolled ? 'h-10 md:h-12' : 'h-12 md:h-14'}`} 
                     fill={getLogoFill()}
@@ -152,9 +153,9 @@ const Header: React.FC = () => {
               </Link>
           </div>
 
-          {/* Center: Mobile Logo & Desktop Nav (Absolutely Centered) */}
+          {/* 2. Center: Mobile Logo (Absolute) & Desktop Nav (Flex) */}
           
-          {/* Mobile Logo (Absolute Center) */}
+          {/* Mobile Logo - Centered Absolutely (fine for mobile view) */}
           <Link to="/" className="md:hidden absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[110]">
             <Logo 
                 className={`transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12'}`} 
@@ -162,8 +163,8 @@ const Header: React.FC = () => {
             />
           </Link>
 
-          {/* Desktop Nav (Absolute Center) */}
-          <nav className="hidden md:flex space-x-8 lg:space-x-10 items-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          {/* Desktop Nav - Centered via Flexbox (No Transform) */}
+          <nav className="hidden md:flex space-x-8 lg:space-x-10 items-center justify-center">
             {dynamicNavLinks.map((link) => (
               <div 
                 key={link.label}
@@ -180,6 +181,7 @@ const Header: React.FC = () => {
                 </Link>
                 
                 {/* MEGA MENU - FULL WIDTH */}
+                {/* Fixed positioning relative to viewport because parent Nav has no transforms */}
                 {link.subItems && link.subItems.length > 0 && activeDropdown === link.label && (
                   <div className="fixed left-0 top-[64px] md:top-[74px] w-screen bg-nomad-paper shadow-xl z-40 border-t border-nomad-black/5 animate-in fade-in slide-in-from-top-2 text-nomad-black h-auto max-h-[85vh] overflow-y-auto">
                     <div className="w-full px-8 md:px-12 py-12">
@@ -234,8 +236,8 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* Right Side: Icons */}
-          <div className="flex items-center space-x-4 md:space-x-6 z-[110]">
+          {/* 3. Right Side: Icons - flex-1 to balance layout */}
+          <div className="flex-1 flex items-center justify-end space-x-4 md:space-x-6 z-[110]">
             <button onClick={() => setSearchOpen(true)} className={`transition-colors p-1 ${getNavLinkClass()}`} aria-label="Search">
               <Search strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />
             </button>

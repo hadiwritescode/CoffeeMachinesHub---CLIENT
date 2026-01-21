@@ -12,21 +12,27 @@ const FeaturesBanner: React.FC = () => {
   return (
     <div className="w-full bg-nomad-paper rounded-b-[3rem] md:rounded-b-[5rem] relative z-10 pt-24 pb-32 shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
       
-      {/* Brands Marquee - Moved Here */}
-      <div className="mb-20 overflow-hidden opacity-50 hover:opacity-100 transition-opacity">
-          <div className="flex animate-marquee whitespace-nowrap items-center">
-              {[...Array(4)].map((_, setIndex) => (
-                  <div key={setIndex} className="flex items-center">
-                      {brands.map((brand, i) => (
-                          <span 
-                            key={`${setIndex}-${i}`} 
-                            className="mx-8 md:mx-12 text-2xl md:text-4xl font-serif font-bold text-nomad-black/20 uppercase tracking-wider cursor-default select-none"
-                          >
-                              {brand}
-                          </span>
-                      ))}
-                  </div>
-              ))}
+      {/* Brands Section */}
+      <div className="mb-20">
+          <div className="text-center mb-10">
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-nomad-black/40">Brands we work with</span>
+          </div>
+          
+          <div className="overflow-hidden opacity-50 hover:opacity-100 transition-opacity">
+              <div className="flex animate-marquee whitespace-nowrap items-center">
+                  {[...Array(4)].map((_, setIndex) => (
+                      <div key={setIndex} className="flex items-center">
+                          {brands.map((brand, i) => (
+                              <span 
+                                key={`${setIndex}-${i}`} 
+                                className="mx-8 md:mx-12 text-2xl md:text-4xl font-serif font-bold text-nomad-black/20 uppercase tracking-wider cursor-default select-none"
+                              >
+                                  {brand}
+                              </span>
+                          ))}
+                      </div>
+                  ))}
+              </div>
           </div>
       </div>
 

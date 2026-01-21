@@ -1,3 +1,4 @@
+
 import React, { useEffect, Suspense, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { StoreProvider, useStore } from './context/StoreContext';
@@ -86,7 +87,7 @@ const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
   }, [pathname]);
 
   return (
-    <div ref={wrapperRef} className="animate-zoom-in min-h-screen">
+    <div ref={wrapperRef} className="animate-fade-in min-h-screen">
       <Suspense fallback={null}>
         {children}
       </Suspense>
