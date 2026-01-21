@@ -19,7 +19,7 @@ const FeaturesBanner: React.FC = () => {
           </div>
           
           <div className="overflow-hidden opacity-50 hover:opacity-100 transition-opacity">
-              <div className="flex animate-marquee whitespace-nowrap items-center">
+              <div className="flex animate-marquee whitespace-nowrap items-center" style={{ animationDuration: '10s' }}>
                   {[...Array(4)].map((_, setIndex) => (
                       <div key={setIndex} className="flex items-center">
                           {brands.map((brand, i) => (
