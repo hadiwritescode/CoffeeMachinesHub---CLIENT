@@ -23,6 +23,28 @@ const Home: React.FC = () => {
     }
   }, [testimonials]);
 
+  // Handle Hero Visibility on Scroll to ensure Footer Reveal works
+  useEffect(() => {
+    const handleScroll = () => {
+        const hero = document.getElementById('home-hero');
+        if (hero) {
+            // Hide hero when we scroll past 120% of viewport to ensure it doesn't block the footer (z-index conflict)
+            if (window.scrollY > window.innerHeight * 1.2) {
+                hero.style.opacity = '0';
+                hero.style.visibility = 'hidden'; // Ensure it doesn't take clicks or block view
+            } else {
+                hero.style.opacity = '1';
+                hero.style.visibility = 'visible';
+            }
+        }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Initial check
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Search Suggestions Logic
   useEffect(() => {
       if (heroSearch.trim().length > 1) {
@@ -62,7 +84,10 @@ const Home: React.FC = () => {
       
       {/* 1. HERO SECTION (Fixed Stagnant Background) */}
       <div className="relative w-full h-screen min-h-[600px]">
-          <section className="fixed top-0 left-0 w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-nomad-black z-0 pointer-events-none md:pointer-events-auto">
+          <section 
+            id="home-hero"
+            className="fixed top-0 left-0 w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-nomad-black z-0 pointer-events-none md:pointer-events-auto transition-opacity duration-500"
+          >
             <div className="absolute inset-0 z-0">
                 <video 
                     autoPlay muted loop playsInline

@@ -1,5 +1,5 @@
 
-import React, { useEffect, Suspense, useRef } from 'react';
+import React, { useEffect, Suspense, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { StoreProvider } from './context/StoreContext';
 import Header from './components/Header';
@@ -97,22 +97,50 @@ const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
 };
 
 const LayoutWithHeaderFooter = ({ children }: { children?: React.ReactNode }) => {
+  const [footerHeight, setFooterHeight] = useState(0);
+  const footerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!footerRef.current) return;
+    
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setFooterHeight(entry.contentRect.height);
+      }
+    });
+
+    observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen relative">
       <Header />
       
       {/* 
-        Stacking Context Strategy:
-        1. Main content has z-10 to allow fixed Hero (z-0) inside it to work properly.
-        2. Footer wrapper also has z-10 to ensure it scrolls ON TOP of the fixed Hero 
-           when reaching the bottom of the page.
+        Stacking Context Strategy for Footer Reveal:
+        1. Content Wrapper (z-10): Contains Header, Main, FeaturesBanner.
+           It has bg-nomad-paper to cover the fixed footer initially.
+           It has margin-bottom equal to footer height to allow scrolling "past" content.
+        2. Footer (z-0): Fixed at bottom. Visible when Content Wrapper scrolls up.
       */}
-      <main className="flex-grow bg-nomad-paper relative z-10">
-        {children}
-      </main>
-
-      <div className="relative z-10">
+      <div 
+        className="relative z-10 bg-nomad-paper shadow-2xl"
+        style={{ marginBottom: `${footerHeight}px` }}
+      >
+        <main className="flex-grow min-h-screen">
+          {children}
+        </main>
         <FeaturesBanner />
+        
+        {/* Shadow Overlay for depth effect at the bottom of content */}
+        <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black/10 to-transparent pointer-events-none rounded-b-[3rem] md:rounded-b-[5rem] -z-10"></div>
+      </div>
+
+      <div 
+        ref={footerRef}
+        className="fixed bottom-0 left-0 w-full z-0"
+      >
         <Footer />
       </div>
       
