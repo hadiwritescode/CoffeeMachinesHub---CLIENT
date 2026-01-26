@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import { auth } from '../firebase';
 
 interface Props {
@@ -13,7 +13,7 @@ interface State {
 /**
  * ErrorBoundary class component to catch rendering errors in its child component tree.
  */
-class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundary extends React.Component<Props, State> {
   public state: State = {
     hasError: false,
     error: null
@@ -30,7 +30,10 @@ class ErrorBoundary extends Component<Props, State> {
   // Handle logout and local storage reset to clear potentially corrupted state
   private handleReset = async () => {
     try {
-        await auth.signOut();
+        // auth might be an empty object if using the deprecated firebase file
+        if ((auth as any).signOut) {
+            await (auth as any).signOut();
+        }
         localStorage.clear();
         window.location.href = '/';
     } catch (e) {
