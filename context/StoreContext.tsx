@@ -2,11 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, BlogPost, Order, User, SiteContent, NavCategory, Testimonial, Message, CartItem } from '../types';
 import { BRAND_LOGOS, INITIAL_CATEGORIES, FAQS } from '../constants';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/firestore';
-import 'firebase/compat/auth';
-import 'firebase/compat/storage';
-import { db, auth, storage } from '../firebase';
+import { supabase } from '../supabase';
 import { useToast } from './ToastContext';
 
 interface StoreContextType {
@@ -30,7 +26,7 @@ interface StoreContextType {
   deleteMessage: (id: string) => Promise<void>;
   toggleWishlist: (id: string) => Promise<void>;
   updateUserProfile: (d: any) => Promise<void>;
-  uploadFile: (f: File, p: string) => Promise<string>;
+  uploadFile: (f: File, bucket: string) => Promise<string>;
   updateSiteContent: (s: keyof SiteContent, d: any) => Promise<void>;
   setCategories: (c: NavCategory[]) => Promise<void>;
   blogPosts: BlogPost[];
@@ -147,72 +143,98 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
   });
 
+  // Fetch Initial Data & Subscribe to Realtime Changes
   useEffect(() => {
-    const unsubs = [
-      db.collection('products').onSnapshot((s) => setProducts(s.docs.map(d => ({ id: d.id, ...d.data() } as Product)))),
-      db.collection('blogs').onSnapshot((s) => setBlogPosts(s.docs.map(d => ({ id: d.id, ...d.data() } as BlogPost)))),
-      db.collection('testimonials').onSnapshot((s) => setTestimonials(s.docs.map(d => ({ id: d.id, ...d.data() } as Testimonial)))),
-      db.collection('messages').onSnapshot((s) => setMessages(s.docs.map(d => ({ id: d.id, ...d.data() } as Message)))),
-      db.collection('orders').onSnapshot((s) => setOrders(s.docs.map(d => ({ id: d.id, ...d.data() } as Order)))),
-      db.collection('content').doc('navigation').onSnapshot((d) => {
-         const data = d.data() as any;
-         if (d.exists && data?.categories) {
-            setCategoriesState(data.categories);
-         }
-      }),
-      db.collection('content').onSnapshot((s) => {
-        setSiteContent(prev => {
-          const next = { ...prev };
-          s.docs.forEach(d => {
-            if (d.id !== 'navigation') {
-                const data = d.data();
-                (next as any)[d.id] = { ...(next as any)[d.id], ...data };
-            }
-          });
-          return next;
-        });
-      })
+    const fetchAll = async () => {
+        // Products
+        const { data: prodData } = await supabase.from('products').select('*');
+        if (prodData) setProducts(prodData);
+
+        // Blogs
+        const { data: blogData } = await supabase.from('blogs').select('*');
+        if (blogData) setBlogPosts(blogData);
+
+        // Testimonials
+        const { data: testData } = await supabase.from('testimonials').select('*');
+        if (testData) setTestimonials(testData);
+
+        // Messages
+        const { data: msgData } = await supabase.from('messages').select('*');
+        if (msgData) setMessages(msgData);
+
+        // Orders
+        const { data: ordData } = await supabase.from('orders').select('*');
+        if (ordData) setOrders(ordData);
+
+        // Content (Map key-value rows to SiteContent object)
+        const { data: contentData } = await supabase.from('content').select('*');
+        if (contentData) {
+            const newContent: any = { ...defaultSiteContent };
+            contentData.forEach((row: any) => {
+                if (row.key === 'navigation') {
+                    if (row.data?.categories) setCategoriesState(row.data.categories);
+                } else {
+                    newContent[row.key] = { ...newContent[row.key], ...row.data };
+                }
+            });
+            setSiteContent(newContent);
+        }
+    };
+
+    fetchAll();
+
+    // Subscribe to changes
+    const channels = [
+        supabase.channel('public:products').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, fetchAll).subscribe(),
+        supabase.channel('public:blogs').on('postgres_changes', { event: '*', schema: 'public', table: 'blogs' }, fetchAll).subscribe(),
+        supabase.channel('public:testimonials').on('postgres_changes', { event: '*', schema: 'public', table: 'testimonials' }, fetchAll).subscribe(),
+        supabase.channel('public:messages').on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchAll).subscribe(),
+        supabase.channel('public:orders').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchAll).subscribe(),
+        supabase.channel('public:content').on('postgres_changes', { event: '*', schema: 'public', table: 'content' }, fetchAll).subscribe(),
     ];
-    return () => unsubs.forEach(u => u());
+
+    return () => {
+        channels.forEach(c => supabase.removeChannel(c));
+    };
   }, []);
 
+  // Auth Listener
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async user => {
-      if (user) {
-        try {
-          const snap = await db.collection('users').doc(user.uid).get();
-          if (snap.exists) {
-            const uData = snap.data() as User;
-            setCurrentUser({ ...uData, id: user.uid });
-            if (uData.cart && Array.isArray(uData.cart)) {
-               setCart(uData.cart);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        // Fetch Profile
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        if (profile) {
+            setCurrentUser(profile);
+            if (profile.cart && Array.isArray(profile.cart) && profile.cart.length > 0) {
+               setCart(profile.cart);
             }
-          } else {
-             const newUser: User = { 
-                id: user.uid, 
-                name: user.displayName || 'User', 
-                email: user.email || '', 
+        } else {
+            // Create Profile if missing (e.g. first login)
+            const newUser: User = { 
+                id: session.user.id, 
+                name: session.user.user_metadata?.name || 'User', 
+                email: session.user.email || '', 
                 role: 'customer', 
                 wishlist: [], 
                 cart: [] 
-             };
-             await db.collection('users').doc(user.uid).set(newUser);
-             setCurrentUser(newUser);
-          }
-        } catch (e) {
-          console.error("Error fetching user data", e);
+            };
+            await supabase.from('profiles').insert(newUser);
+            setCurrentUser(newUser);
         }
       } else {
         setCurrentUser(null);
       }
       setLoading(false);
     });
-    return unsub;
+
+    return () => subscription.unsubscribe();
   }, []);
 
+  // Sync Cart
   useEffect(() => {
     if (currentUser) {
-       db.collection('users').doc(currentUser.id).update({ cart }).catch(() => {});
+       supabase.from('profiles').update({ cart }).eq('id', currentUser.id).then();
     } else {
        localStorage.setItem('cmh_cart', JSON.stringify(cart));
     }
@@ -230,34 +252,52 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const updateCartQuantity = (id: string, d: number) => setCart(prev => prev.map(x => x.id === id ? { ...x, quantity: Math.max(1, x.quantity + d) } : x));
   const clearCart = () => setCart([]);
 
-  const login = async (e: string, p: string) => { await auth.signInWithEmailAndPassword(e, p); showToast("Welcome back!"); };
-  const logout = async () => { await auth.signOut(); clearCart(); showToast("Logged out"); };
+  const login = async (e: string, p: string) => { 
+      const { error } = await supabase.auth.signInWithPassword({ email: e, password: p });
+      if (error) throw error;
+      showToast("Welcome back!"); 
+  };
+  
+  const logout = async () => { 
+      await supabase.auth.signOut(); 
+      clearCart(); 
+      showToast("Logged out"); 
+  };
+
   const register = async (e: string, p: string, n: string) => {
-    const res = await auth.createUserWithEmailAndPassword(e, p);
-    if (res.user) {
-        const u: User = { id: res.user.uid, name: n, email: e, role: 'customer', wishlist: [], cart: [] };
-        await db.collection('users').doc(res.user.uid).set(u);
+    const { data, error } = await supabase.auth.signUp({ 
+        email: e, 
+        password: p,
+        options: { data: { name: n } } 
+    });
+    if (error) throw error;
+    if (data.user) {
+        // Explicitly create profile
+        const u: User = { id: data.user.id, name: n, email: e, role: 'customer', wishlist: [], cart: [] };
+        await supabase.from('profiles').insert(u);
     }
   };
 
-  const uploadFile = async (f: File, p: string) => {
-    const safeName = f.name.replace(/[^a-zA-Z0-9.]/g, '_');
-    const sRef = storage.ref(`${p}/${Date.now()}_${safeName}`);
-    await sRef.put(f);
-    return sRef.getDownloadURL();
+  const uploadFile = async (f: File, bucket: string) => {
+    const safeName = `${Date.now()}_${f.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const { data, error } = await supabase.storage.from(bucket).upload(safeName, f);
+    if (error) throw error;
+    
+    const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(safeName);
+    return publicUrl;
   };
 
   const createOrder = async (o: any) => {
     const id = `ORD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    await db.collection('orders').doc(id).set({ ...o, id, date: new Date().toLocaleDateString(), status: 'Processing' });
+    await supabase.from('orders').insert({ ...o, id, date: new Date().toLocaleDateString(), status: 'Processing' });
     return id;
   };
 
-  const updateOrderStatus = async (id: string, s: any) => db.collection('orders').doc(id).update({ status: s });
+  const updateOrderStatus = async (id: string, s: any) => { await supabase.from('orders').update({ status: s }).eq('id', id); };
   
-  const addMessage = async (m: any) => { await db.collection('messages').add({ ...m, date: new Date().toLocaleDateString(), read: false }); };
-  const markMessageRead = async (id: string, status: boolean) => { await db.collection('messages').doc(id).update({ read: !status }); };
-  const deleteMessage = async (id: string) => { await db.collection('messages').doc(id).delete(); };
+  const addMessage = async (m: any) => { await supabase.from('messages').insert({ ...m, date: new Date().toLocaleDateString(), read: false }); };
+  const markMessageRead = async (id: string, status: boolean) => { await supabase.from('messages').update({ read: !status }).eq('id', id); };
+  const deleteMessage = async (id: string) => { await supabase.from('messages').delete().eq('id', id); };
   
   const toggleWishlist = async (id: string) => {
     if (!currentUser) {
@@ -266,13 +306,21 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
     const isIn = currentUser.wishlist.includes(id);
     const next = isIn ? currentUser.wishlist.filter(x => x !== id) : [...currentUser.wishlist, id];
-    await db.collection('users').doc(currentUser.id).update({ wishlist: next });
+    
+    await supabase.from('profiles').update({ wishlist: next }).eq('id', currentUser.id);
     setCurrentUser({ ...currentUser, wishlist: next });
   };
   
-  const updateUserProfile = async (d: any) => { if (currentUser) await db.collection('users').doc(currentUser.id).update(d); };
-  const updateSiteContent = async (s: keyof SiteContent, d: any) => db.collection('content').doc(s).set(d, { merge: true });
-  const setCategories = async (c: NavCategory[]) => db.collection('content').doc('navigation').set({ categories: c });
+  const updateUserProfile = async (d: any) => { if (currentUser) await supabase.from('profiles').update(d).eq('id', currentUser.id); };
+  
+  const updateSiteContent = async (s: keyof SiteContent, d: any) => { 
+      // Upsert: update if key exists, insert if not
+      await supabase.from('content').upsert({ key: s, data: d }); 
+  };
+  
+  const setCategories = async (c: NavCategory[]) => { 
+      await supabase.from('content').upsert({ key: 'navigation', data: { categories: c } }); 
+  };
 
   return (
     <StoreContext.Provider value={{
@@ -280,17 +328,17 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       login, register, logout, addToCart, removeFromCart, updateCartQuantity, clearCart,
       createOrder, updateOrderStatus, addMessage, markMessageRead, deleteMessage, toggleWishlist, updateUserProfile, uploadFile,
       updateSiteContent, setCategories, blogPosts, 
-      addBlogPost: async b => { await db.collection('blogs').doc(b.id).set(b); },
-      updateBlogPost: async b => { await db.collection('blogs').doc(b.id).update({ ...b }); },
-      removeBlogPost: async id => { await db.collection('blogs').doc(id).delete(); },
+      addBlogPost: async b => { await supabase.from('blogs').upsert(b); },
+      updateBlogPost: async b => { await supabase.from('blogs').update(b).eq('id', b.id); },
+      removeBlogPost: async id => { await supabase.from('blogs').delete().eq('id', id); },
       testimonials, 
-      addTestimonial: async (t: Testimonial) => { await db.collection('testimonials').add(t); },
-      updateTestimonial: async t => { await db.collection('testimonials').doc(t.id).update({ ...t }); },
-      removeTestimonial: async id => { await db.collection('testimonials').doc(id).delete(); },
+      addTestimonial: async (t: Testimonial) => { await supabase.from('testimonials').insert(t); },
+      updateTestimonial: async t => { await supabase.from('testimonials').update(t).eq('id', t.id); },
+      removeTestimonial: async id => { await supabase.from('testimonials').delete().eq('id', id); },
       messages, orders,
-      addProduct: async (p: Product) => { await db.collection('products').doc(p.id).set(p); },
-      updateProduct: async (p: Product) => { await db.collection('products').doc(p.id).update({ ...p }); },
-      removeProduct: async (id: string) => { await db.collection('products').doc(id).delete(); }
+      addProduct: async (p: Product) => { await supabase.from('products').upsert(p); },
+      updateProduct: async (p: Product) => { await supabase.from('products').update(p).eq('id', p.id); },
+      removeProduct: async (id: string) => { await supabase.from('products').delete().eq('id', id); }
     }}>
       {children}
     </StoreContext.Provider>
