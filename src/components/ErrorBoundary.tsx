@@ -1,4 +1,4 @@
-import React, { ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { supabase } from '../supabase';
 
 interface Props {
@@ -13,11 +13,19 @@ interface State {
 /**
  * ErrorBoundary class component to catch rendering errors in its child component tree.
  */
-class ErrorBoundary extends React.Component<Props, State> {
+class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
     error: null
   };
+
+  // Explicitly define props to prevent TS errors in some environments
+  public readonly props: Readonly<Props> & Readonly<{ children?: ReactNode }>;
+
+  constructor(props: Props) {
+    super(props);
+    this.props = props;
+  }
 
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
