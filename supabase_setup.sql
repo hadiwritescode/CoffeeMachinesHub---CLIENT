@@ -1,13 +1,13 @@
 
 -- ==========================================
--- COFFEE MACHINES HUB - FIXED SETUP SQL
--- Run this in Supabase SQL Editor to fix Permission Loops
+-- COFFEE MACHINES HUB - MASTER SETUP SCRIPT
+-- Run this in Supabase SQL Editor
 -- ==========================================
 
 -- 1. EXTENSIONS
 create extension if not exists "uuid-ossp";
 
--- 2. TABLES (Safe Creation)
+-- 2. TABLES (Idempotent Creation)
 create table if not exists products (
   id text primary key,
   title text not null,
@@ -86,7 +86,8 @@ create table if not exists content (
 );
 
 -- 3. HELPER FUNCTIONS (CRITICAL FIX FOR RECURSION)
--- This function runs with the privileges of the creator (postgres), bypassing RLS
+-- This function runs with the privileges of the creator (postgres/superuser)
+-- allowing it to bypass RLS on the profiles table to check role.
 create or replace function public.is_admin()
 returns boolean as $$
 begin
@@ -98,69 +99,73 @@ begin
 end;
 $$ language plpgsql security definer;
 
--- 4. POLICIES (DROP ALL AND RECREATE)
--- We drop existing policies to ensure no conflicts or old broken logic remains
+-- 4. CLEANUP & POLICIES
+-- We drop existing policies to ensure a clean slate (idempotency)
+
 do $$ 
 declare
   tables text[] := array['products', 'blogs', 'testimonials', 'content', 'profiles', 'orders', 'messages'];
   t text;
 begin
   foreach t in array tables loop
+    -- Enable RLS
     execute format('alter table %I enable row level security', t);
+    
+    -- Drop potential existing policies to prevent "already exists" errors
     execute format('drop policy if exists "Public Read %s" on %I', t, t);
-    execute format('drop policy if exists "Admin Write %s" on %I', t, t);
+    execute format('drop policy if exists "Admin Manage %s" on %I', t, t);
     execute format('drop policy if exists "Read %s" on %I', t, t);
     execute format('drop policy if exists "Update %s" on %I', t, t);
     execute format('drop policy if exists "Insert %s" on %I', t, t);
     execute format('drop policy if exists "Delete %s" on %I', t, t);
-    execute format('drop policy if exists "Admin Manage %s" on %I', t, t);
+    execute format('drop policy if exists "Users read own %s" on %I', t, t);
   end loop;
 end $$;
 
 -- --- PRODUCTS ---
-create policy "Public Read Products" on products for select using (true);
-create policy "Admin Manage Products" on products for all using ( is_admin() );
+create policy "Public Read products" on products for select using (true);
+create policy "Admin Manage products" on products for all using ( is_admin() );
 
 -- --- BLOGS ---
-create policy "Public Read Blogs" on blogs for select using (true);
-create policy "Admin Manage Blogs" on blogs for all using ( is_admin() );
+create policy "Public Read blogs" on blogs for select using (true);
+create policy "Admin Manage blogs" on blogs for all using ( is_admin() );
 
 -- --- TESTIMONIALS ---
-create policy "Public Read Testimonials" on testimonials for select using (true);
-create policy "Admin Manage Testimonials" on testimonials for all using ( is_admin() );
+create policy "Public Read testimonials" on testimonials for select using (true);
+create policy "Admin Manage testimonials" on testimonials for all using ( is_admin() );
 
 -- --- CONTENT ---
-create policy "Public Read Content" on content for select using (true);
-create policy "Admin Manage Content" on content for all using ( is_admin() );
+create policy "Public Read content" on content for select using (true);
+create policy "Admin Manage content" on content for all using ( is_admin() );
 
--- --- PROFILES (CRITICAL) ---
--- Users can see their own profile. Admins can see all.
-create policy "Read Profiles" on profiles for select using (
+-- --- PROFILES ---
+-- Users can read their own profile. Admins can read all.
+create policy "Read profiles" on profiles for select using (
   auth.uid() = id OR is_admin()
 );
--- Users can update own. Admins can update all.
-create policy "Update Profiles" on profiles for update using (
+-- Users can update their own profile. Admins can update all.
+create policy "Update profiles" on profiles for update using (
   auth.uid() = id OR is_admin()
 );
--- System (Trigger) or Admin inserts.
-create policy "Insert Profiles" on profiles for insert with check (
+-- Profiles are inserted via Trigger (system) or Admin. 
+-- We allow users to insert their own profile just in case the trigger fails/race condition.
+create policy "Insert profiles" on profiles for insert with check (
   auth.uid() = id OR is_admin()
 );
--- Admins can delete users
-create policy "Delete Profiles" on profiles for delete using ( is_admin() );
+create policy "Delete profiles" on profiles for delete using ( is_admin() );
 
 -- --- ORDERS ---
--- Anyone can create an order (even anon/guests usually, but here we allow authenticated creation)
-create policy "Public Create Orders" on orders for insert with check (true);
+-- Anyone (authenticated) can create an order
+create policy "Create orders" on orders for insert with check ( auth.role() = 'authenticated' );
 -- Users see their own orders (by email match). Admins see all.
-create policy "Read Orders" on orders for select using (
+create policy "Read orders" on orders for select using (
   (auth.jwt() ->> 'email') = email OR is_admin()
 );
-create policy "Admin Manage Orders" on orders for all using ( is_admin() );
+create policy "Admin Manage orders" on orders for all using ( is_admin() );
 
 -- --- MESSAGES ---
-create policy "Public Create Messages" on messages for insert with check (true);
-create policy "Admin Manage Messages" on messages for all using ( is_admin() );
+create policy "Create messages" on messages for insert with check (true);
+create policy "Admin Manage messages" on messages for all using ( is_admin() );
 
 -- 5. STORAGE BUCKETS
 insert into storage.buckets (id, name, public) 
@@ -173,26 +178,22 @@ values
 on conflict (id) do update set public = excluded.public;
 
 -- Storage Policies
--- Drop old to be safe
 do $$ 
 begin
     execute 'drop policy if exists "Public Read Images" on storage.objects';
-    execute 'drop policy if exists "Admin Write Images" on storage.objects';
-    execute 'drop policy if exists "Admin Update Images" on storage.objects';
-    execute 'drop policy if exists "Admin Delete Images" on storage.objects';
-    execute 'drop policy if exists "Give me access" on storage.objects'; 
+    execute 'drop policy if exists "Admin Manage Images" on storage.objects';
 end $$;
 
--- Allow public read
+-- Public Read
 create policy "Public Read Images" on storage.objects for select using ( bucket_id in ('products', 'content', 'blogs', 'categories', 'team') );
 
--- Allow Admin Write (using the secure function)
+-- Admin Write/Delete
 create policy "Admin Manage Images" on storage.objects for all using (
   bucket_id in ('products', 'content', 'blogs', 'categories', 'team') 
   and is_admin()
 );
 
--- 6. TRIGGERS (Auto-create profile)
+-- 6. TRIGGERS (Auto-create profile on signup)
 create or replace function public.handle_new_user() 
 returns trigger as $$
 begin
@@ -208,8 +209,8 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- 7. ADMIN BOOTSTRAP (Replace with your email)
--- This ensures at least one user is admin to start
+-- 7. ADMIN BOOTSTRAP
+-- Sets a specific email as admin immediately
 do $$
 declare
   target_email text := 'salmangbob@gmail.com'; 
@@ -218,6 +219,7 @@ begin
   select id into admin_uid from auth.users where email = target_email limit 1;
   
   if admin_uid is not null then
+    -- Ensure profile exists
     insert into public.profiles (id, email, role, name)
     values (admin_uid, target_email, 'admin', 'Super Admin')
     on conflict (id) do update 

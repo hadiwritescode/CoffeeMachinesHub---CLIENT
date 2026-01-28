@@ -1,2 +1,3 @@
 
-// This file is deprecated. Row Level Security is now handled in Supabase.
+// DEPRECATED: Permissions are now handled in Supabase (PostgreSQL RLS).
+// See supabase_setup.sql for the active security policies.
