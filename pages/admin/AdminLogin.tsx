@@ -13,7 +13,7 @@ const AdminLogin: React.FC = () => {
   const { login, logout, currentUser } = useStore();
   const navigate = useNavigate();
 
-  // Handle Auth State Changes
+  // Handle Auth State Changes via effect
   useEffect(() => {
     if (currentUser) {
       if (currentUser.role === 'admin') {
@@ -32,7 +32,8 @@ const AdminLogin: React.FC = () => {
     setError('');
     try {
       await login(email, password);
-      // Navigation is handled by the useEffect above
+      // Navigation is handled by the useEffect above, but we can try immediate push if login resolves
+      navigate('/admin');
     } catch (err: any) {
       console.error(err);
       setError('Invalid credentials.');

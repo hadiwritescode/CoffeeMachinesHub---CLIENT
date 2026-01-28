@@ -16,7 +16,7 @@ const Login: React.FC = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
+  // Redirect if already logged in via effect
   React.useEffect(() => {
     if (currentUser) {
       if (currentUser.role === 'admin') navigate('/admin');
@@ -35,6 +35,9 @@ const Login: React.FC = () => {
         setPassword('');
       } else {
         await login(email, password);
+        // Explicitly check logic here for faster perceived performance if currentUser is already set by login
+        // Note: currentUser state update is async, so we rely on the effect generally, but if login forces update:
+        navigate('/profile'); 
       }
     } catch (err: any) {
       console.error(err);

@@ -202,8 +202,8 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    // Helper to fetch or create profile
-    const fetchProfile = async (userId: string, email: string, userMeta: any) => {
+    // Helper to fetch or create profile with retry
+    const fetchProfile = async (userId: string, email: string, userMeta: any, retries = 3) => {
         try {
             const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
             
@@ -213,6 +213,12 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                     if (data.cart && Array.isArray(data.cart)) setCart(data.cart);
                 }
             } else {
+                // If profile missing, retry or create
+                if (retries > 0) {
+                    setTimeout(() => fetchProfile(userId, email, userMeta, retries - 1), 1000);
+                    return;
+                }
+
                 // Profile missing, create it
                 const newUser: User = {
                     id: userId,
@@ -261,14 +267,14 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     // Safety timeout: Ensure loading stops eventually even if Supabase hangs
     const safetyTimer = setTimeout(() => {
         if (mounted && loading) setLoading(false);
-    }, 5000);
+    }, 3000);
 
     return () => {
         mounted = false;
         subscription.unsubscribe();
         clearTimeout(safetyTimer);
     };
-  }, []); // Empty dependency array intentionally
+  }, []); 
 
   // Sync Cart
   useEffect(() => {
@@ -292,9 +298,16 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const clearCart = () => setCart([]);
 
   const login = async (e: string, p: string) => { 
-      const { error } = await supabase.auth.signInWithPassword({ email: e, password: p });
+      const { data, error } = await supabase.auth.signInWithPassword({ email: e, password: p });
       if (error) throw error;
       showToast("Welcome back!"); 
+      
+      // Force immediate fetch to unblock UI without waiting for listener
+      if (data.user) {
+          // Explicitly check profile immediately for fast UI response
+          const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+          if (profile) setCurrentUser(profile);
+      }
   };
   
   const logout = async () => { 
