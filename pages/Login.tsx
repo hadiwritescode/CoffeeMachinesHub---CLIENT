@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { useToast } from '../context/ToastContext';
 import { Loader2, Mail, Lock, User as UserIcon, ArrowRight } from 'lucide-react';
 
 const Login: React.FC = () => {
@@ -11,6 +13,7 @@ const Login: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { login, register, currentUser } = useStore();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -27,11 +30,15 @@ const Login: React.FC = () => {
     try {
       if (isRegister) {
         await register(email, password, name);
+        showToast("Account created! Please sign in.", "success");
+        setIsRegister(false);
+        setPassword('');
       } else {
         await login(email, password);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      showToast(err.message || "An error occurred", "error");
     } finally {
       setIsSubmitting(false);
     }

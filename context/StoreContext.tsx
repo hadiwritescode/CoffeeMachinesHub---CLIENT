@@ -272,9 +272,9 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     });
     if (error) throw error;
     if (data.user) {
-        // Explicitly create profile
+        // Explicitly create profile using Upsert to handle potential race conditions with DB triggers
         const u: User = { id: data.user.id, name: n, email: e, role: 'customer', wishlist: [], cart: [] };
-        await supabase.from('profiles').insert(u);
+        await supabase.from('profiles').upsert(u);
     }
   };
 

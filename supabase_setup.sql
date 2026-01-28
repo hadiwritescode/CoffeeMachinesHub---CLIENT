@@ -4,13 +4,9 @@
 -- ==========================================
 
 -- 1. EXTENSIONS
--- Enable standard UUID generation
 create extension if not exists "uuid-ossp";
 
 -- 2. TABLES
--- Use "IF NOT EXISTS" to make the script repeatable without errors
-
--- Products
 create table if not exists products (
   id text primary key,
   title text not null,
@@ -31,7 +27,6 @@ create table if not exists products (
   features jsonb
 );
 
--- Blogs
 create table if not exists blogs (
   id text primary key,
   title text,
@@ -43,7 +38,6 @@ create table if not exists blogs (
   "sourceLink" text
 );
 
--- Testimonials
 create table if not exists testimonials (
   id text primary key,
   name text,
@@ -52,7 +46,6 @@ create table if not exists testimonials (
   rating numeric
 );
 
--- Messages
 create table if not exists messages (
   id uuid default uuid_generate_v4() primary key,
   date text,
@@ -62,7 +55,6 @@ create table if not exists messages (
   read boolean default false
 );
 
--- Orders
 create table if not exists orders (
   id text primary key,
   date text,
@@ -75,8 +67,7 @@ create table if not exists orders (
   items jsonb
 );
 
--- Profiles (Users)
--- Note: 'auth.users' is a system table. We reference it here.
+-- Profiles linked to auth.users
 create table if not exists profiles (
   id uuid references auth.users not null primary key,
   name text,
@@ -89,16 +80,21 @@ create table if not exists profiles (
   city text
 );
 
--- Content (Site Settings)
 create table if not exists content (
   key text primary key,
   data jsonb
 );
 
--- 3. ROW LEVEL SECURITY (RLS) POLICIES
--- We drop existing policies first to ensure updates apply cleanly
+-- 3. RLS ENABLE
+alter table products enable row level security;
+alter table blogs enable row level security;
+alter table testimonials enable row level security;
+alter table content enable row level security;
+alter table profiles enable row level security;
+alter table orders enable row level security;
+alter table messages enable row level security;
 
--- Helper to drop policies if they exist
+-- 4. POLICIES (DROP & RECREATE)
 do $$ 
 begin
     -- Products
@@ -118,82 +114,68 @@ begin
     execute 'drop policy if exists "Admin Write Content" on content';
     
     -- Profiles
-    execute 'drop policy if exists "Public Read Profiles" on profiles';
-    execute 'drop policy if exists "Users can update own profile" on profiles';
+    execute 'drop policy if exists "Read Profiles" on profiles';
+    execute 'drop policy if exists "Update Profiles" on profiles';
+    execute 'drop policy if exists "Insert Profiles" on profiles';
     
     -- Orders
-    execute 'drop policy if exists "Authenticated Users Read Own Orders" on orders';
+    execute 'drop policy if exists "Read Orders" on orders';
     execute 'drop policy if exists "Public Create Orders" on orders';
     execute 'drop policy if exists "Admin Manage Orders" on orders';
     
     -- Messages
     execute 'drop policy if exists "Public Create Messages" on messages';
     execute 'drop policy if exists "Admin Manage Messages" on messages';
+    execute 'drop policy if exists "Admin Delete Messages" on messages';
+    execute 'drop policy if exists "Admin Update Messages" on messages';
 end $$;
-
--- Enable RLS
-alter table products enable row level security;
-alter table blogs enable row level security;
-alter table testimonials enable row level security;
-alter table content enable row level security;
-alter table profiles enable row level security;
-alter table orders enable row level security;
-alter table messages enable row level security;
 
 -- Create Policies
 
--- Products: Everyone can read, only Admins can write
+-- Products
 create policy "Public Read Products" on products for select using (true);
 create policy "Admin Write Products" on products for all using (
   exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
 
--- Blogs: Everyone can read, only Admins can write
+-- Blogs
 create policy "Public Read Blogs" on blogs for select using (true);
 create policy "Admin Write Blogs" on blogs for all using (
   exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
 
--- Testimonials: Everyone can read, only Admins can write
+-- Testimonials
 create policy "Public Read Testimonials" on testimonials for select using (true);
 create policy "Admin Write Testimonials" on testimonials for all using (
   exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
 
--- Content: Everyone can read, only Admins can write
+-- Content
 create policy "Public Read Content" on content for select using (true);
 create policy "Admin Write Content" on content for all using (
   exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
 
--- Profiles: 
--- 1. Users can read their own profile. Admins can read all.
+-- Profiles
 create policy "Read Profiles" on profiles for select using (
   auth.uid() = id or exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
--- 2. Users can update their own profile. Admins can update all.
 create policy "Update Profiles" on profiles for update using (
   auth.uid() = id or exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
--- 3. Trigger automatically inserts, so we allow insert for service role or self (handled by trigger mostly)
 create policy "Insert Profiles" on profiles for insert with check (auth.uid() = id);
 
--- Orders:
--- 1. Anyone can create an order (Guest checkout logic usually requires public insert or anon key)
+-- Orders
 create policy "Public Create Orders" on orders for insert with check (true);
--- 2. Admins can read all. Users can read own (based on email match).
 create policy "Read Orders" on orders for select using (
   (auth.jwt() ->> 'email') = email OR exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
--- 3. Only Admins can update/delete
 create policy "Admin Manage Orders" on orders for all using (
   exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
 
--- Messages:
--- 1. Public create
+-- Messages
 create policy "Public Create Messages" on messages for insert with check (true);
--- 2. Admin read/delete
 create policy "Admin Manage Messages" on messages for select using (
   exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
@@ -204,9 +186,7 @@ create policy "Admin Update Messages" on messages for update using (
   exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
 
-
--- 4. STORAGE BUCKETS
--- Insert standard buckets if they don't exist
+-- 5. STORAGE
 insert into storage.buckets (id, name, public) 
 values 
   ('products', 'products', true),
@@ -214,14 +194,15 @@ values
   ('blogs', 'blogs', true),
   ('categories', 'categories', true),
   ('team', 'team', true)
-on conflict (id) do nothing;
+on conflict (id) do update set public = excluded.public;
 
--- Storage Policies (Simplified: Public Read, Admin Write)
--- Note: 'storage.objects' policies are needed.
+-- Storage Policies
 do $$ 
 begin
     execute 'drop policy if exists "Public Read Images" on storage.objects';
     execute 'drop policy if exists "Admin Write Images" on storage.objects';
+    execute 'drop policy if exists "Admin Update Images" on storage.objects';
+    execute 'drop policy if exists "Admin Delete Images" on storage.objects';
 end $$;
 
 create policy "Public Read Images" on storage.objects for select using ( bucket_id in ('products', 'content', 'blogs', 'categories', 'team') );
@@ -241,30 +222,38 @@ create policy "Admin Delete Images" on storage.objects for delete using (
   and exists (select 1 from profiles where id = auth.uid() and role = 'admin')
 );
 
-
--- 5. TRIGGERS (Auto-create Profile)
--- This function runs when a new user signs up via Supabase Auth
+-- 6. TRIGGERS
 create or replace function public.handle_new_user() 
 returns trigger as $$
 begin
   insert into public.profiles (id, name, email, role)
-  values (new.id, new.raw_user_meta_data->>'name', new.email, 'customer');
+  values (new.id, new.raw_user_meta_data->>'name', new.email, 'customer')
+  on conflict (id) do nothing;
   return new;
 end;
 $$ language plpgsql security definer;
 
--- Trigger definition
+-- Drop trigger if exists to allow recreation
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
-
--- 6. ADMIN BOOTSTRAP (FIX FOR EXISTING USER)
--- Manually insert the specific user as Admin if they exist in Auth but not in Profiles
--- Or update their role if they already exist in Profiles
-insert into public.profiles (id, email, role, name)
-values 
-  ('0fe96ac1-e8ea-4db5-b6c4-dd62c8a4f09c', 'salmangbob@gmail.com', 'admin', 'Super Admin')
-on conflict (id) do update 
-set role = 'admin';
+-- 7. ADMIN BOOTSTRAP
+-- Safely attempts to make the specified user an admin IF they exist in auth.users
+do $$
+declare
+  target_email text := 'salmangbob@gmail.com';
+  admin_uid uuid;
+begin
+  -- Find user ID from auth.users (requires permission context that setup scripts usually have)
+  select id into admin_uid from auth.users where email = target_email limit 1;
+  
+  if admin_uid is not null then
+    -- Upsert profile with admin role
+    insert into public.profiles (id, email, role, name)
+    values (admin_uid, target_email, 'admin', 'Super Admin')
+    on conflict (id) do update 
+    set role = 'admin';
+  end if;
+end $$;
