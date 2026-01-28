@@ -198,51 +198,77 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     };
   }, []);
 
-  // Auth Listener
+  // Auth Logic
   useEffect(() => {
-    // Safety timeout to prevent infinite loading
-    const safetyTimer = setTimeout(() => setLoading(false), 5000);
+    let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      try {
-        if (session?.user) {
-          // Fetch Profile
-          const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-          if (profile) {
-              setCurrentUser(profile);
-              if (profile.cart && Array.isArray(profile.cart) && profile.cart.length > 0) {
-                 setCart(profile.cart);
-              }
-          } else {
-              // Create Profile if missing (e.g. first login)
-              const newUser: User = { 
-                  id: session.user.id, 
-                  name: session.user.user_metadata?.name || 'User', 
-                  email: session.user.email || '', 
-                  role: 'customer', 
-                  wishlist: [], 
-                  cart: [] 
-              };
-              const { error: insertError } = await supabase.from('profiles').upsert(newUser);
-              if (!insertError) setCurrentUser(newUser);
-          }
-        } else {
-          setCurrentUser(null);
+    // Helper to fetch or create profile
+    const fetchProfile = async (userId: string, email: string, userMeta: any) => {
+        try {
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+            
+            if (data) {
+                if (mounted) {
+                    setCurrentUser(data);
+                    if (data.cart && Array.isArray(data.cart)) setCart(data.cart);
+                }
+            } else {
+                // Profile missing, create it
+                const newUser: User = {
+                    id: userId,
+                    email: email,
+                    name: userMeta?.name || email.split('@')[0],
+                    role: 'customer',
+                    wishlist: [],
+                    cart: []
+                };
+                const { error: insertError } = await supabase.from('profiles').upsert(newUser);
+                if (!insertError && mounted) setCurrentUser(newUser);
+            }
+        } catch (error) {
+            console.error("Profile fetch error", error);
         }
-      } catch (e) {
-        console.error("Auth Listener Error:", e);
-        // On error, assume logged out to unblock UI
-        setCurrentUser(null);
-      } finally {
-        setLoading(false);
-      }
+    };
+
+    // Initialize: Check active session immediately
+    const initAuth = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                await fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
+            }
+        } catch (e) {
+            console.error("Init auth error", e);
+        } finally {
+            if (mounted) setLoading(false);
+        }
+    };
+
+    initAuth();
+
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+            await fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
+        } else if (event === 'SIGNED_OUT') {
+            if (mounted) {
+                setCurrentUser(null);
+                setCart([]);
+            }
+        }
     });
 
+    // Safety timeout: Ensure loading stops eventually even if Supabase hangs
+    const safetyTimer = setTimeout(() => {
+        if (mounted && loading) setLoading(false);
+    }, 5000);
+
     return () => {
+        mounted = false;
         subscription.unsubscribe();
         clearTimeout(safetyTimer);
     };
-  }, []);
+  }, []); // Empty dependency array intentionally
 
   // Sync Cart
   useEffect(() => {
