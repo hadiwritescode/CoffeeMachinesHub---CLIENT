@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee, List, BookOpen, Menu, X, Loader2, MessageSquare } from 'lucide-react';
@@ -29,7 +30,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       return (
           <div className="fixed inset-0 z-50 bg-nomad-black flex flex-col items-center justify-center text-white">
               <Loader2 size={48} className="animate-spin text-nomad-gold mb-4" />
-              <p className="font-bold uppercase tracking-widest text-xs">Authenticating...</p>
+              <p className="font-bold uppercase tracking-widest text-xs mb-6">Authenticating...</p>
+              
+              <button 
+                onClick={() => { 
+                    logout(); 
+                    navigate('/admin/login', { replace: true });
+                    window.location.reload(); // Force reload to clear state if stuck
+                }}
+                className="text-white/30 hover:text-white text-[10px] uppercase tracking-widest underline transition-colors"
+              >
+                Click here if stuck
+              </button>
           </div>
       );
   }

@@ -200,35 +200,48 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   // Auth Listener
   useEffect(() => {
+    // Safety timeout to prevent infinite loading
+    const safetyTimer = setTimeout(() => setLoading(false), 5000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        // Fetch Profile
-        const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-        if (profile) {
-            setCurrentUser(profile);
-            if (profile.cart && Array.isArray(profile.cart) && profile.cart.length > 0) {
-               setCart(profile.cart);
-            }
+      try {
+        if (session?.user) {
+          // Fetch Profile
+          const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+          if (profile) {
+              setCurrentUser(profile);
+              if (profile.cart && Array.isArray(profile.cart) && profile.cart.length > 0) {
+                 setCart(profile.cart);
+              }
+          } else {
+              // Create Profile if missing (e.g. first login)
+              const newUser: User = { 
+                  id: session.user.id, 
+                  name: session.user.user_metadata?.name || 'User', 
+                  email: session.user.email || '', 
+                  role: 'customer', 
+                  wishlist: [], 
+                  cart: [] 
+              };
+              const { error: insertError } = await supabase.from('profiles').upsert(newUser);
+              if (!insertError) setCurrentUser(newUser);
+          }
         } else {
-            // Create Profile if missing (e.g. first login)
-            const newUser: User = { 
-                id: session.user.id, 
-                name: session.user.user_metadata?.name || 'User', 
-                email: session.user.email || '', 
-                role: 'customer', 
-                wishlist: [], 
-                cart: [] 
-            };
-            await supabase.from('profiles').insert(newUser);
-            setCurrentUser(newUser);
+          setCurrentUser(null);
         }
-      } else {
+      } catch (e) {
+        console.error("Auth Listener Error:", e);
+        // On error, assume logged out to unblock UI
         setCurrentUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+        subscription.unsubscribe();
+        clearTimeout(safetyTimer);
+    };
   }, []);
 
   // Sync Cart
