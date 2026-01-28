@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 import { Loader2, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
-import Logo from '../../components/Logo';
 
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,13 +10,19 @@ const AdminLogin: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
-  const { login, currentUser } = useStore();
+  const { login, logout, currentUser } = useStore();
   const navigate = useNavigate();
 
-  // Redirect if already logged in as admin
-  React.useEffect(() => {
-    if (currentUser && currentUser.role === 'admin') {
-      navigate('/admin');
+  // Handle Auth State Changes
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.role === 'admin') {
+        navigate('/admin');
+      } else {
+        setError('Access Denied: You do not have administrator privileges.');
+        // Optional: Logout immediately so they aren't stuck in a "logged in as customer" state on the admin page
+        // logout(); 
+      }
     }
   }, [currentUser, navigate]);
 
@@ -26,10 +32,10 @@ const AdminLogin: React.FC = () => {
     setError('');
     try {
       await login(email, password);
-      // The useEffect above will handle redirection upon successful auth state change
+      // Navigation is handled by the useEffect above
     } catch (err: any) {
       console.error(err);
-      setError('Invalid credentials or insufficient permissions.');
+      setError('Invalid credentials.');
     } finally {
       setIsSubmitting(false);
     }
@@ -56,7 +62,7 @@ const AdminLogin: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-5 bg-white/5 backdrop-blur-xl p-8 md:p-10 rounded-3xl border border-white/10 shadow-2xl">
           
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center">
+            <div className="bg-red-500/10 border border-red-500/20 text-red-200 text-xs p-3 rounded-xl text-center font-bold">
                 {error}
             </div>
           )}
