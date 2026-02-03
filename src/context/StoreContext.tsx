@@ -131,6 +131,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  
   const [loading, setLoading] = useState(true);
   
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -142,6 +143,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
   });
 
+  // Fetch Helper
   const fetchAll = async () => {
     try {
         const { data: prodData } = await supabase.from('products').select('*');
@@ -178,6 +180,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   useEffect(() => {
     fetchAll();
+
     const channels = [
         supabase.channel('public:products').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, fetchAll).subscribe(),
         supabase.channel('public:blogs').on('postgres_changes', { event: '*', schema: 'public', table: 'blogs' }, fetchAll).subscribe(),
@@ -186,36 +189,92 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
         supabase.channel('public:orders').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchAll).subscribe(),
         supabase.channel('public:content').on('postgres_changes', { event: '*', schema: 'public', table: 'content' }, fetchAll).subscribe(),
     ];
-    return () => { channels.forEach(c => supabase.removeChannel(c)); };
+
+    return () => {
+        channels.forEach(c => supabase.removeChannel(c));
+    };
   }, []);
 
+  // Auth & Profile Logic
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-        if (profile) {
-            setCurrentUser(profile);
-            if (profile.cart && Array.isArray(profile.cart)) setCart(profile.cart);
-        } else {
-            const newUser: User = { 
-                id: session.user.id, 
-                name: session.user.user_metadata?.name || 'User', 
-                email: session.user.email || '', 
-                role: 'customer', 
-                wishlist: [], 
-                cart: [] 
-            };
-            const { error: insertError } = await supabase.from('profiles').insert(newUser);
-            if (!insertError) setCurrentUser(newUser);
+    let mounted = true;
+
+    // Safety timeout: If Supabase doesn't respond within 3 seconds, stop loading
+    // This prevents the infinite spinner if the DB is unreachable or keys are wrong.
+    const safetyTimer = setTimeout(() => {
+        if (mounted) {
+            setLoading(prev => {
+                if (prev) console.warn("Auth initialization timed out. Forcing app to load.");
+                return false;
+            });
         }
-      } else {
-        setCurrentUser(null);
-      }
-      setLoading(false);
+    }, 3000);
+
+    const fetchProfile = async (userId: string, email: string, userMeta: any) => {
+        try {
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+            if (data) {
+                if (mounted) {
+                    setCurrentUser(data);
+                    if (data.cart && Array.isArray(data.cart)) setCart(data.cart);
+                }
+            } else {
+                // Retry create profile if missing
+                const newUser: User = {
+                    id: userId,
+                    email: email,
+                    name: userMeta?.name || email.split('@')[0],
+                    role: 'customer',
+                    wishlist: [],
+                    cart: []
+                };
+                const { error: insertError } = await supabase.from('profiles').upsert(newUser);
+                if (!insertError && mounted) setCurrentUser(newUser);
+            }
+        } catch (error) {
+            console.error("Profile Error", error);
+        }
+    };
+
+    const initAuth = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                await fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
+            }
+        } catch (e) {
+            console.error("Init Auth Error", e);
+        } finally {
+            if (mounted) setLoading(false);
+        }
+    };
+
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+            setLoading(true); // Temporarily load while fetching profile
+            await fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
+            if (mounted) setLoading(false);
+        } else if (event === 'SIGNED_OUT') {
+            if (mounted) {
+                setCurrentUser(null);
+                setCart([]);
+                setLoading(false);
+            }
+        } else {
+            if (mounted) setLoading(false);
+        }
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+        mounted = false;
+        clearTimeout(safetyTimer);
+        subscription.unsubscribe();
+    };
   }, []);
 
+  // Cart Sync
   useEffect(() => {
     if (currentUser) {
        supabase.from('profiles').update({ cart }).eq('id', currentUser.id).then();
@@ -224,6 +283,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
   }, [cart, currentUser]);
 
+  // Actions
   const addToCart = (p: Product) => {
     setCart(prev => {
       const ex = prev.find(x => x.id === p.id);
@@ -236,193 +296,188 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const updateCartQuantity = (id: string, d: number) => setCart(prev => prev.map(x => x.id === id ? { ...x, quantity: Math.max(1, x.quantity + d) } : x));
   const clearCart = () => setCart([]);
 
-  const wrapDbOp = async (op: Promise<any>, successMsg?: string) => {
-    try {
-        const { data, error } = await op;
-        if (error) {
-            console.error("Database Operation Error:", error);
-            showToast(error.message || "Operation failed. Check permissions.", "error");
-            throw error;
-        }
-        if (successMsg) showToast(successMsg);
-        return data;
-    } catch (err: any) {
-        throw err;
-    }
-  };
-
   const login = async (e: string, p: string) => { 
-      const { error } = await supabase.auth.signInWithPassword({ email: e, password: p });
-      if (error) { showToast(error.message, "error"); throw error; }
-      showToast("Welcome back!"); 
+      const { data, error } = await supabase.auth.signInWithPassword({ email: e, password: p });
+      if (error) throw error;
+      
+      // OPTIMISTIC PROFILE FETCH FOR REDIRECT
+      if (data.user) {
+          const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+          if (profile) setCurrentUser(profile);
+      }
+      showToast("Welcome back!");
   };
   
-  const logout = async () => { await supabase.auth.signOut(); clearCart(); showToast("Logged out"); };
+  const logout = async () => { 
+      await supabase.auth.signOut(); 
+      setCurrentUser(null);
+      clearCart(); 
+      showToast("Logged out"); 
+  };
 
   const register = async (e: string, p: string, n: string) => {
-    const { data, error } = await supabase.auth.signUp({ email: e, password: p, options: { data: { name: n } } });
-    if (error) { showToast(error.message, "error"); throw error; }
+    const { data, error } = await supabase.auth.signUp({ 
+        email: e, 
+        password: p,
+        options: { data: { name: n } } 
+    });
+    if (error) throw error;
+    
     if (data.user) {
         const u: User = { id: data.user.id, name: n, email: e, role: 'customer', wishlist: [], cart: [] };
-        await supabase.from('profiles').insert(u);
-        setCurrentUser(u);
+        await supabase.from('profiles').upsert(u);
+        setCurrentUser(u); // Optimistic Update
     }
   };
 
   const uploadFile = async (f: File, bucket: string) => {
-    const safeName = `${Date.now()}_${f.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-    const { data, error } = await supabase.storage.from(bucket).upload(safeName, f);
-    if (error) { showToast("Upload failed", "error"); throw error; }
-    const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(safeName);
-    return publicUrl;
+    try {
+        const safeName = `${Date.now()}_${f.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        const { data, error } = await supabase.storage.from(bucket).upload(safeName, f);
+        if (error) throw error;
+        
+        const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(safeName);
+        return publicUrl;
+    } catch (err: any) {
+        console.error("Upload Error:", err);
+        showToast(`Upload failed: ${err.message}`, 'error');
+        throw err;
+    }
   };
 
   const createOrder = async (o: any) => {
     const id = `ORD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    await wrapDbOp(supabase.from('orders').insert({ ...o, id, date: new Date().toLocaleDateString(), status: 'Processing' }));
+    const newOrder = { ...o, id, date: new Date().toLocaleDateString(), status: 'Processing' };
+    
+    // Optimistic Update
+    setOrders(prev => [newOrder, ...prev]);
+    
+    const { error } = await supabase.from('orders').insert(newOrder);
+    if (error) { 
+        showToast("Failed to create order", "error"); 
+        // Revert optimistic update on failure if needed, but for now simple error toast
+        setOrders(prev => prev.filter(x => x.id !== id));
+        throw error; 
+    }
     return id;
   };
 
-  const updateOrderStatus = async (id: string, s: any) => { await wrapDbOp(supabase.from('orders').update({ status: s }).eq('id', id), "Order updated"); };
-  const addMessage = async (m: any) => { await wrapDbOp(supabase.from('messages').insert({ ...m, date: new Date().toLocaleDateString(), read: false }), "Message sent"); };
-  const markMessageRead = async (id: string, status: boolean) => { await wrapDbOp(supabase.from('messages').update({ read: !status }).eq('id', id)); };
-  const deleteMessage = async (id: string) => { await wrapDbOp(supabase.from('messages').delete().eq('id', id), "Message deleted"); };
+  const wrapDbOp = async (op: Promise<any>, successMsg?: string) => {
+      try {
+          const { error } = await op;
+          if (error) throw error;
+          if (successMsg) showToast(successMsg);
+      } catch (err: any) {
+          console.error("DB Error:", err);
+          showToast(err.message || "Database operation failed", "error");
+          throw err;
+      }
+  };
+
+  const updateOrderStatus = async (id: string, s: any) => {
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: s } : o)); // Optimistic
+      await wrapDbOp(supabase.from('orders').update({ status: s }).eq('id', id), "Order updated");
+  };
+
+  const addMessage = async (m: any) => {
+      const newMsg = { ...m, id: Date.now().toString(), date: new Date().toLocaleDateString(), read: false };
+      setMessages(prev => [newMsg, ...prev]); // Optimistic
+      await wrapDbOp(supabase.from('messages').insert(newMsg));
+  };
+
+  const markMessageRead = async (id: string, status: boolean) => {
+      setMessages(prev => prev.map(m => m.id === id ? { ...m, read: !status } : m)); // Optimistic
+      await wrapDbOp(supabase.from('messages').update({ read: !status }).eq('id', id));
+  };
+
+  const deleteMessage = async (id: string) => {
+      setMessages(prev => prev.filter(m => m.id !== id)); // Optimistic
+      await wrapDbOp(supabase.from('messages').delete().eq('id', id), "Message deleted");
+  };
   
   const toggleWishlist = async (id: string) => {
-    if (!currentUser) { showToast("Please login to save favorites", "info"); return; }
+    if (!currentUser) {
+        showToast("Please login to save favorites", "info");
+        return;
+    }
     const isIn = currentUser.wishlist.includes(id);
     const next = isIn ? currentUser.wishlist.filter(x => x !== id) : [...currentUser.wishlist, id];
+    
+    setCurrentUser({ ...currentUser, wishlist: next }); // Optimistic
     await supabase.from('profiles').update({ wishlist: next }).eq('id', currentUser.id);
-    setCurrentUser({ ...currentUser, wishlist: next });
   };
   
   const updateUserProfile = async (d: any) => { 
       if (currentUser) {
+          setCurrentUser({...currentUser, ...d}); // Optimistic
           await wrapDbOp(supabase.from('profiles').update(d).eq('id', currentUser.id), "Profile updated");
-          setCurrentUser({...currentUser, ...d});
       }
   };
   
-  // --- Admin Actions with Rollback ---
-
-  const updateSiteContent = async (s: keyof SiteContent, d: any) => { 
-      const previous = { ...siteContent };
+  const updateSiteContent = async (s: keyof SiteContent, d: any) => {
       setSiteContent(prev => ({ ...prev, [s]: d })); // Optimistic
-      try {
-        await wrapDbOp(supabase.from('content').upsert({ key: s, data: d }), "Content saved"); 
-      } catch (error) {
-        setSiteContent(previous); // Revert
-      }
-  };
-  
-  const setCategories = async (c: NavCategory[]) => { 
-      const previous = [...categories];
-      setCategoriesState(c); // Optimistic
-      try {
-        await wrapDbOp(supabase.from('content').upsert({ key: 'navigation', data: { categories: c } }), "Categories saved"); 
-      } catch (error) {
-        setCategoriesState(previous); // Revert
-      }
+      await wrapDbOp(supabase.from('content').upsert({ key: s, data: d }), "Content saved");
   };
 
+  const setCategories = async (c: NavCategory[]) => {
+      setCategoriesState(c); // Optimistic
+      await wrapDbOp(supabase.from('content').upsert({ key: 'navigation', data: { categories: c } }), "Categories updated");
+  };
+
+  // Admin Actions - Products
   const addProduct = async (p: Product) => {
-      const previous = [...products];
       setProducts(prev => {
           const exists = prev.find(x => x.id === p.id);
           if (exists) return prev.map(x => x.id === p.id ? p : x);
           return [...prev, p];
       });
-      try {
-        await wrapDbOp(supabase.from('products').upsert(p), "Product saved");
-      } catch (error) {
-        setProducts(previous);
-      }
+      await wrapDbOp(supabase.from('products').upsert(p), "Product saved");
   };
 
   const updateProduct = async (p: Product) => {
-      const previous = [...products];
       setProducts(prev => prev.map(x => x.id === p.id ? p : x));
-      try {
-        await wrapDbOp(supabase.from('products').update(p).eq('id', p.id), "Product updated");
-      } catch (error) {
-        setProducts(previous);
-      }
+      await wrapDbOp(supabase.from('products').update(p).eq('id', p.id), "Product updated");
   };
 
   const removeProduct = async (id: string) => {
-      const previous = [...products];
       setProducts(prev => prev.filter(x => x.id !== id));
-      try {
-        await wrapDbOp(supabase.from('products').delete().eq('id', id), "Product deleted");
-      } catch (error) {
-        setProducts(previous);
-      }
+      await wrapDbOp(supabase.from('products').delete().eq('id', id), "Product deleted");
   };
 
-  // Blog Actions
+  // Admin Actions - Blogs
   const addBlogPost = async (b: BlogPost) => {
-      const previous = [...blogPosts];
       setBlogPosts(prev => {
           const exists = prev.find(x => x.id === b.id);
           if (exists) return prev.map(x => x.id === b.id ? b : x);
           return [...prev, b];
       });
-      try {
-        await wrapDbOp(supabase.from('blogs').upsert(b), "Blog post saved");
-      } catch (error) {
-        setBlogPosts(previous);
-      }
+      await wrapDbOp(supabase.from('blogs').upsert(b), "Blog post saved");
   };
 
   const updateBlogPost = async (b: BlogPost) => {
-      const previous = [...blogPosts];
       setBlogPosts(prev => prev.map(x => x.id === b.id ? b : x));
-      try {
-        await wrapDbOp(supabase.from('blogs').update(b).eq('id', b.id), "Blog post updated");
-      } catch (error) {
-        setBlogPosts(previous);
-      }
+      await wrapDbOp(supabase.from('blogs').update(b).eq('id', b.id), "Blog post updated");
   };
 
   const removeBlogPost = async (id: string) => {
-      const previous = [...blogPosts];
       setBlogPosts(prev => prev.filter(x => x.id !== id));
-      try {
-        await wrapDbOp(supabase.from('blogs').delete().eq('id', id), "Blog post deleted");
-      } catch (error) {
-        setBlogPosts(previous);
-      }
+      await wrapDbOp(supabase.from('blogs').delete().eq('id', id), "Blog post deleted");
   };
-
-  // Testimonials
+  
+  // Admin Actions - Testimonials
   const addTestimonial = async (t: Testimonial) => {
-      const previous = [...testimonials];
       setTestimonials(prev => [...prev, t]);
-      try {
-        await wrapDbOp(supabase.from('testimonials').insert(t), "Testimonial added");
-      } catch (error) {
-        setTestimonials(previous);
-      }
+      await wrapDbOp(supabase.from('testimonials').insert(t));
   };
 
   const updateTestimonial = async (t: Testimonial) => {
-      const previous = [...testimonials];
       setTestimonials(prev => prev.map(x => x.id === t.id ? t : x));
-      try {
-        await wrapDbOp(supabase.from('testimonials').update(t).eq('id', t.id), "Testimonial updated");
-      } catch (error) {
-        setTestimonials(previous);
-      }
+      await wrapDbOp(supabase.from('testimonials').update(t).eq('id', t.id), "Testimonial updated");
   };
 
   const removeTestimonial = async (id: string) => {
-      const previous = [...testimonials];
       setTestimonials(prev => prev.filter(x => x.id !== id));
-      try {
-        await wrapDbOp(supabase.from('testimonials').delete().eq('id', id), "Testimonial removed");
-      } catch (error) {
-        setTestimonials(previous);
-      }
+      await wrapDbOp(supabase.from('testimonials').delete().eq('id', id));
   };
 
   return (
