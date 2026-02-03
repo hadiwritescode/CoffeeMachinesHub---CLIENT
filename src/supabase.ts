@@ -5,7 +5,12 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error("SUPABASE ERROR: Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
+  const msg = "CRITICAL ERROR: Supabase keys are missing in .env file. Database connection will fail.";
+  console.error(msg);
+  // Alert in browser so it is obvious
+  if (typeof window !== 'undefined') {
+      alert(msg);
+  }
 }
 
 export const supabase = createClient(supabaseUrl || '', supabaseKey || '') as any;
