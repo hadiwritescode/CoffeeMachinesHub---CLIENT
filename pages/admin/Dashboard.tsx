@@ -1,7 +1,8 @@
+
 import React from 'react';
 import AdminLayout from '../../layouts/AdminLayout';
 import { useStore } from '../../context/StoreContext';
-import { DollarSign, ShoppingBag, MessageSquare, TrendingUp, Coffee } from 'lucide-react';
+import { DollarSign, ShoppingBag, MessageSquare, TrendingUp, Coffee, ShieldAlert } from 'lucide-react';
 
 const StatCard = ({ title, value, icon: Icon, color }: any) => (
   <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center space-x-4">
@@ -16,7 +17,7 @@ const StatCard = ({ title, value, icon: Icon, color }: any) => (
 );
 
 const Dashboard = () => {
-  const { orders, products, messages } = useStore();
+  const { orders, products, messages, currentUser } = useStore();
   
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
   const activeOrders = orders.filter(o => o.status === 'Processing').length;
@@ -26,6 +27,32 @@ const Dashboard = () => {
       <div className="mb-10">
         <h1 className="text-4xl font-serif font-bold text-nomad-black mb-2">Dashboard</h1>
         <p className="text-gray-500">Welcome back, here's what's happening with your store today.</p>
+      </div>
+
+      {/* DEBUG PANEL - VISIBLE IF PERMISSIONS ISSUE SUSPECTED OR ALWAYS FOR ADMIN */}
+      <div className="bg-blue-50 border border-blue-200 p-6 rounded-3xl mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+              <div className="flex items-center gap-2 mb-2">
+                  <ShieldAlert size={18} className="text-blue-700"/>
+                  <h3 className="font-bold text-blue-800 text-sm uppercase tracking-widest">Access Diagnostics</h3>
+              </div>
+              <div className="text-sm space-y-1 text-blue-900/80 font-mono">
+                  <p>User: {currentUser?.email}</p>
+                  <p>Role: <span className={`font-bold ${currentUser?.role === 'admin' ? 'text-green-600' : 'text-red-600'}`}>{currentUser?.role}</span></p>
+                  <p className="text-xs opacity-70">ID: {currentUser?.id}</p>
+              </div>
+          </div>
+          {currentUser?.role !== 'admin' ? (
+              <div className="bg-red-100 text-red-700 px-6 py-4 rounded-xl text-sm font-bold border border-red-200 max-w-md">
+                  ⚠️ RESTRICTED ACCESS DETECTED
+                  <p className="font-normal text-xs mt-2">You are logged in as a 'customer'. Changes to products or content will <b>not</b> be saved to the database. Run the SQL script to promote this email to 'admin'.</p>
+              </div>
+          ) : (
+              <div className="bg-green-100 text-green-700 px-6 py-4 rounded-xl text-sm font-bold border border-green-200">
+                  ✅ FULL ADMIN ACCESS ACTIVE
+                  <p className="font-normal text-xs mt-2">Database writes are enabled.</p>
+              </div>
+          )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">

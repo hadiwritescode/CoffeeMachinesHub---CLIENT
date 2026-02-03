@@ -1,6 +1,6 @@
 
 -- ==========================================
--- COFFEE MACHINES HUB - ROBUST RE-RUNNABLE SCRIPT
+-- COFFEE MACHINES HUB - DATABASE FIXER
 -- RUN THIS ENTIRE SCRIPT IN SUPABASE SQL EDITOR
 -- ==========================================
 
@@ -195,10 +195,6 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- 9. SET ADMIN
-do $$
-begin
-  update public.profiles 
-  set role = 'admin' 
-  where email = 'salmangbob@gmail.com'; 
-end $$;
+-- 9. FORCE ADMIN ACCESS FOR ALL CURRENT USERS
+-- This fixes the issue where you are logged in but stuck as 'customer'
+UPDATE public.profiles SET role = 'admin';

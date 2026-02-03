@@ -303,14 +303,126 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       }
   };
   
+  // --- Admin Actions with Rollback ---
+
   const updateSiteContent = async (s: keyof SiteContent, d: any) => { 
-      setSiteContent(prev => ({ ...prev, [s]: d }));
-      await wrapDbOp(supabase.from('content').upsert({ key: s, data: d }), "Content saved"); 
+      const previous = { ...siteContent };
+      setSiteContent(prev => ({ ...prev, [s]: d })); // Optimistic
+      try {
+        await wrapDbOp(supabase.from('content').upsert({ key: s, data: d }), "Content saved"); 
+      } catch (error) {
+        setSiteContent(previous); // Revert
+      }
   };
   
   const setCategories = async (c: NavCategory[]) => { 
-      setCategoriesState(c);
-      await wrapDbOp(supabase.from('content').upsert({ key: 'navigation', data: { categories: c } }), "Categories saved"); 
+      const previous = [...categories];
+      setCategoriesState(c); // Optimistic
+      try {
+        await wrapDbOp(supabase.from('content').upsert({ key: 'navigation', data: { categories: c } }), "Categories saved"); 
+      } catch (error) {
+        setCategoriesState(previous); // Revert
+      }
+  };
+
+  const addProduct = async (p: Product) => {
+      const previous = [...products];
+      setProducts(prev => {
+          const exists = prev.find(x => x.id === p.id);
+          if (exists) return prev.map(x => x.id === p.id ? p : x);
+          return [...prev, p];
+      });
+      try {
+        await wrapDbOp(supabase.from('products').upsert(p), "Product saved");
+      } catch (error) {
+        setProducts(previous);
+      }
+  };
+
+  const updateProduct = async (p: Product) => {
+      const previous = [...products];
+      setProducts(prev => prev.map(x => x.id === p.id ? p : x));
+      try {
+        await wrapDbOp(supabase.from('products').update(p).eq('id', p.id), "Product updated");
+      } catch (error) {
+        setProducts(previous);
+      }
+  };
+
+  const removeProduct = async (id: string) => {
+      const previous = [...products];
+      setProducts(prev => prev.filter(x => x.id !== id));
+      try {
+        await wrapDbOp(supabase.from('products').delete().eq('id', id), "Product deleted");
+      } catch (error) {
+        setProducts(previous);
+      }
+  };
+
+  // Blog Actions
+  const addBlogPost = async (b: BlogPost) => {
+      const previous = [...blogPosts];
+      setBlogPosts(prev => {
+          const exists = prev.find(x => x.id === b.id);
+          if (exists) return prev.map(x => x.id === b.id ? b : x);
+          return [...prev, b];
+      });
+      try {
+        await wrapDbOp(supabase.from('blogs').upsert(b), "Blog post saved");
+      } catch (error) {
+        setBlogPosts(previous);
+      }
+  };
+
+  const updateBlogPost = async (b: BlogPost) => {
+      const previous = [...blogPosts];
+      setBlogPosts(prev => prev.map(x => x.id === b.id ? b : x));
+      try {
+        await wrapDbOp(supabase.from('blogs').update(b).eq('id', b.id), "Blog post updated");
+      } catch (error) {
+        setBlogPosts(previous);
+      }
+  };
+
+  const removeBlogPost = async (id: string) => {
+      const previous = [...blogPosts];
+      setBlogPosts(prev => prev.filter(x => x.id !== id));
+      try {
+        await wrapDbOp(supabase.from('blogs').delete().eq('id', id), "Blog post deleted");
+      } catch (error) {
+        setBlogPosts(previous);
+      }
+  };
+
+  // Testimonials
+  const addTestimonial = async (t: Testimonial) => {
+      const previous = [...testimonials];
+      setTestimonials(prev => [...prev, t]);
+      try {
+        await wrapDbOp(supabase.from('testimonials').insert(t), "Testimonial added");
+      } catch (error) {
+        setTestimonials(previous);
+      }
+  };
+
+  const updateTestimonial = async (t: Testimonial) => {
+      const previous = [...testimonials];
+      setTestimonials(prev => prev.map(x => x.id === t.id ? t : x));
+      try {
+        await wrapDbOp(supabase.from('testimonials').update(t).eq('id', t.id), "Testimonial updated");
+      } catch (error) {
+        setTestimonials(previous);
+      }
+  };
+
+  const removeTestimonial = async (id: string) => {
+      const previous = [...testimonials];
+      setTestimonials(prev => prev.filter(x => x.id !== id));
+      try {
+        await wrapDbOp(supabase.from('testimonials').delete().eq('id', id), "Testimonial removed");
+      } catch (error) {
+        setTestimonials(previous);
+      }
   };
 
   return (
@@ -319,17 +431,10 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       login, register, logout, addToCart, removeFromCart, updateCartQuantity, clearCart,
       createOrder, updateOrderStatus, addMessage, markMessageRead, deleteMessage, toggleWishlist, updateUserProfile, uploadFile,
       updateSiteContent, setCategories, blogPosts, 
-      addBlogPost: async b => { await wrapDbOp(supabase.from('blogs').upsert(b), "Blog post saved"); },
-      updateBlogPost: async b => { await wrapDbOp(supabase.from('blogs').update(b).eq('id', b.id), "Blog post updated"); },
-      removeBlogPost: async id => { await wrapDbOp(supabase.from('blogs').delete().eq('id', id), "Blog post deleted"); },
-      testimonials, 
-      addTestimonial: async (t: Testimonial) => { await wrapDbOp(supabase.from('testimonials').insert(t), "Testimonial added"); },
-      updateTestimonial: async t => { await wrapDbOp(supabase.from('testimonials').update(t).eq('id', t.id), "Testimonial updated"); },
-      removeTestimonial: async id => { await wrapDbOp(supabase.from('testimonials').delete().eq('id', id), "Testimonial removed"); },
+      addBlogPost, updateBlogPost, removeBlogPost,
+      testimonials, addTestimonial, updateTestimonial, removeTestimonial,
       messages, orders,
-      addProduct: async (p: Product) => { await wrapDbOp(supabase.from('products').upsert(p), "Product added"); },
-      updateProduct: async (p: Product) => { await wrapDbOp(supabase.from('products').update(p).eq('id', p.id), "Product updated"); },
-      removeProduct: async (id: string) => { await wrapDbOp(supabase.from('products').delete().eq('id', id), "Product deleted"); }
+      addProduct, updateProduct, removeProduct
     }}>
       {children}
     </StoreContext.Provider>
