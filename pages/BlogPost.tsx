@@ -4,7 +4,7 @@ import { useStore } from '../context/StoreContext';
 import { ArrowLeft, Loader2, Link as LinkIcon } from 'lucide-react';
 
 const BlogPost: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams() as { id: string };
   const { blogPosts, loading } = useStore();
   const post = blogPosts.find(p => p.id === id);
 

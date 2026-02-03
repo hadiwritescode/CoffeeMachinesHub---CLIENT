@@ -8,7 +8,7 @@ type SortOption = 'featured' | 'newest' | 'price-low' | 'price-high';
 
 const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { collectionId } = useParams<{ collectionId: string }>();
+  const { collectionId } = useParams() as { collectionId: string };
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('featured');

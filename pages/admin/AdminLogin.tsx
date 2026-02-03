@@ -33,12 +33,13 @@ const AdminLogin: React.FC = () => {
     setError('');
     try {
       await login(email, password);
-      // FORCE HARD RELOAD to ensure context and routing are fresh
-      window.location.href = '/admin';
+      // FORCE HARD RELOAD with DELAY to ensure context and persistence are fresh
+      setTimeout(() => {
+          window.location.href = '/admin';
+      }, 500);
     } catch (err: any) {
       console.error(err);
       setError('Invalid credentials.');
-    } finally {
       setIsSubmitting(false);
     }
   };

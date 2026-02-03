@@ -17,7 +17,7 @@ declare module 'react-router-dom' {
   export const NavLink: any;
   export const useLocation: any;
   export const useNavigate: any;
-  export const useParams: any;
+  export function useParams<T = any>(): T;
   export const useSearchParams: any;
   export const Navigate: any;
   export const Outlet: any;

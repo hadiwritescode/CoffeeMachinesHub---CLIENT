@@ -252,9 +252,12 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-            setLoading(true);
-            await fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
-            if (mounted) setLoading(false);
+            if (mounted) setLoading(true);
+            try {
+                await fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
+            } finally {
+                if (mounted) setLoading(false);
+            }
         } else if (event === 'SIGNED_OUT') {
             if (mounted) {
                 setCurrentUser(null);
@@ -262,7 +265,13 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                 setLoading(false);
             }
         } else {
-            if (mounted) setLoading(false);
+            // For other events (like TOKEN_REFRESHED), ensure we aren't stuck loading
+            // Only force loading off if it's been a while, or assume handled by other flows
+            // For safety, checking state might be complex, so we leave it unless it's INITIAL_SESSION
+            if (event === 'INITIAL_SESSION' && mounted) {
+                 // initAuth handles the fetch, this is just a backup safety
+                 // We do NOT set loading false here immediately to avoid flickering if initAuth is still running
+            }
         }
     });
 
@@ -298,6 +307,12 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const login = async (e: string, p: string) => { 
       const { data, error } = await supabase.auth.signInWithPassword({ email: e, password: p });
       if (error) throw error;
+      
+      // OPTIMISTIC PROFILE FETCH FOR REDIRECT
+      if (data.user) {
+          const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+          if (profile) setCurrentUser(profile);
+      }
       showToast("Welcome back!");
   };
   

@@ -25,7 +25,7 @@ const IconMap = {
 };
 
 const ProductDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams() as { id: string };
   const { toggleWishlist, addToCart, currentUser, products } = useStore();
   const product = products.find(p => p.id === id);
   const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(0);
