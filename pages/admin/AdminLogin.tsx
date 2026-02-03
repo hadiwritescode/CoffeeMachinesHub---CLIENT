@@ -17,14 +17,15 @@ const AdminLogin: React.FC = () => {
   useEffect(() => {
     if (currentUser) {
       if (currentUser.role === 'admin') {
-        navigate('/admin');
+        // If already logged in as admin, ensuring we are on admin page
+        if (window.location.pathname === '/admin/login') {
+             window.location.href = '/admin';
+        }
       } else {
         setError('Access Denied: You do not have administrator privileges.');
-        // Optional: Logout immediately so they aren't stuck in a "logged in as customer" state on the admin page
-        // logout(); 
       }
     }
-  }, [currentUser, navigate]);
+  }, [currentUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +33,8 @@ const AdminLogin: React.FC = () => {
     setError('');
     try {
       await login(email, password);
-      // Navigation is handled by the useEffect above, but we can try immediate push if login resolves
-      navigate('/admin');
+      // FORCE HARD RELOAD to ensure context and routing are fresh
+      window.location.href = '/admin';
     } catch (err: any) {
       console.error(err);
       setError('Invalid credentials.');

@@ -200,7 +200,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     let mounted = true;
 
     // Safety timeout: If Supabase doesn't respond within 3 seconds, stop loading
-    // This prevents the infinite spinner if the DB is unreachable or keys are wrong.
     const safetyTimer = setTimeout(() => {
         if (mounted) {
             setLoading(prev => {
@@ -253,7 +252,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-            setLoading(true); // Temporarily load while fetching profile
+            setLoading(true);
             await fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
             if (mounted) setLoading(false);
         } else if (event === 'SIGNED_OUT') {
@@ -299,12 +298,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const login = async (e: string, p: string) => { 
       const { data, error } = await supabase.auth.signInWithPassword({ email: e, password: p });
       if (error) throw error;
-      
-      // OPTIMISTIC PROFILE FETCH FOR REDIRECT
-      if (data.user) {
-          const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
-          if (profile) setCurrentUser(profile);
-      }
       showToast("Welcome back!");
   };
   
@@ -326,7 +319,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     if (data.user) {
         const u: User = { id: data.user.id, name: n, email: e, role: 'customer', wishlist: [], cart: [] };
         await supabase.from('profiles').upsert(u);
-        setCurrentUser(u); // Optimistic Update
+        setCurrentUser(u); 
     }
   };
 
@@ -348,15 +341,10 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const createOrder = async (o: any) => {
     const id = `ORD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
     const newOrder = { ...o, id, date: new Date().toLocaleDateString(), status: 'Processing' };
-    
-    // Optimistic Update
     setOrders(prev => [newOrder, ...prev]);
-    
     const { error } = await supabase.from('orders').insert(newOrder);
     if (error) { 
         showToast("Failed to create order", "error"); 
-        // Revert optimistic update on failure if needed, but for now simple error toast
-        setOrders(prev => prev.filter(x => x.id !== id));
         throw error; 
     }
     return id;
@@ -370,28 +358,28 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       } catch (err: any) {
           console.error("DB Error:", err);
           showToast(err.message || "Database operation failed", "error");
-          throw err;
+          // NOTE: We do not re-throw here to prevent aggressive UI reverts in catch blocks
       }
   };
 
   const updateOrderStatus = async (id: string, s: any) => {
-      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: s } : o)); // Optimistic
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: s } : o));
       await wrapDbOp(supabase.from('orders').update({ status: s }).eq('id', id), "Order updated");
   };
 
   const addMessage = async (m: any) => {
       const newMsg = { ...m, id: Date.now().toString(), date: new Date().toLocaleDateString(), read: false };
-      setMessages(prev => [newMsg, ...prev]); // Optimistic
+      setMessages(prev => [newMsg, ...prev]);
       await wrapDbOp(supabase.from('messages').insert(newMsg));
   };
 
   const markMessageRead = async (id: string, status: boolean) => {
-      setMessages(prev => prev.map(m => m.id === id ? { ...m, read: !status } : m)); // Optimistic
+      setMessages(prev => prev.map(m => m.id === id ? { ...m, read: !status } : m));
       await wrapDbOp(supabase.from('messages').update({ read: !status }).eq('id', id));
   };
 
   const deleteMessage = async (id: string) => {
-      setMessages(prev => prev.filter(m => m.id !== id)); // Optimistic
+      setMessages(prev => prev.filter(m => m.id !== id));
       await wrapDbOp(supabase.from('messages').delete().eq('id', id), "Message deleted");
   };
   
@@ -403,28 +391,29 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     const isIn = currentUser.wishlist.includes(id);
     const next = isIn ? currentUser.wishlist.filter(x => x !== id) : [...currentUser.wishlist, id];
     
-    setCurrentUser({ ...currentUser, wishlist: next }); // Optimistic
+    setCurrentUser({ ...currentUser, wishlist: next });
     await supabase.from('profiles').update({ wishlist: next }).eq('id', currentUser.id);
   };
   
   const updateUserProfile = async (d: any) => { 
       if (currentUser) {
-          setCurrentUser({...currentUser, ...d}); // Optimistic
+          setCurrentUser({...currentUser, ...d});
           await wrapDbOp(supabase.from('profiles').update(d).eq('id', currentUser.id), "Profile updated");
       }
   };
   
+  // --- Admin Actions (No manual rollback to prevent flickering) ---
+
   const updateSiteContent = async (s: keyof SiteContent, d: any) => {
-      setSiteContent(prev => ({ ...prev, [s]: d })); // Optimistic
+      setSiteContent(prev => ({ ...prev, [s]: d })); 
       await wrapDbOp(supabase.from('content').upsert({ key: s, data: d }), "Content saved");
   };
 
   const setCategories = async (c: NavCategory[]) => {
-      setCategoriesState(c); // Optimistic
+      setCategoriesState(c); 
       await wrapDbOp(supabase.from('content').upsert({ key: 'navigation', data: { categories: c } }), "Categories updated");
   };
 
-  // Admin Actions - Products
   const addProduct = async (p: Product) => {
       setProducts(prev => {
           const exists = prev.find(x => x.id === p.id);
@@ -444,7 +433,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       await wrapDbOp(supabase.from('products').delete().eq('id', id), "Product deleted");
   };
 
-  // Admin Actions - Blogs
   const addBlogPost = async (b: BlogPost) => {
       setBlogPosts(prev => {
           const exists = prev.find(x => x.id === b.id);
@@ -464,7 +452,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       await wrapDbOp(supabase.from('blogs').delete().eq('id', id), "Blog post deleted");
   };
   
-  // Admin Actions - Testimonials
   const addTestimonial = async (t: Testimonial) => {
       setTestimonials(prev => [...prev, t]);
       await wrapDbOp(supabase.from('testimonials').insert(t));
