@@ -58,7 +58,7 @@ const defaultSiteContent: SiteContent = {
     featuredTitle: "Top Rated Machines", 
     favoritesTitle: "Essentials", 
     favoritesSubtitle: "Curated Favorites", 
-    partnersText: "Trusted Partners & Global Brands",
+    partnersText: "Trusted Partners & Global Brands", 
     marqueeText: "Free Shipping on Orders Over Rs. 5000 • Direct Import from Italy",
     trendingTags: ['Espresso', 'Grinder', 'Roast', 'Accessories']
   },
@@ -199,7 +199,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    // Safety timeout: If Supabase doesn't respond within 3 seconds, stop loading
+    // Safety timeout: If Supabase doesn't respond within 4 seconds, force stop loading
     const safetyTimer = setTimeout(() => {
         if (mounted) {
             setLoading(prev => {
@@ -207,7 +207,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                 return false;
             });
         }
-    }, 3000);
+    }, 4000);
 
     const fetchProfile = async (userId: string, email: string, userMeta: any) => {
         try {
@@ -252,12 +252,9 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-            if (mounted) setLoading(true);
-            try {
-                await fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
-            } finally {
-                if (mounted) setLoading(false);
-            }
+            // NOTE: We do NOT set loading to true here to avoid freezing UI on re-auth.
+            // background update instead.
+            fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
         } else if (event === 'SIGNED_OUT') {
             if (mounted) {
                 setCurrentUser(null);
@@ -265,13 +262,8 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                 setLoading(false);
             }
         } else {
-            // For other events (like TOKEN_REFRESHED), ensure we aren't stuck loading
-            // Only force loading off if it's been a while, or assume handled by other flows
-            // For safety, checking state might be complex, so we leave it unless it's INITIAL_SESSION
-            if (event === 'INITIAL_SESSION' && mounted) {
-                 // initAuth handles the fetch, this is just a backup safety
-                 // We do NOT set loading false here immediately to avoid flickering if initAuth is still running
-            }
+            // For other events, just ensure loading is off if we are mounted
+            if (mounted && loading) setLoading(false);
         }
     });
 
@@ -308,7 +300,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       const { data, error } = await supabase.auth.signInWithPassword({ email: e, password: p });
       if (error) throw error;
       
-      // OPTIMISTIC PROFILE FETCH FOR REDIRECT
+      // Explicitly loading during login action only
       if (data.user) {
           const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
           if (profile) setCurrentUser(profile);
