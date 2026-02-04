@@ -1,4 +1,2 @@
-
-// This file is deprecated and should not be used. 
-// Firebase is now the backend service.
-// See src/firebase.ts
+// This file is deprecated. Please use firebase.ts instead.
+export const supabase = null;
