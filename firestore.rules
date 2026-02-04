@@ -1,84 +1,81 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // ---------------- HELPER FUNCTIONS ----------------
+
+    // --- Helper Functions ---
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
+    // Fetch the user's profile document to check their role
     function isAdmin() {
       return isAuthenticated() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-    
-    // ---------------- CONTENT & CONFIGURATION ----------------
-    
-    // Site Content (Hero, Home, Shop, Services, About, Contact, Footer, Team, Navigation)
-    // All stored as documents within the 'content' collection
+
+    // --- Content & Catalog (Public Read, Admin Write) ---
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /content/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Products Catalog
-    match /products/{productId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    
-    // Blogs / Journal
     match /blogs/{blogId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
-    // Testimonials
-    match /testimonials/{tId} {
+
+    match /testimonials/{testimonialId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ---------------- USER INTERACTION ----------------
+    // --- User Interaction ---
 
-    // Orders: 
-    // - Public creation (guest checkout)
-    // - Admins can read/write all
-    // - Users can read their own orders (matched by email)
+    // Messages (Contact Form)
+    // Anyone can create, only admins can read/manage
+    match /messages/{messageId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Orders
+    // Anyone can create (Guest Checkout)
+    // Admins can manage all
+    // Users can read their own orders if logged in (matched by email stored in auth token)
     match /orders/{orderId} {
       allow create: if true;
       allow read: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
       allow update, delete: if isAdmin();
     }
 
-    // Messages (Contact Form):
-    // - Public creation
-    // - Admin only read/manage
-    match /messages/{msgId} {
-      allow create: if true;
-      allow read, update, delete: if isAdmin();
-    }
-
-    // ---------------- USER ACCOUNTS ----------------
+    // --- User Profiles ---
 
     match /users/{userId} {
-      // Profiles are visible to the owner and admins
+      // Users can read their own profile; Admins can read all
       allow read: if isOwner(userId) || isAdmin();
       
-      // Registration
+      // Creation allowed for the authenticated user (Registration)
       allow create: if isOwner(userId);
       
-      // Update: 
-      // - Admins can update everything (roles, etc.)
-      // - Owners can update details but CANNOT change their 'role'
-      allow update: if isAdmin() || (isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])));
+      // Update allowed if Owner or Admin
+      // CRITICAL: If Owner, prevent changing the 'role' field to avoid privilege escalation
+      allow update: if isAdmin() || (isOwner(userId) && request.resource.data.role == resource.data.role);
       
-      allow delete: if isAdmin(); 
+      // Only Admins can delete users
+      allow delete: if isAdmin();
     }
   }
 }
