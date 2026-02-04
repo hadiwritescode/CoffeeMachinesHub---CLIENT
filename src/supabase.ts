@@ -1,2 +1,3 @@
-// This file is deprecated. Please use firebase.ts instead.
+
+// This file is deprecated and should not be used.
 export const supabase = null;
