@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ShoppingBag, ShoppingCart, FileText, Settings, LogOut, Coffee, List, BookOpen, Menu, X, Loader2, MessageSquare } from 'lucide-react';
@@ -14,6 +13,15 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const { logout, currentUser, loading } = useStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showExit, setShowExit] = useState(false);
+
+  // Show exit button after 3 seconds if still loading
+  useEffect(() => {
+      if (loading) {
+          const timer = setTimeout(() => setShowExit(true), 3000);
+          return () => clearTimeout(timer);
+      }
+  }, [loading]);
 
   // Security Gate
   useEffect(() => {
@@ -32,6 +40,19 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <div className="fixed inset-0 z-50 bg-nomad-black flex flex-col items-center justify-center text-white">
               <Loader2 size={48} className="animate-spin text-nomad-gold mb-4" />
               <p className="font-bold uppercase tracking-widest text-xs mb-6">Authenticating...</p>
+              
+              {/* Escape hatch for infinite loading bugs */}
+              {showExit && (
+                  <button 
+                    onClick={async () => { 
+                        await logout(); 
+                        window.location.href = '/admin/login'; 
+                    }}
+                    className="mt-8 text-white/50 hover:text-white text-[10px] uppercase tracking-widest underline transition-colors animate-fade-in"
+                  >
+                    Taking too long? Click here to Reset
+                  </button>
+              )}
           </div>
       );
   }
@@ -44,10 +65,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <p className="font-bold uppercase tracking-widest text-xs mb-6">Redirecting...</p>
               
               <button 
-                onClick={() => { 
-                    logout(); 
-                    navigate('/admin/login', { replace: true });
-                    window.location.reload(); 
+                onClick={async () => { 
+                    await logout(); 
+                    window.location.href = '/admin/login'; 
                 }}
                 className="text-white/30 hover:text-white text-[10px] uppercase tracking-widest underline transition-colors"
               >

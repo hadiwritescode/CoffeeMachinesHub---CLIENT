@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
@@ -34,9 +33,10 @@ const AdminLogin: React.FC = () => {
     try {
       await login(email, password);
       // FORCE HARD RELOAD with DELAY to ensure context and persistence are fresh
+      // Increased delay to 1000ms to be safe for slower storage I/O
       setTimeout(() => {
           window.location.href = '/admin';
-      }, 500);
+      }, 1000);
     } catch (err: any) {
       console.error(err);
       setError('Invalid credentials.');
