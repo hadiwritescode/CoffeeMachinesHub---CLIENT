@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     description TEXT NOT NULL,
     specs JSONB,
     features TEXT[],
-    inStock BOOLEAN DEFAULT true,
+    "inStock" BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -73,11 +73,11 @@ CREATE TABLE IF NOT EXISTS public.messages (
 -- Orders table
 CREATE TABLE IF NOT EXISTS public.orders (
     id TEXT PRIMARY KEY,
-    userId TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     items JSONB NOT NULL,
     total INTEGER NOT NULL,
     status TEXT NOT NULL,
-    billingInfo JSONB NOT NULL,
+    "billingInfo" JSONB NOT NULL,
     date TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -113,8 +113,8 @@ CREATE POLICY "Users can update own profile" ON public.users FOR UPDATE USING (a
 CREATE POLICY "Users can insert own profile" ON public.users FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Allow authenticated users to insert orders, and read their own
-CREATE POLICY "Users can insert orders" ON public.orders FOR INSERT WITH CHECK (auth.uid()::text = userId);
-CREATE POLICY "Users can read own orders" ON public.orders FOR SELECT USING (auth.uid()::text = userId);
+CREATE POLICY "Users can insert orders" ON public.orders FOR INSERT WITH CHECK (auth.uid()::text = "userId");
+CREATE POLICY "Users can read own orders" ON public.orders FOR SELECT USING (auth.uid()::text = "userId");
 
 -- Allow anyone to insert messages
 CREATE POLICY "Anyone can insert messages" ON public.messages FOR INSERT WITH CHECK (true);
