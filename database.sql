@@ -149,6 +149,16 @@ INSERT INTO storage.buckets (id, name, public) VALUES ('blogs', 'blogs', true) O
 INSERT INTO storage.buckets (id, name, public) VALUES ('testimonials', 'testimonials', true) ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies
+
+-- First drop them if they exist so the script is re-runnable
+DROP POLICY IF EXISTS "Public Access Products" ON storage.objects;
+DROP POLICY IF EXISTS "Public Access Blogs" ON storage.objects;
+DROP POLICY IF EXISTS "Public Access Testimonials" ON storage.objects;
+DROP POLICY IF EXISTS "Upload Access Products" ON storage.objects;
+DROP POLICY IF EXISTS "Upload Access Blogs" ON storage.objects;
+DROP POLICY IF EXISTS "Upload Access Testimonials" ON storage.objects;
+
+-- Recreate policies
 CREATE POLICY "Public Access Products" ON storage.objects FOR SELECT USING (bucket_id = 'products');
 CREATE POLICY "Public Access Blogs" ON storage.objects FOR SELECT USING (bucket_id = 'blogs');
 CREATE POLICY "Public Access Testimonials" ON storage.objects FOR SELECT USING (bucket_id = 'testimonials');
