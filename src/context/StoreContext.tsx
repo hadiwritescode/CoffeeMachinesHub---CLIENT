@@ -150,31 +150,22 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
   }, [currentUser === null]);
 
+  // Safety Timer to force loading states if Supabase hangs
+  useEffect(() => {
+      const timer = setTimeout(() => {
+          if (!dataLoaded || !authLoaded) {
+              console.warn("Safety Timeout: Forcing load states after 10s of inactivity.");
+              setDataLoaded(true);
+              setAuthLoaded(true);
+          }
+      }, 10000);
+      return () => clearTimeout(timer);
+  }, [dataLoaded, authLoaded]);
+
   useEffect(() => {
     const fetchInitialData = async () => {
         try {
-            const [
-                { data: pData },
-                { data: bData },
-                { data: tData },
-                { data: mData },
-                { data: oData },
-                { data: cData }
-            ] = await Promise.all([
-                supabase.from('products').select('*'),
-                supabase.from('blogs').select('*'),
-                supabase.from('testimonials').select('*'),
-                supabase.from('messages').select('*'),
-                supabase.from('orders').select('*').order('date', { ascending: false }),
-                supabase.from('content').select('*')
-            ]);
-            
-            if (pData) setProducts(pData as Product[]);
-            if (bData) setBlogPosts(bData as BlogPost[]);
-            if (tData) setTestimonials(tData as Testimonial[]);
-            if (mData) setMessages(mData as Message[]);
-            if (oData) setOrders(oData as Order[]);
-            
+            const { data: cData } = await supabase.from('content').select('*');
             if (cData) {
                 const newContent: any = { ...defaultSiteContent };
                 cData.forEach(doc => {
@@ -188,6 +179,28 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                 });
                 setSiteContent(newContent);
             }
+
+            // Parallel but limited fetches
+            const [
+                { data: pData },
+                { data: bData },
+                { data: tData }
+            ] = await Promise.all([
+                supabase.from('products').select('*'),
+                supabase.from('blogs').select('*'),
+                supabase.from('testimonials').select('*')
+            ]);
+            
+            if (pData) setProducts(pData as Product[]);
+            if (bData) setBlogPosts(bData as BlogPost[]);
+            if (tData) setTestimonials(tData as Testimonial[]);
+
+            const { data: mData } = await supabase.from('messages').select('*');
+            if (mData) setMessages(mData as Message[]);
+            
+            const { data: oData } = await supabase.from('orders').select('*').order('date', { ascending: false });
+            if (oData) setOrders(oData as Order[]);
+
         } catch (err) {
             console.error("Fetch Initial Data Error:", err);
         } finally {
@@ -202,31 +215,31 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
             const doc = payload.new as Product;
             if (payload.eventType === 'INSERT') setProducts(prev => [...prev, doc]);
             if (payload.eventType === 'UPDATE') setProducts(prev => prev.map(p => p.id === doc.id ? doc : p));
-            if (payload.eventType === 'DELETE') setProducts(prev => prev.filter(p => p.id !== payload.old.id));
+            if (payload.eventType === 'DELETE') setProducts(prev => prev.filter(p => p.id !== (payload.old as any).id));
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'blogs' }, payload => {
             const doc = payload.new as BlogPost;
             if (payload.eventType === 'INSERT') setBlogPosts(prev => [...prev, doc]);
             if (payload.eventType === 'UPDATE') setBlogPosts(prev => prev.map(p => p.id === doc.id ? doc : p));
-            if (payload.eventType === 'DELETE') setBlogPosts(prev => prev.filter(p => p.id !== payload.old.id));
+            if (payload.eventType === 'DELETE') setBlogPosts(prev => prev.filter(p => p.id !== (payload.old as any).id));
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'testimonials' }, payload => {
             const doc = payload.new as Testimonial;
             if (payload.eventType === 'INSERT') setTestimonials(prev => [...prev, doc]);
             if (payload.eventType === 'UPDATE') setTestimonials(prev => prev.map(p => p.id === doc.id ? doc : p));
-            if (payload.eventType === 'DELETE') setTestimonials(prev => prev.filter(p => p.id !== payload.old.id));
+            if (payload.eventType === 'DELETE') setTestimonials(prev => prev.filter(p => p.id !== (payload.old as any).id));
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, payload => {
             const doc = payload.new as Message;
             if (payload.eventType === 'INSERT') setMessages(prev => [...prev, doc]);
             if (payload.eventType === 'UPDATE') setMessages(prev => prev.map(p => p.id === doc.id ? doc : p));
-            if (payload.eventType === 'DELETE') setMessages(prev => prev.filter(p => p.id !== payload.old.id));
+            if (payload.eventType === 'DELETE') setMessages(prev => prev.filter(p => p.id !== (payload.old as any).id));
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
             const doc = payload.new as Order;
             if (payload.eventType === 'INSERT') setOrders(prev => [doc, ...prev]);
             if (payload.eventType === 'UPDATE') setOrders(prev => prev.map(p => p.id === doc.id ? doc : p));
-            if (payload.eventType === 'DELETE') setOrders(prev => prev.filter(p => p.id !== payload.old.id));
+            if (payload.eventType === 'DELETE') setOrders(prev => prev.filter(p => p.id !== (payload.old as any).id));
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'content' }, payload => {
             if (payload.eventType === 'DELETE') return;
@@ -248,16 +261,27 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
     
-    // Safety timer to prevent infinite loading
-    const safetyTimer = setTimeout(() => {
-        if (mounted) {
-            setDataLoaded(true);
-            setAuthLoaded(true);
+    const initSession = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user && mounted) {
+                const { data: userData, error } = await supabase.from('users').select('*').eq('id', session.user.id).single();
+                if (userData && !error && mounted) {
+                    setCurrentUser({ ...userData } as User);
+                    if (userData.cart && Array.isArray(userData.cart)) setCart(userData.cart);
+                }
+            }
+        } catch (err) {
+            console.error("Initial Session Error:", err);
+        } finally {
+            if (mounted) setAuthLoaded(true);
         }
-    }, 6000);
+    };
+
+    initSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (session?.user) {
+        if (event === 'SIGNED_IN' && session?.user) {
             try {
                 const { data: userData, error } = await supabase.from('users').select('*').eq('id', session.user.id).single();
                 
@@ -266,7 +290,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                         setCurrentUser({ ...userData } as User);
                         if (userData.cart && Array.isArray(userData.cart)) setCart(userData.cart);
                     }
-                } else if (!error || error.code === 'PGRST116') {
+                } else if (error && error.code === 'PGRST116') {
                     const newUser: User = {
                         id: session.user.id,
                         email: session.user.email || '',
@@ -279,9 +303,9 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                     if (mounted) setCurrentUser(newUser);
                 }
             } catch (err) {
-                console.error("Profile Fetch Error:", err);
+                console.error("Auth Change Error:", err);
             }
-        } else {
+        } else if (event === 'SIGNED_OUT') {
             if (mounted) {
                 setCurrentUser(null);
                 setCart([]);
@@ -292,7 +316,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
     return () => {
         mounted = false;
-        clearTimeout(safetyTimer);
         subscription.unsubscribe();
     };
   }, []);
@@ -332,15 +355,8 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const clearCart = () => setCart([]);
 
   const login = async (e: string, p: string) => { 
-      const { data, error } = await supabase.auth.signInWithPassword({ email: e, password: p });
+      const { error } = await supabase.auth.signInWithPassword({ email: e, password: p });
       if (error) throw error;
-      if (data.user) {
-          const { data: userData } = await supabase.from('users').select('*').eq('id', data.user.id).single();
-          if (userData) {
-              setCurrentUser(userData as User);
-              if (userData.cart) setCart(userData.cart);
-          }
-      }
       showToast("Welcome back!");
   };
   
@@ -352,17 +368,12 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   };
 
   const register = async (e: string, p: string, n: string) => {
-    const { data: { user }, error } = await supabase.auth.signUp({ 
+    const { error } = await supabase.auth.signUp({ 
         email: e, 
         password: p,
         options: { data: { full_name: n } }
     });
     if (error) throw error;
-    if (user) {
-        const u: User = { id: user.id, name: n, email: e, role: 'customer', wishlist: [], cart: [] };
-        await supabase.from('users').upsert(u);
-        setCurrentUser(u); 
-    }
   };
 
   const uploadFile = async (f: File, bucket: string) => {

@@ -16,11 +16,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showExit, setShowExit] = useState(false);
 
-  // Show exit button after 3 seconds if still loading
+  // Show exit button after 6 seconds if still loading
   useEffect(() => {
       if (loading) {
-          const timer = setTimeout(() => setShowExit(true), 3000);
+          const timer = setTimeout(() => setShowExit(true), 6000);
           return () => clearTimeout(timer);
+      } else {
+          setShowExit(false);
       }
   }, [loading]);
 
@@ -40,7 +42,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       return (
           <div className="fixed inset-0 z-50 bg-nomad-black flex flex-col items-center justify-center text-white">
               <Loader2 size={48} className="animate-spin text-nomad-gold mb-4" />
-              <p className="font-bold uppercase tracking-widest text-xs mb-6">Authenticating...</p>
+              <p className="font-bold uppercase tracking-widest text-[10px] mb-6">Authenticating...</p>
               
               {/* Escape hatch for infinite loading bugs */}
               {showExit && (

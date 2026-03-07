@@ -18,15 +18,14 @@ const AdminLogin: React.FC = () => {
   useEffect(() => {
     if (currentUser) {
       if (currentUser.role === 'admin') {
-        // If already logged in as admin, ensuring we are on admin page
         if (window.location.pathname === '/admin/login') {
-             window.location.href = '/admin';
+             navigate('/admin');
         }
       } else {
         setError('Access Denied: You do not have administrator privileges.');
       }
     }
-  }, [currentUser]);
+  }, [currentUser, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
