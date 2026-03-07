@@ -1,6 +1,5 @@
-
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { supabase } from '../../src/supabase';
+import { supabase } from '../src/supabase';
 
 interface Props {
   children?: ReactNode;

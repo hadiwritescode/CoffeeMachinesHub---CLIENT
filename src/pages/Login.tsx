@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { useToast } from '../context/ToastContext';
+import { supabase } from '../supabase';
 import { Loader2, Mail, Lock, User as UserIcon, ArrowRight } from 'lucide-react';
 
 const Login: React.FC = () => {

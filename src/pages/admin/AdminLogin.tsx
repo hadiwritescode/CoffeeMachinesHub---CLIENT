@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
+import { supabase } from '../../supabase';
 import { Loader2, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
 
 const AdminLogin: React.FC = () => {
