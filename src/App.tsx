@@ -1,36 +1,36 @@
 
 import React, { useEffect, Suspense, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { StoreProvider } from './src/context/StoreContext';
-import Header from './src/components/Header';
-import Footer from './src/components/Footer';
-import WhatsAppWidget from './src/components/WhatsAppWidget';
-import FeaturesBanner from './src/components/FeaturesBanner';
-import ScrollToTop from './src/components/ScrollToTop';
+import { StoreProvider } from './context/StoreContext';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import WhatsAppWidget from './components/WhatsAppWidget';
+import FeaturesBanner from './components/FeaturesBanner';
+import ScrollToTop from './components/ScrollToTop';
 
 // Production lazy loading strategy
-const Home = React.lazy(() => import('./src/pages/Home'));
-const Shop = React.lazy(() => import('./src/pages/Shop'));
-const ProductDetail = React.lazy(() => import('./src/pages/ProductDetail'));
-const Services = React.lazy(() => import('./src/pages/Services'));
-const About = React.lazy(() => import('./src/pages/About'));
-const Blogs = React.lazy(() => import('./src/pages/Blogs'));
-const BlogPost = React.lazy(() => import('./src/pages/BlogPost'));
-const Contact = React.lazy(() => import('./src/pages/Contact'));
-const Cart = React.lazy(() => import('./src/pages/Cart'));
-const Login = React.lazy(() => import('./src/pages/Login'));
-const Profile = React.lazy(() => import('./src/pages/Profile'));
-const NotFound = React.lazy(() => import('./src/pages/NotFound'));
+const Home = React.lazy(() => import('./pages/Home'));
+const Shop = React.lazy(() => import('./pages/Shop'));
+const ProductDetail = React.lazy(() => import('./pages/ProductDetail'));
+const Services = React.lazy(() => import('./pages/Services'));
+const About = React.lazy(() => import('./pages/About'));
+const Blogs = React.lazy(() => import('./pages/Blogs'));
+const BlogPost = React.lazy(() => import('./pages/BlogPost'));
+const Contact = React.lazy(() => import('./pages/Contact'));
+const Cart = React.lazy(() => import('./pages/Cart'));
+const Login = React.lazy(() => import('./pages/Login'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 // Admin Pages
-const AdminLogin = React.lazy(() => import('./src/pages/admin/AdminLogin'));
-const Dashboard = React.lazy(() => import('./src/pages/admin/Dashboard'));
-const ProductManager = React.lazy(() => import('./src/pages/admin/ProductManager'));
-const OrderManager = React.lazy(() => import('./src/pages/admin/OrderManager'));
-const ContentManager = React.lazy(() => import('./src/pages/admin/ContentManager'));
-const BlogManager = React.lazy(() => import('./src/pages/admin/BlogManager'));
-const CategoryManager = React.lazy(() => import('./src/pages/admin/CategoryManager'));
-const MessageManager = React.lazy(() => import('./src/pages/admin/MessageManager'));
+const AdminLogin = React.lazy(() => import('./pages/admin/AdminLogin'));
+const Dashboard = React.lazy(() => import('./pages/admin/Dashboard'));
+const ProductManager = React.lazy(() => import('./pages/admin/ProductManager'));
+const OrderManager = React.lazy(() => import('./pages/admin/OrderManager'));
+const ContentManager = React.lazy(() => import('./pages/admin/ContentManager'));
+const BlogManager = React.lazy(() => import('./pages/admin/BlogManager'));
+const CategoryManager = React.lazy(() => import('./pages/admin/CategoryManager'));
+const MessageManager = React.lazy(() => import('./pages/admin/MessageManager'));
 
 const PageWrapper = ({ children }: { children?: React.ReactNode }) => {
   const { pathname } = useLocation();
