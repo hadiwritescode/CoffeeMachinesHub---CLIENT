@@ -134,17 +134,14 @@ CREATE POLICY "Users can read own orders" ON public.orders FOR SELECT USING (aut
 -- Allow anyone to insert messages
 CREATE POLICY "Anyone can insert messages" ON public.messages FOR INSERT WITH CHECK (true);
 
--- Allow all actions for admin users (Assuming an 'admin' role check, or bypass for simplicity in dev)
--- For this simplified migration, if we have an admin system, we'd add admin bypass policies here:
--- CREATE POLICY "Admin full access" ON public.products FOR ALL USING (auth.jwt()->>'role' = 'admin');
--- Since previous rules were likely simple or non-existent in the provided snippets, 
--- we provide wide open access for easy development, BUT you should restrict this.
-CREATE POLICY "Dev mode full access products" ON public.products FOR ALL USING (true);
-CREATE POLICY "Dev mode full access blogs" ON public.blogs FOR ALL USING (true);
-CREATE POLICY "Dev mode full access testimonials" ON public.testimonials FOR ALL USING (true);
-CREATE POLICY "Dev mode full access content" ON public.content FOR ALL USING (true);
-CREATE POLICY "Dev mode full access messages" ON public.messages FOR ALL USING (true);
-CREATE POLICY "Dev mode full access orders" ON public.orders FOR ALL USING (true);
+-- Allow all actions for admin users across all main product/content tables
+-- Using a subquery to check if the authenticated user has the 'admin' role in the users table.
+CREATE POLICY "Admin full access products" ON public.products FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
+CREATE POLICY "Admin full access blogs" ON public.blogs FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
+CREATE POLICY "Admin full access testimonials" ON public.testimonials FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
+CREATE POLICY "Admin full access content" ON public.content FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
+CREATE POLICY "Admin full access messages" ON public.messages FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
+CREATE POLICY "Admin full access orders" ON public.orders FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
 
 -- Storage Setup
 INSERT INTO storage.buckets (id, name, public) VALUES ('products', 'products', true) ON CONFLICT (id) DO NOTHING;
@@ -177,3 +174,14 @@ CREATE POLICY "Upload Access Testimonials" ON storage.objects FOR INSERT WITH CH
 
 -- Turn on realtime for specific tables
 alter publication supabase_realtime add table products, blogs, testimonials, messages, orders, content;
+
+-- ==============================================================================
+-- 🛠️ ADMIN SETUP HELPER
+-- ==============================================================================
+-- To grant a user admin access to the Admin Portal, run this query in your
+-- Supabase SQL Editor after they have created an account:
+-- 
+-- UPDATE public.users 
+-- SET role = 'admin' 
+-- WHERE email = 'YOUR_ADMIN_EMAIL@example.com';
+-- ==============================================================================

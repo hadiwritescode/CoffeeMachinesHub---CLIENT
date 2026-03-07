@@ -33,11 +33,19 @@ const AdminLogin: React.FC = () => {
     setError('');
     try {
       await login(email, password);
-      // FORCE HARD RELOAD with DELAY to ensure context and persistence are fresh
-      // Increased delay to 1000ms to be safe for slower storage I/O
-      setTimeout(() => {
-          window.location.href = '/admin';
-      }, 1000);
+      
+      // Directly check DB role to prevent race conditions with Context
+      const { data, error: roleError } = await supabase.from('users').select('role').eq('email', email).single();
+      
+      if (data?.role === 'admin') {
+        setTimeout(() => {
+            window.location.href = '/admin';
+        }, 500);
+      } else {
+        setError('Access Denied: You do not have administrator privileges.');
+        setIsSubmitting(false);
+        await logout(); // Kick them out since this is the admin portal
+      }
     } catch (err: any) {
       console.error(err);
       setError('Invalid credentials.');
