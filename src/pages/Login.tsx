@@ -37,21 +37,12 @@ const Login: React.FC = () => {
         setIsSubmitting(false);
       } else {
         await login(email, password);
-        
-        // Explicitly check role to route properly
-        const { data } = await supabase.from('users').select('role').eq('email', email).single();
-        
-        setTimeout(() => {
-             if (data?.role === 'admin') {
-                 window.location.href = '/admin';
-             } else {
-                 window.location.href = '/profile';
-             }
-        }, 500);
+        // Navigating away will be handled by the useEffect watching currentUser
       }
     } catch (err: any) {
       console.error(err);
       showToast(err.message || "An error occurred", "error");
+    } finally {
       setIsSubmitting(false);
     }
   };

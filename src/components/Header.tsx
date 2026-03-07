@@ -8,7 +8,7 @@ import { useStore } from '../context/StoreContext';
 import { Product } from '../types';
 
 const Header: React.FC = () => {
-  const { cart, products, categories, siteContent } = useStore();
+  const { cart, products, categories, siteContent, currentUser } = useStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -241,7 +241,11 @@ const Header: React.FC = () => {
             <button onClick={() => setSearchOpen(true)} className={`transition-colors p-1 ${getNavLinkClass()}`} aria-label="Search">
               <Search strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />
             </button>
-            <Link to="/login" className={`transition-colors p-1 hidden sm:block ${getNavLinkClass()}`} aria-label="Account">
+            <Link 
+              to={currentUser ? (currentUser.role === 'admin' ? '/admin' : '/profile') : '/login'} 
+              className={`transition-colors p-1 hidden sm:block ${getNavLinkClass()}`} 
+              aria-label="Account"
+            >
               <User strokeWidth={1.5} size={22} className={mobileMenuOpen ? 'text-nomad-black' : ''} />
             </Link>
             <Link to="/cart" className={`transition-colors p-1 relative ${getNavLinkClass()}`} aria-label="Cart">
@@ -356,7 +360,13 @@ const Header: React.FC = () => {
              <a href={`https://wa.me/${waPhone}`} target="_blank" rel="noreferrer" className="flex items-center space-x-3 text-sm font-bold uppercase tracking-wider text-gray-600 hover:text-nomad-black">
                <Phone size={18} /> <span>{displayPhone}</span>
              </a>
-             <Link to="/login" className="block text-xs font-bold uppercase tracking-widest text-nomad-black" onClick={() => setMobileMenuOpen(false)}>My Account</Link>
+             <Link 
+               to={currentUser ? (currentUser.role === 'admin' ? '/admin' : '/profile') : '/login'} 
+               className="block text-xs font-bold uppercase tracking-widest text-nomad-black" 
+               onClick={() => setMobileMenuOpen(false)}
+             >
+               {currentUser ? (currentUser.role === 'admin' ? 'Dashboard' : 'My Account') : 'Sign In'}
+             </Link>
           </div>
         </div>
         

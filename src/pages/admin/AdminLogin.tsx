@@ -34,22 +34,11 @@ const AdminLogin: React.FC = () => {
     setError('');
     try {
       await login(email, password);
-      
-      // Directly check DB role to prevent race conditions with Context
-      const { data, error: roleError } = await supabase.from('users').select('role').eq('email', email).single();
-      
-      if (data?.role === 'admin') {
-        setTimeout(() => {
-            window.location.href = '/admin';
-        }, 500);
-      } else {
-        setError('Access Denied: You do not have administrator privileges.');
-        setIsSubmitting(false);
-        await logout(); // Kick them out since this is the admin portal
-      }
+      // Correct role check and redirection will be handled by the useEffect watching currentUser
     } catch (err: any) {
       console.error(err);
       setError('Invalid credentials.');
+    } finally {
       setIsSubmitting(false);
     }
   };

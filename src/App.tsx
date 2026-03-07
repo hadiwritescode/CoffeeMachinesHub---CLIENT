@@ -147,6 +147,30 @@ const LayoutWithHeaderFooter = ({ children }: { children?: React.ReactNode }) =>
 };
 
 const AppContent = () => {
+  const { loading } = useStore();
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-nomad-paper z-[100] flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+          <div className="relative w-24 h-24 mb-10">
+              <div className="absolute inset-0 border-t-2 border-nomad-gold rounded-full animate-spin"></div>
+              <div className="absolute inset-4 border-b-2 border-nomad-black rounded-full animate-spin-reverse opaicty-40"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-nomad-gold text-[10px] font-bold tracking-[0.3em] animate-pulse">HUB</span>
+              </div>
+          </div>
+          <h2 className="text-2xl font-serif font-medium text-nomad-black mb-3">Coffee Machines Hub</h2>
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-[0.2em] max-w-xs leading-loose">
+              Preparing your premium <br/> brewing experience...
+          </p>
+          
+          <div className="absolute bottom-12 text-[8px] font-bold uppercase tracking-[0.4em] text-gray-300">
+              Direct Import • Quality Guaranteed
+          </div>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <PageWrapper>

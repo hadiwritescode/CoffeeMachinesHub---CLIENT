@@ -132,16 +132,25 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   
-  const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useState<CartItem[]>([]);
   
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('cmh_cart');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
+  // Track if initial data and initial auth are loaded
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [authLoaded, setAuthLoaded] = useState(false);
+  
+  const loading = !dataLoaded || !authLoaded;
+
+  // Initialize cart from localStorage ONLY if not logged in (to avoid flashing)
+  useEffect(() => {
+    if (!currentUser) {
+        try {
+            const saved = localStorage.getItem('cmh_cart');
+            if (saved) setCart(JSON.parse(saved));
+        } catch (e) {
+            console.error("Cart init error", e);
+        }
     }
-  });
+  }, [currentUser === null]);
 
   // --- Real-time Listeners (Supabase) ---
   useEffect(() => {
@@ -188,7 +197,9 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
         }
     };
     
-    fetchInitialData();
+    fetchInitialData().finally(() => {
+        setDataLoaded(true);
+    });
 
     const channel = supabase.channel('public_db_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
@@ -285,7 +296,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                         setCurrentUser({ ...userData } as User);
                         if (userData.cart && Array.isArray(userData.cart)) setCart(userData.cart);
                     }
-                } else {
+                } else if (!error || error.code === 'PGRST116') { // PGRST116 is 'no rows returned'
                     // Create new profile if it doesn't exist
                     const newUser: User = {
                         id: session.user.id,
@@ -295,7 +306,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                         wishlist: [],
                         cart: []
                     };
-                    await supabase.from('users').insert(newUser);
+                    await supabase.from('users').upsert(newUser);
                     if (mounted) setCurrentUser(newUser);
                 }
             } catch (err) {
@@ -307,7 +318,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                 setCart([]);
             }
         }
-        if (mounted) setLoading(false);
+        if (mounted) setAuthLoaded(true);
     });
 
     return () => {
@@ -357,10 +368,14 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
       const { data, error } = await supabase.auth.signInWithPassword({ email: e, password: p });
       if (error) throw error;
       
-      // Manually fetch and set user to speed up redirect/persistence
+      // The onAuthStateChange listener will handle setting the user and clearing loading
+      // BUT we can wait for it here if we want to be certain before redirection in the UI
       if (data.user) {
           const { data: userData } = await supabase.from('users').select('*').eq('id', data.user.id).single();
-          if (userData) setCurrentUser(userData as User);
+          if (userData) {
+              setCurrentUser(userData as User);
+              if (userData.cart) setCart(userData.cart);
+          }
       }
       
       showToast("Welcome back!");
@@ -369,7 +384,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const logout = async () => { 
       await supabase.auth.signOut();
       setCurrentUser(null);
-      clearCart(); 
+      setCart([]); 
       showToast("Logged out"); 
   };
 
