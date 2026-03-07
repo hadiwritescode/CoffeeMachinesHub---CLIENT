@@ -398,7 +398,14 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
 
   const createOrder = async (o: any) => {
     const id = `ORD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    const newOrder = { ...o, id, date: new Date().toLocaleDateString(), status: 'Processing' };
+    const newOrder = { 
+        ...o, 
+        id, 
+        userId: o.userId || currentUser?.id || 'guest',
+        customerName: o.customerName || currentUser?.name || 'Guest',
+        date: new Date().toLocaleDateString(), 
+        status: 'Processing' 
+    };
     
     try {
         await wrapDbOp(supabase.from('orders').insert(newOrder));

@@ -16,6 +16,9 @@ CREATE TABLE IF NOT EXISTS public.users (
     role user_role DEFAULT 'customer',
     wishlist TEXT[] DEFAULT '{}',
     cart JSONB DEFAULT '[]'::jsonb,
+    phone TEXT,
+    address TEXT,
+    city TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -51,7 +54,7 @@ CREATE TABLE IF NOT EXISTS public.testimonials (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     role TEXT NOT NULL,
-    content TEXT NOT NULL,
+    text TEXT NOT NULL,
     rating INTEGER NOT NULL,
     image TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -74,10 +77,13 @@ CREATE TABLE IF NOT EXISTS public.messages (
 CREATE TABLE IF NOT EXISTS public.orders (
     id TEXT PRIMARY KEY,
     "userId" TEXT NOT NULL,
+    "customerName" TEXT NOT NULL,
+    email TEXT NOT NULL,
+    address TEXT NOT NULL,
+    phone TEXT NOT NULL,
     items JSONB NOT NULL,
     total INTEGER NOT NULL,
     status TEXT NOT NULL,
-    "billingInfo" JSONB NOT NULL,
     date TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
