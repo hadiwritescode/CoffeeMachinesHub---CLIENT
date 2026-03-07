@@ -134,13 +134,11 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   
   const [cart, setCart] = useState<CartItem[]>([]);
   
-  // Track if initial data and initial auth are loaded
   const [dataLoaded, setDataLoaded] = useState(false);
   const [authLoaded, setAuthLoaded] = useState(false);
   
   const loading = !dataLoaded || !authLoaded;
 
-  // Initialize cart from localStorage ONLY if not logged in (to avoid flashing)
   useEffect(() => {
     if (!currentUser) {
         try {
@@ -152,9 +150,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
   }, [currentUser === null]);
 
-  // --- Real-time Listeners (Supabase) ---
   useEffect(() => {
-    // Initial Fetch Map
     const fetchInitialData = async () => {
         try {
             const [
@@ -183,7 +179,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                 const newContent: any = { ...defaultSiteContent };
                 cData.forEach(doc => {
                     const key = doc.id;
-                    const data = doc.data; // JSONB column 'data'
+                    const data = doc.data;
                     if (key === 'navigation') {
                         if (data.categories) setCategoriesState(data.categories);
                     } else {
@@ -194,12 +190,12 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
             }
         } catch (err) {
             console.error("Fetch Initial Data Error:", err);
+        } finally {
+            setDataLoaded(true);
         }
     };
     
-    fetchInitialData().finally(() => {
-        setDataLoaded(true);
-    });
+    fetchInitialData();
 
     const channel = supabase.channel('public_db_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
@@ -233,7 +229,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
             if (payload.eventType === 'DELETE') setOrders(prev => prev.filter(p => p.id !== payload.old.id));
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'content' }, payload => {
-            if (payload.eventType === 'DELETE') return; // Rare for static content
+            if (payload.eventType === 'DELETE') return;
             const key = payload.new.id;
             const data = payload.new.data;
             if (key === 'navigation') {
@@ -247,48 +243,22 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     return () => {
         supabase.removeChannel(channel);
     };
-
-    // Messages
-    unsubs.push(db.collection('messages').onSnapshot(snap => {
-        setMessages(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message)));
-    }));
-
-    // Orders
-    unsubs.push(db.collection('orders').orderBy('date', 'desc').onSnapshot(snap => {
-        setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)));
-    }));
-
-    // Content (Flattened documents to SiteContent object)
-    unsubs.push(db.collection('content').onSnapshot(snap => {
-        const newContent: any = { ...defaultSiteContent };
-        snap.docs.forEach(doc => {
-            const key = doc.id;
-            const data = doc.data();
-            // Special handler for navigation which is stored in a doc 'navigation' with field 'categories'
-            if (key === 'navigation') {
-                if (data.categories) setCategoriesState(data.categories);
-            } else {
-                // For other content (hero, home, about, etc.), merge data
-                newContent[key] = { ...newContent[key], ...data };
-            }
-        });
-        setSiteContent(newContent);
-    }));
-
-    return () => unsubs.forEach(u => u());
   }, []);
 
-  // --- Auth & User Profile ---
   useEffect(() => {
     let mounted = true;
+    
+    // Safety timer to prevent infinite loading
     const safetyTimer = setTimeout(() => {
-        if (mounted) setLoading(false);
-    }, 4000);
+        if (mounted) {
+            setDataLoaded(true);
+            setAuthLoaded(true);
+        }
+    }, 6000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (session?.user) {
             try {
-                // Fetch user profile
                 const { data: userData, error } = await supabase.from('users').select('*').eq('id', session.user.id).single();
                 
                 if (userData && !error) {
@@ -296,8 +266,7 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
                         setCurrentUser({ ...userData } as User);
                         if (userData.cart && Array.isArray(userData.cart)) setCart(userData.cart);
                     }
-                } else if (!error || error.code === 'PGRST116') { // PGRST116 is 'no rows returned'
-                    // Create new profile if it doesn't exist
+                } else if (!error || error.code === 'PGRST116') {
                     const newUser: User = {
                         id: session.user.id,
                         email: session.user.email || '',
@@ -328,10 +297,8 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     };
   }, []);
 
-  // --- Cart Persistence ---
   useEffect(() => {
     if (currentUser) {
-       // Persist to Supabase
        supabase.from('users').update({ cart }).eq('id', currentUser.id).then(({error}) => {
            if (error) console.error("Cart save error", error);
        });
@@ -340,18 +307,18 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
   }, [cart, currentUser]);
 
-  // --- Helpers ---
   const wrapDbOp = async (op: Promise<any>, successMsg?: string) => {
       try {
-          await op;
+          const { error } = await op;
+          if (error) throw error;
           if (successMsg) showToast(successMsg);
       } catch (err: any) {
           console.error("DB Error:", err);
           showToast(err.message || "Operation failed", "error");
+          throw err;
       }
   };
 
-  // --- Actions ---
   const addToCart = (p: Product) => {
     setCart(prev => {
       const ex = prev.find(x => x.id === p.id);
@@ -367,9 +334,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const login = async (e: string, p: string) => { 
       const { data, error } = await supabase.auth.signInWithPassword({ email: e, password: p });
       if (error) throw error;
-      
-      // The onAuthStateChange listener will handle setting the user and clearing loading
-      // BUT we can wait for it here if we want to be certain before redirection in the UI
       if (data.user) {
           const { data: userData } = await supabase.from('users').select('*').eq('id', data.user.id).single();
           if (userData) {
@@ -377,7 +341,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
               if (userData.cart) setCart(userData.cart);
           }
       }
-      
       showToast("Welcome back!");
   };
   
@@ -396,7 +359,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     });
     if (error) throw error;
     if (user) {
-        // Create profile manually here to ensure name is saved immediately
         const u: User = { id: user.id, name: n, email: e, role: 'customer', wishlist: [], cart: [] };
         await supabase.from('users').upsert(u);
         setCurrentUser(u); 
@@ -408,7 +370,6 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
         const safeName = `${Date.now()}_${f.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
         const { data, error } = await supabase.storage.from(bucket).upload(safeName, f);
         if (error) throw error;
-        
         const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
         return urlData.publicUrl;
     } catch (err: any) {
@@ -428,37 +389,25 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
         date: new Date().toLocaleDateString(), 
         status: 'Processing' 
     };
-    
-    try {
-        await wrapDbOp(supabase.from('orders').insert(newOrder));
-        // Optimistic update handled by real-time listener if active, but we can do it here too just in case
-        setOrders(prev => [newOrder as Order, ...prev]); 
-        return id;
-    } catch(e) {
-        showToast("Failed to create order", "error");
-        throw e;
-    }
+    await wrapDbOp(supabase.from('orders').insert(newOrder));
+    return id;
   };
 
   const updateOrderStatus = async (id: string, s: any) => {
-      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: s } : o));
       await wrapDbOp(supabase.from('orders').update({ status: s }).eq('id', id), "Order updated");
   };
 
   const addMessage = async (m: any) => {
       const id = Date.now().toString();
       const newMsg = { ...m, id, date: new Date().toLocaleDateString(), read: false };
-      setMessages(prev => [newMsg as Message, ...prev]);
       await wrapDbOp(supabase.from('messages').insert(newMsg));
   };
 
   const markMessageRead = async (id: string, status: boolean) => {
-      setMessages(prev => prev.map(m => m.id === id ? { ...m, read: !status } : m));
       await wrapDbOp(supabase.from('messages').update({ read: !status }).eq('id', id));
   };
 
   const deleteMessage = async (id: string) => {
-      setMessages(prev => prev.filter(m => m.id !== id));
       await wrapDbOp(supabase.from('messages').delete().eq('id', id), "Message deleted");
   };
   
@@ -469,24 +418,19 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
     }
     const isIn = currentUser.wishlist.includes(id);
     const next = isIn ? currentUser.wishlist.filter(x => x !== id) : [...currentUser.wishlist, id];
-    
     setCurrentUser({ ...currentUser, wishlist: next });
     await supabase.from('users').update({ wishlist: next }).eq('id', currentUser.id);
   };
   
   const updateUserProfile = async (d: any) => { 
       if (currentUser) {
-          const updated = {...currentUser, ...d};
-          setCurrentUser(updated);
+          setCurrentUser({...currentUser, ...d});
           await wrapDbOp(supabase.from('users').update(d).eq('id', currentUser.id), "Profile updated");
       }
   };
   
-  // --- Admin Actions ---
-
   const updateSiteContent = async (s: keyof SiteContent, d: any) => {
       setSiteContent(prev => ({ ...prev, [s]: d })); 
-      // Supabase upsert matches on primary key (id)
       await wrapDbOp(supabase.from('content').upsert({ id: s, data: d }), "Content saved");
   };
 
@@ -496,51 +440,38 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   };
 
   const addProduct = async (p: Product) => {
-      setProducts(prev => {
-          const exists = prev.find(x => x.id === p.id);
-          if (exists) return prev.map(x => x.id === p.id ? p : x);
-          return [...prev, p];
-      });
       await wrapDbOp(supabase.from('products').insert(p), "Product saved");
   };
 
   const updateProduct = async (p: Product) => {
-      setProducts(prev => prev.map(x => x.id === p.id ? p : x));
       await wrapDbOp(supabase.from('products').update(p).eq('id', p.id), "Product updated");
   };
 
   const removeProduct = async (id: string) => {
-      setProducts(prev => prev.filter(x => x.id !== id));
       await wrapDbOp(supabase.from('products').delete().eq('id', id), "Product deleted");
   };
 
   const addBlogPost = async (b: BlogPost) => {
-      setBlogPosts(prev => [...prev, b]);
       await wrapDbOp(supabase.from('blogs').insert(b), "Blog post saved");
   };
 
   const updateBlogPost = async (b: BlogPost) => {
-      setBlogPosts(prev => prev.map(x => x.id === b.id ? b : x));
       await wrapDbOp(supabase.from('blogs').update(b).eq('id', b.id), "Blog post updated");
   };
 
   const removeBlogPost = async (id: string) => {
-      setBlogPosts(prev => prev.filter(x => x.id !== id));
       await wrapDbOp(supabase.from('blogs').delete().eq('id', id), "Blog post deleted");
   };
   
   const addTestimonial = async (t: Testimonial) => {
-      setTestimonials(prev => [...prev, t]);
       await wrapDbOp(supabase.from('testimonials').insert(t));
   };
 
   const updateTestimonial = async (t: Testimonial) => {
-      setTestimonials(prev => prev.map(x => x.id === t.id ? t : x));
       await wrapDbOp(supabase.from('testimonials').update(t).eq('id', t.id), "Testimonial updated");
   };
 
   const removeTestimonial = async (id: string) => {
-      setTestimonials(prev => prev.filter(x => x.id !== id));
       await wrapDbOp(supabase.from('testimonials').delete().eq('id', id));
   };
 
