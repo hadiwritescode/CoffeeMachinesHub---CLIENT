@@ -1,16 +1,60 @@
-
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      // Public Read Access for all uploaded files (Images, etc.)
-      allow read: if true;
+    
+    // --- Helper Functions ---
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
 
-      // Restrict writes to authenticated users.
-      // Ideally, you would check for admin status here using Custom Claims,
-      // but standard Firestore lookups are not supported in Storage rules.
-      // This basic rule prevents unauthenticated uploads.
-      allow write: if request.auth != null;
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isVideo() {
+      return request.resource.contentType.matches('video/.*');
+    }
+
+    function isSmallFile() {
+      return request.resource.size < 10 * 1024 * 1024; // 10MB limit
+    }
+
+    // --- Rules ---
+
+    // 1. Products, Content, Blogs, Categories: Public Read, Auth Write
+    // Ideally, we would check isAdmin() here, but Storage rules cannot read Firestore cheaply.
+    // We rely on the fact that only Admins have access to the UI to trigger these uploads
+    // and authenticated users are trusted to an extent.
+    match /products/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (isImage() || isVideo()) && isSmallFile();
+    }
+    
+    match /content/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (isImage() || isVideo()) && isSmallFile();
+    }
+
+    match /blogs/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isImage() && isSmallFile();
+    }
+
+    match /categories/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (isImage() || isVideo()) && isSmallFile();
+    }
+    
+    match /team/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isImage() && isSmallFile();
+    }
+
+    // 2. Default deny for everything else
+    match /{allPaths=**} {
+      allow read: if false;
+      allow write: if false;
     }
   }
 }

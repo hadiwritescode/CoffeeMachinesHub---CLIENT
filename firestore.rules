@@ -1,26 +1,34 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // --- Helper Functions ---
 
+    // Check if user is logged in
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Fetch the user's profile document to check their role
+    // Check if the user is an admin by looking up their user profile in Firestore
     function isAdmin() {
       return isAuthenticated() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // Check if the user is accessing their own data
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // --- Content & Catalog (Public Read, Admin Write) ---
+    // Prevent users from changing their role (Privilege Escalation protection)
+    function isNotChangingRole() {
+      // Allow update if 'role' field is NOT present in the request (unchanged)
+      // OR if the 'role' field in request matches the existing resource
+      return !('role' in request.resource.data) || request.resource.data.role == resource.data.role;
+    }
+
+    // --- Catalog & Content (Public Read, Admin Write) ---
 
     match /products/{productId} {
       allow read: if true;
@@ -45,18 +53,19 @@ service cloud.firestore {
     // --- User Interaction ---
 
     // Messages (Contact Form)
-    // Anyone can create, only admins can read/manage
+    // Public can create, Admin can read/manage
     match /messages/{messageId} {
       allow create: if true;
       allow read, update, delete: if isAdmin();
     }
 
     // Orders
-    // Anyone can create (Guest Checkout)
+    // Public can create (Guest Checkout)
     // Admins can manage all
-    // Users can read their own orders if logged in (matched by email stored in auth token)
+    // Users can read their own orders based on the 'email' field stored in the order
     match /orders/{orderId} {
       allow create: if true;
+      // Allow read if Admin OR if the order belongs to the logged-in user's email
       allow read: if isAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
       allow update, delete: if isAdmin();
     }
@@ -64,17 +73,18 @@ service cloud.firestore {
     // --- User Profiles ---
 
     match /users/{userId} {
-      // Users can read their own profile; Admins can read all
+      // 1. Read: Owner or Admin
       allow read: if isOwner(userId) || isAdmin();
       
-      // Creation allowed for the authenticated user (Registration)
+      // 2. Create: User creates their own profile on registration
       allow create: if isOwner(userId);
       
-      // Update allowed if Owner or Admin
-      // CRITICAL: If Owner, prevent changing the 'role' field to avoid privilege escalation
-      allow update: if isAdmin() || (isOwner(userId) && request.resource.data.role == resource.data.role);
+      // 3. Update: 
+      // - Admin can update anything.
+      // - Owner can update ONLY if they are NOT changing the 'role' field.
+      allow update: if isAdmin() || (isOwner(userId) && isNotChangingRole());
       
-      // Only Admins can delete users
+      // 4. Delete: Only Admin
       allow delete: if isAdmin();
     }
   }
