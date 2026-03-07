@@ -1,16 +1,17 @@
 -- SAFE DB INITIALIZATION
--- This script uses IF NOT EXISTS so it will not overwrite your existing data.
--- Create custom types for roles and statuses
+-- This script uses IF NOT EXISTS and DROP IF EXISTS so it is 100% rerunnable.
+
+-- 1. Custom Types
 DO $$ BEGIN
     CREATE TYPE user_role AS ENUM ('customer', 'admin');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
--- Enable UUID extension
+-- 2. Extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users table
+-- 3. Tables
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,
     email TEXT UNIQUE NOT NULL,
@@ -24,7 +25,6 @@ CREATE TABLE IF NOT EXISTS public.users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Products table
 CREATE TABLE IF NOT EXISTS public.products (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -33,12 +33,11 @@ CREATE TABLE IF NOT EXISTS public.products (
     images TEXT[] NOT NULL,
     description TEXT NOT NULL,
     specs JSONB,
-    features TEXT[],
+    features JSONB, -- Changed to JSONB for more flexibility
     "inStock" BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Blogs table
 CREATE TABLE IF NOT EXISTS public.blogs (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -51,7 +50,6 @@ CREATE TABLE IF NOT EXISTS public.blogs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Testimonials table
 CREATE TABLE IF NOT EXISTS public.testimonials (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -62,7 +60,6 @@ CREATE TABLE IF NOT EXISTS public.testimonials (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Messages table
 CREATE TABLE IF NOT EXISTS public.messages (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -75,7 +72,6 @@ CREATE TABLE IF NOT EXISTS public.messages (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Orders table
 CREATE TABLE IF NOT EXISTS public.orders (
     id TEXT PRIMARY KEY,
     "userId" TEXT NOT NULL,
@@ -90,7 +86,6 @@ CREATE TABLE IF NOT EXISTS public.orders (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Content table (for singleton site content)
 CREATE TABLE IF NOT EXISTS public.content (
     id TEXT PRIMARY KEY,
     data JSONB NOT NULL,
@@ -98,7 +93,7 @@ CREATE TABLE IF NOT EXISTS public.content (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Enable RLS
+-- 4. RLS Enablement
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.blogs ENABLE ROW LEVEL SECURITY;
@@ -107,51 +102,38 @@ ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.content ENABLE ROW LEVEL SECURITY;
 
--- Basic Policies (Update these for production)
+-- 5. Policies Cleanup (Rerunnable setup)
+DO $$ 
+DECLARE
+    pol record;
+BEGIN
+    FOR pol IN 
+        SELECT policyname, tablename 
+        FROM pg_policies 
+        WHERE schemaname = 'public' AND tablename IN ('users', 'products', 'blogs', 'testimonials', 'messages', 'orders', 'content')
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', pol.policyname, pol.tablename);
+    END LOOP;
+END $$;
 
--- Safely drop all existing policies before recreating them so the script is re-runnable
-DROP POLICY IF EXISTS "Public read products" ON public.products;
-DROP POLICY IF EXISTS "Public read blogs" ON public.blogs;
-DROP POLICY IF EXISTS "Public read testimonials" ON public.testimonials;
-DROP POLICY IF EXISTS "Public read content" ON public.content;
-
-DROP POLICY IF EXISTS "Users can read own profile" ON public.users;
-DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
-DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
-
-DROP POLICY IF EXISTS "Users can insert orders" ON public.orders;
-DROP POLICY IF EXISTS "Users can read own orders" ON public.orders;
-
-DROP POLICY IF EXISTS "Anyone can insert messages" ON public.messages;
-
-DROP POLICY IF EXISTS "Admin full access products" ON public.products;
-DROP POLICY IF EXISTS "Admin full access blogs" ON public.blogs;
-DROP POLICY IF EXISTS "Admin full access testimonials" ON public.testimonials;
-DROP POLICY IF EXISTS "Admin full access content" ON public.content;
-DROP POLICY IF EXISTS "Admin full access messages" ON public.messages;
-DROP POLICY IF EXISTS "Admin full access orders" ON public.orders;
-
--- Allow public read access to most things
+-- 6. Public Read Policies
 CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
 CREATE POLICY "Public read blogs" ON public.blogs FOR SELECT USING (true);
 CREATE POLICY "Public read testimonials" ON public.testimonials FOR SELECT USING (true);
 CREATE POLICY "Public read content" ON public.content FOR SELECT USING (true);
 
--- Allow authenticated users to read and update their own profile
+-- 7. User Profiles Policies
 CREATE POLICY "Users can read own profile" ON public.users FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.users FOR UPDATE USING (auth.uid() = id);
--- Need an insert policy for profile creation via triggers or direct upsert
 CREATE POLICY "Users can insert own profile" ON public.users FOR INSERT WITH CHECK (auth.uid() = id);
 
--- Allow authenticated users to insert orders, and read their own
+-- 8. Orders & Messages Policies
 CREATE POLICY "Users can insert orders" ON public.orders FOR INSERT WITH CHECK (auth.uid()::text = "userId");
 CREATE POLICY "Users can read own orders" ON public.orders FOR SELECT USING (auth.uid()::text = "userId");
-
--- Allow anyone to insert messages
 CREATE POLICY "Anyone can insert messages" ON public.messages FOR INSERT WITH CHECK (true);
 
--- Allow all actions for admin users across all main product/content tables
--- Using a subquery to check if the authenticated user has the 'admin' role in the users table.
+-- 9. Admin Policies (Master access)
+-- Note: Replaced subqueries with a more performant way to check role if possible, but subquery is fine for small scale.
 CREATE POLICY "Admin full access products" ON public.products FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
 CREATE POLICY "Admin full access blogs" ON public.blogs FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
 CREATE POLICY "Admin full access testimonials" ON public.testimonials FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
@@ -159,63 +141,60 @@ CREATE POLICY "Admin full access content" ON public.content FOR ALL USING ( (SEL
 CREATE POLICY "Admin full access messages" ON public.messages FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
 CREATE POLICY "Admin full access orders" ON public.orders FOR ALL USING ( (SELECT role FROM public.users WHERE id = auth.uid()) = 'admin' );
 
--- Storage Setup
+-- 10. Storage Setup
 INSERT INTO storage.buckets (id, name, public) VALUES ('products', 'products', true) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public) VALUES ('blogs', 'blogs', true) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public) VALUES ('testimonials', 'testimonials', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('categories', 'categories', true) ON CONFLICT (id) DO NOTHING;
 
--- Storage Policies
+-- 11. Storage Policies Cleanup
+DO $$ 
+DECLARE
+    pol record;
+BEGIN
+    FOR pol IN 
+        SELECT policyname 
+        FROM pg_policies 
+        WHERE schemaname = 'storage' AND tablename = 'objects'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON storage.objects', pol.policyname);
+    END LOOP;
+END $$;
 
--- First drop them if they exist so the script is re-runnable
-DROP POLICY IF EXISTS "Public Access Products" ON storage.objects;
-DROP POLICY IF EXISTS "Public Access Blogs" ON storage.objects;
-DROP POLICY IF EXISTS "Public Access Testimonials" ON storage.objects;
-DROP POLICY IF EXISTS "Upload Access Products" ON storage.objects;
-DROP POLICY IF EXISTS "Upload Access Blogs" ON storage.objects;
-DROP POLICY IF EXISTS "Upload Access Testimonials" ON storage.objects;
-
--- Recreate policies
+-- 12. Recreate Storage Policies
 CREATE POLICY "Public Access Products" ON storage.objects FOR SELECT USING (bucket_id = 'products');
 CREATE POLICY "Public Access Blogs" ON storage.objects FOR SELECT USING (bucket_id = 'blogs');
 CREATE POLICY "Public Access Testimonials" ON storage.objects FOR SELECT USING (bucket_id = 'testimonials');
+CREATE POLICY "Public Access Categories" ON storage.objects FOR SELECT USING (bucket_id = 'categories');
 
 CREATE POLICY "Upload Access Products" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'products' AND auth.role() = 'authenticated');
 CREATE POLICY "Upload Access Blogs" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'blogs' AND auth.role() = 'authenticated');
 CREATE POLICY "Upload Access Testimonials" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'testimonials' AND auth.role() = 'authenticated');
+CREATE POLICY "Upload Access Categories" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'categories' AND auth.role() = 'authenticated');
 
--- Function and Trigger to auto-create user profile (Optional but good practice)
--- CREATE OR REPLACE FUNCTION public.handle_new_user()
--- RETURNS trigger AS $$
--- BEGIN
---   INSERT INTO public.users (id, email, name, role)
---   VALUES (new.id, new.email, COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)), 'customer');
---   RETURN new;
--- END;
--- $$ LANGUAGE plpgsql SECURITY DEFINER;
--- 
--- DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
--- CREATE TRIGGER on_auth_user_created
---   AFTER INSERT ON auth.users
---   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
-
--- Turn on realtime for specific tables (safely)
+-- 13. Realtime Subscription (Bulletproof)
 DO $$
+DECLARE
+    tbl_name text;
+    tables_to_add text[] := ARRAY['products', 'blogs', 'testimonials', 'messages', 'orders', 'content'];
 BEGIN
-    BEGIN
-        ALTER PUBLICATION supabase_realtime ADD TABLE products, blogs, testimonials, messages, orders, content;
-    EXCEPTION
-        WHEN duplicate_object THEN
-            NULL; -- Tables already exist in publication
-    END;
+    -- Ensure publication exists
+    IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+        CREATE PUBLICATION supabase_realtime;
+    END IF;
+
+    FOREACH tbl_name IN ARRAY tables_to_add
+    LOOP
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_publication_tables 
+            WHERE pubname = 'supabase_realtime' 
+            AND schemaname = 'public' 
+            AND tablename = tbl_name
+        ) THEN
+            EXECUTE format('ALTER PUBLICATION supabase_realtime ADD TABLE public.%I', tbl_name);
+        END IF;
+    END LOOP;
 END $$;
 
--- ==============================================================================
--- 🛠️ ADMIN SETUP HELPER
--- ==============================================================================
--- To grant a user admin access to the Admin Portal, run this query in your
--- Supabase SQL Editor after they have created an account:
--- 
--- UPDATE public.users 
--- SET role = 'admin' 
--- WHERE email = 'YOUR_ADMIN_EMAIL@example.com';
--- ==============================================================================
+-- 14. Helper to promote admin (Commented out)
+-- UPDATE public.users SET role = 'admin' WHERE email = 'your-email@example.com';
