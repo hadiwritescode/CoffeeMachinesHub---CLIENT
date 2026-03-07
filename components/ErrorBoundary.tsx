@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { auth } from '../firebase';
+import { supabase } from '../src/supabase';
 
 interface Props {
   children?: ReactNode;
@@ -38,7 +38,7 @@ class ErrorBoundary extends Component<Props, State> {
   // Handle logout and local storage reset to clear potentially corrupted state
   private handleReset = async () => {
     try {
-        await auth.signOut();
+        await supabase.auth.signOut();
         localStorage.clear();
         window.location.href = '/';
     } catch (e) {
