@@ -1,3 +1,12 @@
+-- Drop existing tables to ensure clean schema creation (since previous runs might have created lowercase columns)
+DROP TABLE IF EXISTS public.users CASCADE;
+DROP TABLE IF EXISTS public.products CASCADE;
+DROP TABLE IF EXISTS public.blogs CASCADE;
+DROP TABLE IF EXISTS public.testimonials CASCADE;
+DROP TABLE IF EXISTS public.messages CASCADE;
+DROP TABLE IF EXISTS public.orders CASCADE;
+DROP TABLE IF EXISTS public.content CASCADE;
+
 -- Create custom types for roles and statuses
 DO $$ BEGIN
     CREATE TYPE user_role AS ENUM ('customer', 'admin');
