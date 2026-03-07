@@ -27,14 +27,19 @@ CREATE TABLE IF NOT EXISTS public.users (
 
 CREATE TABLE IF NOT EXISTS public.products (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
+    title TEXT NOT NULL,
     price INTEGER NOT NULL,
     category TEXT NOT NULL,
+    subtitle TEXT, -- Added
+    image TEXT, 
     images TEXT[] NOT NULL,
     description TEXT NOT NULL,
     specs JSONB,
-    features JSONB, -- Changed to JSONB for more flexibility
-    "inStock" BOOLEAN DEFAULT true,
+    features JSONB, 
+    tags TEXT[],
+    "soldOut" BOOLEAN DEFAULT false,
+    "isFeatured" BOOLEAN DEFAULT false, -- Added
+    "isRecommended" BOOLEAN DEFAULT false, -- Added
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -47,6 +52,7 @@ CREATE TABLE IF NOT EXISTS public.blogs (
     date TEXT NOT NULL,
     author TEXT NOT NULL,
     tags TEXT[],
+    "sourceLink" TEXT, -- Added missing column
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
