@@ -198,8 +198,16 @@ CREATE POLICY "Upload Access Testimonials" ON storage.objects FOR INSERT WITH CH
 --   AFTER INSERT ON auth.users
 --   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- Turn on realtime for specific tables
-alter publication supabase_realtime add table products, blogs, testimonials, messages, orders, content;
+-- Turn on realtime for specific tables (safely)
+DO $$
+BEGIN
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE products, blogs, testimonials, messages, orders, content;
+    EXCEPTION
+        WHEN duplicate_object THEN
+            NULL; -- Tables already exist in publication
+    END;
+END $$;
 
 -- ==============================================================================
 -- 🛠️ ADMIN SETUP HELPER
