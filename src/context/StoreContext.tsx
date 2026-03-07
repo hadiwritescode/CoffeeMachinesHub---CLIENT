@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, BlogPost, Order, User, SiteContent, NavCategory, Testimonial, Message, CartItem } from '../types';
 import { BRAND_LOGOS, INITIAL_CATEGORIES, FAQS } from '../constants';
-import { supabase } from '../../src/supabase';
+import { supabase } from '../supabase';
 import { useToast } from './ToastContext';
 
 interface StoreContextType {
@@ -354,8 +354,15 @@ export const StoreProvider = ({ children }: { children?: React.ReactNode }) => {
   const clearCart = () => setCart([]);
 
   const login = async (e: string, p: string) => { 
-      const { error } = await supabase.auth.signInWithPassword({ email: e, password: p });
+      const { data, error } = await supabase.auth.signInWithPassword({ email: e, password: p });
       if (error) throw error;
+      
+      // Manually fetch and set user to speed up redirect/persistence
+      if (data.user) {
+          const { data: userData } = await supabase.from('users').select('*').eq('id', data.user.id).single();
+          if (userData) setCurrentUser(userData as User);
+      }
+      
       showToast("Welcome back!");
   };
   

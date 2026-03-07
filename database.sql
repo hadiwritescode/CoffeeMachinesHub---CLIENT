@@ -1,12 +1,5 @@
--- Drop existing tables to ensure clean schema creation (since previous runs might have created lowercase columns)
-DROP TABLE IF EXISTS public.users CASCADE;
-DROP TABLE IF EXISTS public.products CASCADE;
-DROP TABLE IF EXISTS public.blogs CASCADE;
-DROP TABLE IF EXISTS public.testimonials CASCADE;
-DROP TABLE IF EXISTS public.messages CASCADE;
-DROP TABLE IF EXISTS public.orders CASCADE;
-DROP TABLE IF EXISTS public.content CASCADE;
-
+-- SAFE DB INITIALIZATION
+-- This script uses IF NOT EXISTS so it will not overwrite your existing data.
 -- Create custom types for roles and statuses
 DO $$ BEGIN
     CREATE TYPE user_role AS ENUM ('customer', 'admin');
@@ -115,6 +108,29 @@ ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.content ENABLE ROW LEVEL SECURITY;
 
 -- Basic Policies (Update these for production)
+
+-- Safely drop all existing policies before recreating them so the script is re-runnable
+DROP POLICY IF EXISTS "Public read products" ON public.products;
+DROP POLICY IF EXISTS "Public read blogs" ON public.blogs;
+DROP POLICY IF EXISTS "Public read testimonials" ON public.testimonials;
+DROP POLICY IF EXISTS "Public read content" ON public.content;
+
+DROP POLICY IF EXISTS "Users can read own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
+
+DROP POLICY IF EXISTS "Users can insert orders" ON public.orders;
+DROP POLICY IF EXISTS "Users can read own orders" ON public.orders;
+
+DROP POLICY IF EXISTS "Anyone can insert messages" ON public.messages;
+
+DROP POLICY IF EXISTS "Admin full access products" ON public.products;
+DROP POLICY IF EXISTS "Admin full access blogs" ON public.blogs;
+DROP POLICY IF EXISTS "Admin full access testimonials" ON public.testimonials;
+DROP POLICY IF EXISTS "Admin full access content" ON public.content;
+DROP POLICY IF EXISTS "Admin full access messages" ON public.messages;
+DROP POLICY IF EXISTS "Admin full access orders" ON public.orders;
+
 -- Allow public read access to most things
 CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
 CREATE POLICY "Public read blogs" ON public.blogs FOR SELECT USING (true);
